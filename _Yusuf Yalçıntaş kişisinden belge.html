@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pres Üretim Takip Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config={theme:{extend:{colors:{bg:'#121410',bg2:'#1a1d17',bg3:'#22261e',border:'#2a3024',text:'#e0e2db',text2:'#a3a89e',text3:'#5e6358',accent:'#a8e063',accent2:'#e86d3a',accent3:'#f5c842',accent4:'#5bb8e8'},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace'],bebas:['Bebas Neue','sans-serif']}}}}
+    </script>
+    <style>
+        body{background-color:#121410;color:#e0e2db;font-family:'Inter',sans-serif}
+        ::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-track{background:#1a1d17} ::-webkit-scrollbar-thumb{background:#2a3024;border-radius:4px}
+        .panel{display:none;opacity:0;transition:opacity 0.3s} .panel.active{display:block;opacity:1;animation:fadeIn 0.4s forwards}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)}}
+        .skeleton{background:linear-gradient(90deg,#1c2018 25%,#2a3024 50%,#1c2018 75%);background-size:200% 100%;animation:skel 1.5s infinite;border-radius:4px}
+        @keyframes skel{0%{background-position:200% 0} 100%{background-position:-200% 0}}
+        .emp-link{cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-color:#2a3024;transition:all 0.2s}
+        .emp-link:hover{color:#a8e063;text-decoration-color:#a8e063}
+        
+        /* PRINT STYLES - Strict Black & Landscape */
+        @media print {
+            @page { size: landscape; margin: 5mm; }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body { 
+                background-color: white !important; 
+                background: white !important;
+                color: black !important; 
+                padding: 0 !important;
+                display: block !important; /* CRITICAL: Prevent flexbox pagination issues */
+                height: auto !important;
+                overflow: visible !important;
+            }
+            
+            /* Clean White Theme for Containers */
+            .bg-bg, .bg-bg2, .bg-bg3, .panel, .card {
+                background-color: white !important;
+                background: white !important;
+                color: black !important;
+                border: none !important; /* Remove borders from containers as requested */
+                box-shadow: none !important;
+                padding: 0 !important; /* Remove padding to maximize space */
+            }
+            
+            /* Remove dark backgrounds from headers */
+            header, .header, nav {  
+                display: none !important; /* Hide navigation and header completely */
+            }
+
+            /* Clean Table Styling */
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 9px !important; /* Slightly increased for readability */
+                color: black !important;
+                table-layout: auto !important; /* Let table expand */
+            }
+            th, td {
+                border: 1px solid #000 !important; /* Strict black borders */
+                padding: 4px !important;
+            }
+            th {
+                background-color: #f0f0f0 !important; /* Light gray for headers */
+                font-weight: bold !important;
+            }
+
+            /* Hide Section Headers like 'GÜNLÜK PERFORMANS' boxes */
+            .font-bebas.text-base.tracking-\[2px\].text-text2.mb-2 {
+                display: none !important;
+            }
+            
+            /* Simple Section Headers */
+            .panel > .bg-bg2 > .font-bebas {
+                display: block !important;
+                font-size: 16px !important;
+                font-weight: 900 !important;
+                margin-bottom: 5px !important;
+                margin-top: 10px !important;
+                color: black !important;
+                border: none !important;
+                background: none !important;
+                padding: 0 !important;
+                text-transform: uppercase !important;
+            }
+            
+            /* Hide the ugly background boxes around headers in print */
+            .panel .bg-bg2 {
+                border: none !important;
+                background: none !important;
+            }
+            
+            /* Ensure charts fit nicely */
+            .grid > div {
+                width: 48% !important;
+                display: inline-block !important;
+                vertical-align: top !important;
+                margin: 0.5% !important;
+                page-break-inside: avoid !important;
+                border: 1px solid #ddd !important; /* Subtle border for charts */
+            }
+            
+            /* Hide UI Elements */
+            header, #main-nav, #pdf-btn, .loading-overlay, button, .skeleton, input { 
+                display: none !important; 
+            }
+            
+            /* Show Print Header/Footer */
+            #print-header, #print-footer { 
+                display: block !important; 
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+                margin-bottom: 1mm !important; /* Reduce margin to minimum */
+            }
+            
+            /* Panel Styling */
+            .panel { display: none !important; }
+            .panel.active { 
+                display: block !important; 
+                opacity: 1 !important; 
+                animation: none !important; 
+                width: 100% !important;
+                background: transparent !important;
+                page-break-before: avoid !important;
+                break-before: avoid !important;
+                margin-top: 0 !important; /* Ensure no top margin */
+            }
+            
+            /* Table Styling */
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 8px !important; /* Reduced to 8px as requested */
+                color: black !important;
+                table-layout: auto !important;
+                background: transparent !important;
+                page-break-inside: auto !important; 
+                margin-top: 0 !important; /* No margin above table */
+            }
+            th, td {
+                border: 1px solid black !important;
+                color: black !important;
+                padding: 2px !important; /* Reduced to 2px for tighter fit */
+                background-color: transparent !important; 
+                line-height: 1.1 !important; /* Tighter line height */
+            }
+            th {
+                font-weight: bold !important;
+                border-bottom: 2px solid black !important;
+                white-space: nowrap !important;
+            }
+            td { white-space: nowrap !important; }
+            
+            /* Prevent breaking inside rows if possible */
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            
+            /* Force Black Text Everywhere */
+            h1, h2, h3, div, span, p, a, a:visited, a:hover, a:active, .emp-link, b, strong, .text-text2, .font-bebas, th, td {
+                color: black !important;
+                text-decoration: none !important;
+                text-shadow: none !important;
+                box-shadow: none !important;
+                font-weight: normal !important; /* Ensure links don't look like links */
+            }
+
+            /* Prevent Clipping */
+            .overflow-hidden, .overflow-x-auto {
+                overflow: visible !important;
+            }
+            
+            /* Chart & Grid Layout Fixes for Print */
+            .grid {
+                display: block !important; 
+                margin: 0 !important;
+                padding: 0 !important;
+                gap: 0 !important;
+            }
+            .grid > div {
+                display: inline-block !important;
+                width: 48% !important; /* Slightly reduce width for margin */
+                margin-right: 1% !important; /* Add small margin */
+                margin-bottom: 5px !important; 
+                padding: 4px !important; /* Small padding */
+                vertical-align: top !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Single column grid items should be full width */
+            .grid > div:only-child {
+                width: 100% !important;
+                margin-right: 0 !important;
+            }
+            
+            /* Ensure canvas (charts) scale properly but use full space */
+            canvas {
+                max-width: 100% !important;
+                height: auto !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            /* Add slight padding to container inside grid */
+            .grid > div > div {
+                padding: 4px !important; /* Small padding */
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            
+            /* Hide Scrollbars */
+            ::-webkit-scrollbar { display: none; }
+        }
+
+        /* MODAL PRINT STYLES - Portrait & Isolated */
+        @media print {
+            body.modal-open {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            body.modal-open > *:not(#emp-modal) {
+                display: none !important;
+            }
+            body.modal-open #emp-modal {
+                display: block !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                z-index: 9999 !important;
+                background: white !important; /* Ensure white background for modal */
+                overflow: visible !important;
+                opacity: 1 !important;
+            }
+            /* Modal Specifics Restored */
+            body.modal-open #emp-modal .bg-bg2, 
+            body.modal-open #emp-modal .bg-bg3 {
+                background: white !important;
+                border: 1px solid black !important; /* Keep structure */
+                box-shadow: none !important;
+                padding: 10px !important;
+                margin-bottom: 10px !important;
+            }
+            body.modal-open #emp-modal table {
+                width: 100% !important;
+                border: 1px solid black !important;
+            }
+            body.modal-open #emp-modal button {
+                display: none !important; /* Hide close/print buttons */
+            }
+            .print-hide { display: none !important; }
+            .print-show { display: flex !important; }
+        }
+    </style>
+</head>
+<body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm">
+
+    <!-- PRINT ONLY HEADER -->
+    <div id="print-header" class="hidden mb-4 border-b-2 border-black pb-2 text-black print:block">
+        <div class="flex justify-between items-end">
+            <div>
+                <!-- Removed Title as requested -->
+                <div class="text-xl font-mono font-bold mt-1 uppercase" id="print-tab-name">ÖZET TABLOSU</div>
+            </div>
+            <div class="text-right font-mono text-black">
+                <div class="text-xl font-bold" id="print-date"></div>
+            </div>
+        </div>
+    </div>
+
+    <header class="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-bg2 border border-border p-4 rounded shadow-lg relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
+        <div>
+            <h1 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent">PRES ÜRETİM TAKİP</h1>
+            <div class="flex items-center gap-3 mt-1 text-xs md:text-sm font-mono text-text3"><span id="src-status">● BAĞLANIYOR...</span><span class="w-1 h-1 bg-text3 rounded-full"></span><span id="src-info">Veri bekleniyor...</span></div>
+        </div>
+        <div class="flex flex-wrap gap-4 md:gap-8 font-mono text-xs md:text-sm text-text2">
+            <div class="flex flex-col"><span class="text-[10px] uppercase tracking-wider text-text3">Toplam Üretim</span><span id="hdr-total" class="text-xl font-bold text-text">-</span></div>
+            <div class="flex flex-col"><span class="text-[10px] uppercase tracking-wider text-text3">Ort. Perf</span><span id="hdr-perf" class="text-xl font-bold text-accent4">-</span></div>
+            <div class="flex flex-col"><span class="text-[10px] uppercase tracking-wider text-text3">Çalışan</span><span id="hdr-workers" class="text-xl font-bold text-text">-</span></div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="exportToPDF()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-xs flex items-center gap-2">📥 PDF İNDİR</button>
+            <button onclick="fetchCSV()" id="btn-refresh" class="px-3 py-1.5 bg-bg3 hover:bg-border text-accent border border-border rounded font-mono text-xs flex items-center gap-2">↻ GÜNCELLE</button>
+        </div>
+    </header>
+
+    <nav class="flex overflow-x-auto gap-2 border-b border-border pb-1 no-scrollbar" id="main-nav">
+        <div onclick="swT('gunluk',this)" class="px-4 py-2 text-accent border-b-2 border-accent cursor-pointer font-bebas tracking-wider whitespace-nowrap">GÜNLÜK RAPOR</div>
+        <div onclick="swT('haftalik',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">HAFTALIK RAPOR</div>
+        <div onclick="swT('aylik',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">AYLIK RAPOR</div>
+        <div onclick="swT('genel',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">GENEL ÖZET</div>
+        <div onclick="swT('calisan',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">ÇALIŞAN PERFORMANSI</div>
+        <div onclick="swT('pres',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">PRES MAKİNE</div>
+        <div onclick="swT('fason',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">FASON DETAY</div>
+    </nav>
+
+    <main class="flex-1 relative min-h-[500px]">
+        <div class="panel active" id="panel-gunluk">
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 bg-bg2 border border-border p-2 rounded gap-2">
+                <button onclick="chD(-1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">◀ ÖNCEKİ</button>
+                <div class="flex items-center gap-3"><span id="c-day" class="font-bebas text-2xl tracking-wider text-accent"></span><input type="date" id="d-pick" class="bg-bg3 border border-border text-text2 text-xs rounded p-1.5 outline-none" onchange="pkD(this.value)"></div>
+                <button onclick="chD(1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">SONRAKİ ▶</button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4" id="g-kpi"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4 lg:col-span-2"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">GÜNLÜK PERFORMANS</div><div class="h-[240px] relative"><canvas id="c1"></canvas></div></div>
+                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">VARDİYA ORANI</div><div class="h-[240px] relative"><canvas id="c2"></canvas></div></div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">GÜNLÜK LİSTE</span><input type="text" onkeyup="fT('t-gun',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-x-auto"><table class="w-full text-left border-collapse" id="t-gun"><thead id="th-gun"></thead><tbody id="tb-gun"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="panel-haftalik">
+            <div class="flex items-center justify-between mb-4 bg-bg2 border border-border p-2 rounded">
+                <button onclick="chW(-1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">◀ ÖNCEKİ</button>
+                <div class="flex items-center gap-3"><span id="c-week" class="font-bebas text-2xl tracking-wider text-accent"></span><input type="week" id="w-pick" class="bg-bg3 border border-border text-text2 text-xs rounded p-1.5 outline-none" onchange="pkW(this.value)"></div>
+                <button onclick="chW(1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">SONRAKİ ▶</button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4" id="w-kpi"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">ÜRETİM TRENDİ</div><div class="h-[240px] relative"><canvas id="w1"></canvas></div></div>
+                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">PERFORMANS TRENDİ</div><div class="h-[240px] relative"><canvas id="w2"></canvas></div></div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden">
+                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">HAFTALIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('t-haf',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-x-auto"><table class="w-full text-left border-collapse" id="t-haf"><thead id="th-haf"></thead><tbody id="tb-haf"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="panel-aylik">
+            <div class="flex items-center justify-between mb-4 bg-bg2 border border-border p-2 rounded">
+                <button onclick="chM(-1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">◀ ÖNCEKİ</button>
+                <div class="flex items-center gap-3"><span id="c-month" class="font-bebas text-2xl tracking-wider text-accent"></span><input type="month" id="m-pick" class="bg-bg3 border border-border text-text2 text-xs rounded p-1.5 outline-none" onchange="pkM(this.value)"></div>
+                <button onclick="chM(1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">SONRAKİ ▶</button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4" id="m-kpi"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">ÜRETİM TRENDİ</div><div class="h-[240px] relative"><canvas id="m1"></canvas></div></div>
+                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">PERFORMANS TRENDİ</div><div class="h-[240px] relative"><canvas id="m2"></canvas></div></div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden">
+                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">AYLIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('t-ay',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-x-auto"><table class="w-full text-left border-collapse" id="t-ay"><thead id="th-ay"></thead><tbody id="tb-ay"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="panel-genel">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4" id="h-kpi"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">GENEL ÜRETİM</div><div class="h-[240px] relative"><canvas id="h1"></canvas></div></div>
+                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">GENEL PERFORMANS</div><div class="h-[240px] relative"><canvas id="h2"></canvas></div></div>
+            </div>
+            <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">EN İYİ 10 ÇALIŞAN</div><div class="h-[260px] relative"><canvas id="h3"></canvas></div></div>
+        </div>
+
+        <div class="panel hidden" id="panel-calisan">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4 md:col-span-2"><div class="font-bebas text-base text-text2 mb-2">ÇALIŞAN ÜRETİM</div><div class="h-[240px] relative"><canvas id="ca1"></canvas></div></div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden">
+                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">TÜM ÇALIŞANLAR</span><input type="text" onkeyup="fT('t-cal',this.value)" placeholder="İsim Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-x-auto"><table class="w-full text-left border-collapse" id="t-cal"><thead id="th-cal"></thead><tbody id="tb-cal"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="panel-pres">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4 md:col-span-2"><div class="font-bebas text-base text-text2 mb-2">PRES ÜRETİM</div><div class="h-[240px] relative"><canvas id="p1"></canvas></div></div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden">
+                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">PRES LİSTESİ</span><input type="text" onkeyup="fT('t-pre',this.value)" placeholder="Pres Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-x-auto"><table class="w-full text-left border-collapse" id="t-pre"><thead id="th-pre"></thead><tbody id="tb-pre"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="panel-fason">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">FASON ÜRETİM</div><div class="h-[320px] relative"><canvas id="f1"></canvas></div></div>
+                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">FASON PERFORMANS</div><div class="h-[320px] relative"><canvas id="f2"></canvas></div></div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden">
+                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">FASON LİSTESİ</span><input type="text" onkeyup="fT('t-fas',this.value)" placeholder="Fason Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-x-auto"><table class="w-full text-left border-collapse" id="t-fas"><thead id="th-fas"></thead><tbody id="tb-fas"></tbody></table></div>
+            </div>
+        </div>
+    </main>
+
+    <div id="emp-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-5xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
+            <div class="absolute top-4 right-4 flex gap-3">
+                <button onclick="window.print()" class="text-text2 hover:text-accent font-bold text-sm bg-bg3 px-3 py-1 rounded border border-border">YAZDIR</button>
+                <button onclick="closeModal()" class="text-text2 hover:text-accent2 text-3xl font-bold leading-none">&times;</button>
+            </div>
+            <h2 id="mdl-name" class="font-bebas text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">ÇALIŞAN ADI</h2>
+            
+            <div id="mdl-stats" class="mb-6"></div>
+            
+            <h3 class="font-bebas text-xl tracking-[1px] text-text2 mb-3">SON ÜRETİM KAYITLARI</h3>
+            <div class="overflow-x-auto bg-bg3 border border-border rounded">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="p-3 text-xs font-mono text-text3 border-b border-border">Tarih</th>
+                            <th class="p-3 text-xs font-mono text-text3 border-b border-border">Vardiya</th>
+                            <th class="p-3 text-xs font-mono text-text3 border-b border-border">Presler</th>
+                            <th class="p-3 text-xs font-mono text-text3 border-b border-border">Üretim</th>
+                            <th class="p-3 text-xs font-mono text-text3 border-b border-border">Performans</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mdl-history" class="text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script>
+// VARIABLES & LOGIC
+let RAW=[], DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
+const URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6Oc7Fa2D0TOVcth9hfJ8GKeRf0O7_I-1dUxwFd-EqlG1F9JSvPnqVesKklofAiJPRJ-lkTTAcRD7v/pub?gid=670708123&single=true&output=csv';
+const pURL = 'https://r.jina.ai/' + URL;
+
+function $(id){return document.getElementById(id);}
+function n(v){return v>0?v.toLocaleString('tr-TR'):'-';}
+function pb(p){const c=p>=120?'bg-accent/20 text-accent':p>=90?'bg-accent4/20 text-accent4':p>=70?'bg-accent2/20 text-accent2':'bg-accent3/20 text-accent3'; return `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${c}">${p.toFixed(1)}%</span>`;}
+function isoW(d){const[D,M,Y]=d.split('.').map(Number);const dt=new Date(Y,M-1,D);dt.setDate(dt.getDate()+4-(dt.getDay()||7));return `${dt.getFullYear()}-W${String(Math.ceil((((dt-new Date(dt.getFullYear(),0,1))/86400000)+1)/7)).padStart(2,'0')}`;}
+function calc(arr){return{u:arr.reduce((s,r)=>s+r.tU,0),p:arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0,d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
+
+// CHART & TABS
+function mc(id,t,d,o={}){if(charts[id])charts[id].destroy(); const c={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8a9680',font:{family:"'JetBrains Mono'",size:10}}}},scales:{x:{grid:{color:'rgba(42,48,36,.4)'},ticks:{color:'#8a9680',font:{size:9}}},y:{grid:{color:'rgba(42,48,36,.4)'},ticks:{color:'#8a9680',font:{size:9}}}}}; if(o.y)c.scales.y=o.y; if(o.x)c.scales.x=o.x; if(o.idx)c.indexAxis=o.idx; charts[id]=new Chart($(id),{type:t,data:d,options:c});}
+
+function swT(t,el){
+    cTab=t; 
+    document.querySelectorAll('.panel').forEach(e=>{e.classList.remove('active','block');e.classList.add('hidden');});
+    
+    // Fix navigation styling: Reset all tabs to inactive state first
+    document.querySelectorAll('#main-nav > div').forEach(e => {
+        e.classList.remove('text-accent', 'border-accent');
+        e.classList.add('text-text2', 'border-transparent');
+    });
+    
+    // Set active state for clicked element
+    el.classList.remove('text-text2', 'border-transparent');
+    el.classList.add('text-accent', 'border-accent');
+
+    const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active','block'),10);}
+    if(!RAW.length)return;
+    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF();
+}
+
+// SEARCH
+function fT(id,q){const f=q.toLowerCase(),r=$(id).getElementsByTagName('tr'); for(let i=0;i<r.length;i++) r[i].style.display=r[i].innerText.toLowerCase().includes(f)?'':'none';}
+
+// HTML GENERATORS
+const th=(cols)=>`<tr>${cols.map(c=>`<th class="p-2 text-left font-mono text-[10px] text-text3 border-b border-border uppercase whitespace-nowrap">${c}</th>`).join('')}</tr>`;
+const tr=(cols)=>`<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs">${cols.map(c=>`<td class="p-2 whitespace-nowrap">${c}</td>`).join('')}</tr>`;
+const card=(c,l,v,s)=>`<div class="bg-bg2 border border-border border-l-4 ${c} rounded p-3"><div class="font-bebas text-sm text-text2">${l}</div><div class="font-mono text-xl font-bold text-text my-1">${v}</div><div class="text-[10px] text-text3">${s}</div></div>`;
+
+// DATE NAVIGATION
+function chD(x){const i=DATES.indexOf(sD); if(DATES[i+x]){sD=DATES[i+x]; rG();}}
+function pkD(v){const f=v.split('-').reverse().join('.'); if(DATES.includes(f)){sD=f; rG();}else alert('Veri yok');}
+function chW(x){const i=WEEKS.indexOf(sW); if(WEEKS[i+x]){sW=WEEKS[i+x]; rW();}}
+function pkW(v){if(WEEKS.includes(v)){sW=v; rW();}else alert('Veri yok');}
+function chM(x){const i=MONTHS.indexOf(sM); if(MONTHS[i+x]){sM=MONTHS[i+x]; rM();}}
+function pkM(v){const f=v.split('-').reverse().join('.'); if(MONTHS.includes(f)){sM=f; rM();}else alert('Veri yok');}
+
+// RENDERERS
+function rG(){
+    if(!sD)return; $('c-day').innerText=sD; $('d-pick').value=sD.split('.').reverse().join('-');
+    const dd=RAW.filter(r=>r.tarih===sD), s=calc(dd), sab=dd.filter(r=>r.vardiya==='08:00-16:00').length, aks=dd.filter(r=>r.vardiya==='16:00-24:00').length;
+    $('g-kpi').innerHTML=card('border-l-accent','Üretim',n(s.u),'Adet')+card('border-l-accent4','Performans',s.p.toFixed(1)+'%',s.c+' Kayıt')+card('border-l-accent2','Duruş',n(s.d),'Dk')+card('border-l-accent','Çalışan',new Set(dd.map(r=>r.calisan)).size,'Kişi')+card('border-l-accent3','Düşük Perf',dd.filter(r=>r.tP<80).length,'Kayıt')+card('border-l-accent','Yüksek Perf',dd.filter(r=>r.tP>=110).length,'Kayıt');
+    const sr=[...dd].sort((a,b)=>b.tP-a.tP);
+    mc('c1','bar',{labels:sr.map(r=>r.calisan.split(' ')[0]),datasets:[{label:'Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?'#a8e063bb':r.tP>=90?'#5bb8e8bb':r.tP>=70?'#f5c842bb':'#e86d3abb')}]});
+    mc('c2','doughnut',{labels:['08-16','16-24','Diğer'],datasets:[{data:[sab,aks,dd.length-sab-aks],backgroundColor:['#a8e063bb','#5bb8e8bb','#f5c842bb']}]},{x:{display:false},y:{display:false}});
+    const pm={}; dd.forEach(r=>{if(r.pres1)pm[r.pres1]=(pm[r.pres1]||0)+r.uretim1; if(r.pres2)pm[r.pres2]=(pm[r.pres2]||0)+r.uretim2;});
+    const ps=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,12); mc('c3','bar',{labels:ps.map(x=>x[0]),datasets:[{label:'Üretim',data:ps.map(x=>x[1]),backgroundColor:'#a8e063bb'}]});
+    $('th-gun').innerHTML=th(['#','Çalışan','Vardiya','Pres 1','Fason 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Ürt 2','Perf 2','Dur 2','Top.Ürt','Ort.Perf']);
+    $('tb-gun').innerHTML=dd.map((r,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${r.calisan}')">${r.calisan}</b>`, r.vardiya||'-', r.pres1||'-', r.fason1||'-', n(r.uretim1), pb(r.perf1), r.durus1||'-', r.pres2||'-', r.fason2||'-', n(r.uretim2), pb(r.perf2), r.durus2||'-', `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)])).join('');
+}
+
+function rW(){
+    if(!sW)return; $('c-week').innerText=sW.replace('-W',' / ')+'. Hafta'; $('w-pick').value=sW;
+    const wd=RAW.filter(r=>isoW(r.tarih)===sW), s=calc(wd);
+    $('w-kpi').innerHTML=card('border-l-accent','Haftalık Üretim',n(s.u),'Adet')+card('border-l-accent4','Haftalık Perf',s.p.toFixed(1)+'%',s.c+' Kayıt')+card('border-l-accent2','Haftalık Duruş',n(s.d),'Dk')+card('border-l-accent3','Çalışılan Gün',new Set(wd.map(r=>r.tarih)).size,'Gün');
+    const dt=[...new Set(wd.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,5), ...calc(wd.filter(r=>r.tarih===d))}));
+    mc('w1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:'#a8e063',backgroundColor:'#a8e06333',fill:true}]});
+    mc('w2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:'#5bb8e8',backgroundColor:'#5bb8e833',fill:true}]},{y:{min:60,max:130}});
+    const ws=[...new Set(wd.map(r=>r.calisan))].map(w=>({w,...calc(wd.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
+    $('th-haf').innerHTML=th(['Sıra','Çalışan','Top.Üretim','Ort.Perf']);
+    $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${w.w}')">${w.w}</b>`, n(w.u), pb(w.p)])).join('');
+}
+
+function rM(){
+    if(!sM)return; const [m,y]=sM.split('.'); $('c-month').innerText=`${m}/${y}`; $('m-pick').value=`${y}-${m}`;
+    const md=RAW.filter(r=>r.tarih.endsWith(sM)), s=calc(md);
+    $('m-kpi').innerHTML=card('border-l-accent','Aylık Üretim',n(s.u),'Adet')+card('border-l-accent4','Aylık Perf',s.p.toFixed(1)+'%',s.c+' Kayıt')+card('border-l-accent2','Aylık Duruş',n(s.d),'Dk')+card('border-l-accent3','Çalışılan Gün',new Set(md.map(r=>r.tarih)).size,'Gün');
+    const dt=[...new Set(md.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,2), ...calc(md.filter(r=>r.tarih===d))}));
+    mc('m1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:'#a8e063',backgroundColor:'#a8e06333',fill:true}]});
+    mc('m2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:'#5bb8e8',backgroundColor:'#5bb8e833',fill:true}]},{y:{min:60,max:130}});
+    const ws=[...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
+    $('th-ay').innerHTML=th(['Sıra','Çalışan','Top.Üretim','Ort.Perf']);
+    $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${w.w}')">${w.w}</b>`, n(w.u), pb(w.p)])).join('');
+}
+
+function rH(){
+    const s=calc(RAW); $('h-kpi').innerHTML=card('border-l-accent','Genel Üretim',n(s.u),'Tümü')+card('border-l-accent4','Genel Perf',s.p.toFixed(1)+'%',s.c+' Kayıt')+card('border-l-accent2','Genel Duruş',n(s.d),'Dk')+card('border-l-accent3','Kayıtlı Gün',DATES.length,'Gün');
+    const dt=DATES.map(d=>({l:d.slice(0,5), ...calc(RAW.filter(r=>r.tarih===d))}));
+    mc('h1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:'#a8e063',backgroundColor:'#a8e06333',fill:true}]});
+    mc('h2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:'#5bb8e8',backgroundColor:'#5bb8e833',fill:true}]},{y:{min:60,max:130}});
+    const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u).slice(0,10);
+    mc('h3','bar',{labels:ws.map(x=>x.w.split(' ')[0]),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:'#a8e063bb'}]});
+}
+
+function rC(){
+    const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
+    mc('ca1','bar',{labels:ws.map(x=>x.w.split(' ')[0]),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:'#a8e063bb'}]});
+    mc('ca2','bar',{labels:[...ws].sort((a,b)=>b.p-a.p).map(x=>x.w.split(' ')[0]),datasets:[{label:'Perf %',data:[...ws].sort((a,b)=>b.p-a.p).map(x=>x.p),backgroundColor:'#5bb8e8bb'}]});
+    $('th-cal').innerHTML=th(['Sıra','Çalışan','Kayıt','Top.Üretim','Ort.Perf','Duruş (Dk)']);
+    $('tb-cal').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${w.w}')">${w.w}</b>`, w.c, n(w.u), pb(w.p), n(w.d)])).join('');
+}
+
+function rP(){
+    const pM={}; RAW.forEach(r=>{[1,2].forEach(i=>{const p=r['pres'+i]; if(p){if(!pM[p])pM[p]={u:0,pp:[],d:0,c:0}; pM[p].u+=r['uretim'+i]; if(r['perf'+i])pM[p].pp.push(r['perf'+i]); pM[p].d+=r['durus'+i]; pM[p].c++;}});});
+    const pl=Object.entries(pM).map(([p,v])=>({p, u:v.u, d:v.d, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
+    mc('p1','bar',{labels:pl.map(x=>x.p),datasets:[{label:'Üretim',data:pl.map(x=>x.u),backgroundColor:'#a8e063bb'}]});
+    $('th-pre').innerHTML=th(['Pres','Top.Üretim','Ort.Perf','Kayıt','Duruş (Dk)']);
+    $('tb-pre').innerHTML=pl.map(x=>tr([`<b>${x.p}</b>`, n(x.u), pb(x.a), x.c, n(x.d)])).join('');
+}
+
+function rF(){
+    const fM={}; RAW.forEach(r=>{[1,2].forEach(i=>{const f=r['fason'+i]; if(f){if(!fM[f])fM[f]={u:0,pp:[],c:0}; fM[f].u+=r['uretim'+i]; if(r['perf'+i])fM[f].pp.push(r['perf'+i]); fM[f].c++;}});});
+    const fl=Object.entries(fM).map(([f,v])=>({f, u:v.u, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
+    mc('f1','bar',{labels:fl.slice(0,15).map(x=>x.f),datasets:[{label:'Üretim',data:fl.slice(0,15).map(x=>x.u),backgroundColor:'#a8e063bb'}]},{idx:'y'});
+    mc('f2','bar',{labels:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.f),datasets:[{label:'Perf %',data:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.a),backgroundColor:'#5bb8e8bb'}]},{idx:'y'});
+    $('th-fas').innerHTML=th(['Fason','Top.Üretim','Ort.Perf','Kayıt']);
+    $('tb-fas').innerHTML=fl.map(x=>tr([`<b>${x.f}</b>`, n(x.u), pb(x.a), x.c])).join('');
+}
+
+// EMPLOYEE MODAL (Yeni Özellik)
+function openModal(emp) {
+    document.body.classList.add('modal-open');
+    let ps = document.getElementById('print-style-modal');
+    if(!ps){
+        ps = document.createElement('style');
+        ps.id = 'print-style-modal';
+        document.head.appendChild(ps);
+    }
+    ps.innerHTML = '@media print { @page { size: portrait; margin: 10mm; } }';
+
+    const data = RAW.filter(r => r.calisan === emp).sort((a,b)=> a.tarih.split('.').reverse().join('') > b.tarih.split('.').reverse().join('') ? -1 : 1);
+    $('mdl-name').innerText = emp + ' - PERFORMANS ÖZETİ';
+    
+    const d = calc(data.filter(r => r.tarih === sD));
+    const w = calc(data.filter(r => isoW(r.tarih) === sW));
+    const m = calc(data.filter(r => r.tarih.endsWith(sM)));
+    const t = calc(data);
+
+    const c = (l, v) => `<div class="bg-bg border border-border rounded p-4 flex flex-col shadow-inner"><span class="text-xs font-mono text-text3 mb-1">${l}</span><span class="font-bold text-xl text-text">${n(v.u)} Adet</span><span class="text-xs ${v.p>=100?'text-accent':'text-accent2'} mt-1">${v.p.toFixed(1)}% Ort. Perf</span></div>`;
+    const r = (l, v) => `<div class="flex-1 border border-black p-2 text-center"><div class="font-bold text-sm mb-1 uppercase border-b border-black pb-1">${l}</div><div class="text-2xl font-black my-1">${n(v.u)} <span class="text-xs font-normal">Adet</span></div><div class="text-xs">${v.p.toFixed(1)}% Ort. Perf</div></div>`;
+    
+    $('mdl-stats').innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 print-hide">
+            ${c(`GÜNLÜK (${sD})`, d) + c('HAFTALIK', w) + c(`AYLIK (${sM})`, m) + c('TÜM ZAMANLAR', t)}
+        </div>
+        <div class="hidden print-show w-full mb-6 gap-2">
+            ${r(`GÜNLÜK (${sD})`, d) + r('HAFTALIK', w) + r(`AYLIK (${sM})`, m) + r('TÜM ZAMANLAR', t)}
+        </div>
+    `;
+
+    $('mdl-history').innerHTML = data.slice(0, 15).map(r => `
+        <tr class="border-b border-border/50 hover:bg-bg2">
+            <td class="p-3 font-mono">${r.tarih}</td>
+            <td class="p-3 text-text2">${r.vardiya}</td>
+            <td class="p-3 text-text2">${r.pres1} ${r.pres2 ? '<br>'+r.pres2 : ''}</td>
+            <td class="p-3 font-mono font-bold">${n(r.tU)}</td>
+            <td class="p-3">${pb(r.tP)}</td>
+        </tr>
+    `).join('');
+
+    const el = $('emp-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
+}
+function closeModal() { 
+    document.body.classList.remove('modal-open');
+    const ps = document.getElementById('print-style-modal');
+    if(ps) ps.innerHTML = '';
+    
+    const el = $('emp-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300); 
+}
+
+// PDF EXPORT (Native Print)
+function exportToPDF() {
+    if(!RAW.length) return alert("Veri yok.");
+    
+    // Update print header info
+    const d = new Date().toLocaleDateString('tr-TR');
+    const dateEl = document.getElementById('print-date');
+    const tabEl = document.getElementById('print-tab-name');
+    
+    if(dateEl) dateEl.textContent = d;
+    if(tabEl) tabEl.textContent = cTab.toUpperCase() + ' ÖZET TABLOSU';
+
+    window.print();
+}
+
+// DATA FETCH
+function parse(t){
+    // Remove Markdown wrapper if present
+    if(t.includes('Markdown Content:')) t=t.split('Markdown Content:')[1];
+    
+    // Split into lines and filter empty ones
+    const l=t.split('\n').map(x=>x.trim()).filter(x=>x && !x.startsWith('```'));
+    
+    // Find header row (must contain 'Tarih' and 'Çalışan' or 'ID')
+    let hIdx = -1;
+    for(let i=0; i<Math.min(l.length, 10); i++) {
+        if(l[i].includes('Tarih') && (l[i].includes('Çalışan') || l[i].includes('ID'))) {
+            hIdx = i; break;
+        }
+    }
+    if(hIdx === -1) return []; // Header not found
+    
+    // Parse header
+    const h=l[hIdx].split(',').map(x=>x.replace(/"/g,'').trim());
+    const p=[];
+    
+    // Helper for number parsing
+    const tN=v=>{if(!v||v==='-')return 0; return parseFloat(v.toString().replace(/\./g,'').replace(',','.').replace('%',''))||0;};
+    
+    // Parse rows
+    for(let i=hIdx+1;i<l.length;i++){
+        let c=[], cur='', iQ=false;
+        // Handle CSV parsing with quotes
+        for(let ch of l[i]){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim());cur='';} else cur+=ch;} c.push(cur.trim());
+        
+        // Map columns to header
+        let rw={}; h.forEach((k,j)=>rw[k]=c[j]?c[j].replace(/"/g,'').trim():'');
+        
+        // Validation
+        let tarih=rw['Tarih']||'', cal=rw['Çalışan']||rw['Çalışan Adı']||''; 
+        if(!tarih||!cal) continue;
+        
+        // Data Extraction
+        let u1=tN(rw['Üretilen Adet 1']), p1=tN(rw['Üretim Yüzdesi (Performans)']);
+        let u2=tN(rw['Üretilen Adet 2']), p2=tN(rw['Üretim Yüzdesi (Performans)2']);
+        let tU=tN(rw['Toplam Üretilen Çift Kafa Günlük Adet'])||(u1+u2); 
+        
+        if(!tU) continue;
+        
+        p.push({
+            tarih:tarih, 
+            calisan:cal, 
+            vardiya:rw['Vardiya']||'', 
+            pres1:rw['Pres1']||'', 
+            fason1:rw['Fason1']||'', 
+            uretim1:u1, 
+            perf1:p1>0&&p1<=1?p1*100:p1, 
+            durus1:tN(rw['Duruş Süresi 1 (dk)']), 
+            pres2:rw['Pres2']||'', 
+            fason2:rw['Fason2']||'', 
+            uretim2:u2, 
+            perf2:p2>0&&p2<=1?p2*100:p2, 
+            durus2:tN(rw['Duruş Süresi 2 (dk)']), 
+            tU:tU, 
+            tP:(tN(rw['Günlük Toplam Performans'])||(p1&&p2?(p1+p2)/2:p1||p2))
+        });
+    } 
+    return p.map(x=>{if(x.tP>0&&x.tP<=1)x.tP*=100; return x;});
+}
+
+function fetchCSV(){
+    const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; 
+    $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
+    ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
+    
+    // Try Jina proxy first, then direct Google Sheets URL
+    fetch(pURL,{cache:'no-store'})
+        .then(r=>{if(!r.ok) throw 'Jina Error'; return r.text();})
+        .then(t=>{
+            const res = parse(t);
+            if(!res.length) throw 'Jina Empty';
+            return res;
+        })
+        .catch(() => {
+            // Fallback to direct URL if Jina fails or returns empty/bad data
+            console.log('Falling back to direct URL');
+            return fetch(URL).then(r => {if(!r.ok) throw 'Direct Error'; return r.text();}).then(t => parse(t));
+        })
+        .then(data => {
+            RAW = data;
+            if(!RAW.length) throw 'Veri Boş';
+            
+            DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
+            MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
+            WEEKS=[...new Set(DATES.map(isoW))].sort();
+            
+            if(DATES.length) sD=DATES[DATES.length-1];
+            if(MONTHS.length) sM=MONTHS[MONTHS.length-1];
+            if(WEEKS.length) sW=WEEKS[WEEKS.length-1];
+            
+            const s=calc(RAW); 
+            $('hdr-total').innerText=n(s.u); 
+            $('hdr-perf').innerText=s.p.toFixed(1)+'%'; 
+            $('hdr-workers').innerText=new Set(RAW.map(r=>r.calisan)).size; 
+            
+            $('src-status').innerText='● CANLI VERİ'; $('src-status').style.color='#a8e063'; 
+            $('src-info').innerText=`${RAW.length} kayıt`;
+            
+            swT(cTab, document.querySelector('.text-accent.border-accent')||document.querySelector('nav div'));
+        })
+        .catch(e=>{
+            console.error(e);
+            $('src-status').innerText='● HATA: ' + e; 
+            $('src-status').style.color='#e86d3a';
+            $('src-info').innerText='Veri alınamadı';
+        })
+        .finally(()=>{
+            b.innerText='↻ GÜNCELLE'; b.disabled=false;
+        });
+}
+
+fetchCSV();
+</script>
+</body>
+</html>
