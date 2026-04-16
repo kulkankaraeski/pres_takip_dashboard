@@ -95,6 +95,7 @@
         <div onclick="swT('calisan',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">ÇALIŞAN PERFORMANSI</div>
         <div onclick="swT('pres',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">PRES MAKİNE</div>
         <div onclick="swT('fason',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">FASON DETAY</div>
+        <div onclick="swT('form',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">VERİ GİRİŞ FORMU</div>
     </nav>
 
     <main class="flex-1 relative min-h-[500px]">
@@ -188,6 +189,54 @@
                 <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-fas"><thead id="th-fas"></thead><tbody id="tb-fas"></tbody></table></div>
             </div>
         </div>
+
+        <div class="panel hidden" id="panel-form">
+            <div class="bg-bg2 border border-border rounded p-6 max-w-4xl mx-auto shadow-lg">
+                <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">YENİ ÜRETİM KAYDI GİRİŞİ</h2>
+                <form id="uretim-formu" onsubmit="submitForm(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Tarih</label>
+                            <input type="date" id="f-tarih" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Çalışan</label>
+                            <select id="f-calisan" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer">
+                                <option value="">Seçiniz...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Vardiya</label>
+                            <select id="f-vardiya" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer">
+                                <option value="">Seçiniz...</option>
+                                <option value="08:00-16:00">08:00-16:00</option>
+                                <option value="16:00-24:00">16:00-24:00</option>
+                                <option value="00:00-08:00">00:00-08:00</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-bg3 border border-border rounded p-4">
+                            <h3 class="font-bebas text-lg text-accent4 mb-3 border-b border-border/50 pb-1 tracking-wider">BÖLÜM 1 (KAFA 1)</h3>
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres1" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Fason</label><select id="f-fason1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div></div>
+                                <div class="grid grid-cols-3 gap-2"><div><label class="block text-[10px] text-text3 mb-1 uppercase">Hedef</label><input type="number" id="f-hedef1" required min="1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim1" required min="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus1" min="0" value="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div></div>
+                            </div>
+                        </div>
+                        <div class="bg-bg3 border border-border rounded p-4 opacity-90 hover:opacity-100 transition-opacity">
+                            <h3 class="font-bebas text-lg text-accent2 mb-3 border-b border-border/50 pb-1 tracking-wider">BÖLÜM 2 (KAFA 2 - İsteğe Bağlı)</h3>
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres2" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Fason</label><select id="f-fason2" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div></div>
+                                <div class="grid grid-cols-3 gap-2"><div><label class="block text-[10px] text-text3 mb-1 uppercase">Hedef</label><input type="number" id="f-hedef2" min="1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim2" min="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus2" min="0" value="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end border-t border-border pt-4"><button type="submit" class="px-6 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg">💾 KAYDET VE GÖNDER</button></div>
+                </form>
+            </div>
+        </div>
     </main>
 
     <div id="emp-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
@@ -223,6 +272,8 @@
 let RAW=[], DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
+
+const SCRIPT_URL = 'BURAYA_KOPYALADIGINIZ_URL_GELECEK'; // Apps Script Web App linkini buraya yapıştırın
 
 const URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6Oc7Fa2D0TOVcth9hfJ8GKeRf0O7_I-1dUxwFd-EqlG1F9JSvPnqVesKklofAiJPRJ-lkTTAcRD7v/pub?gid=670708123&single=true&output=csv';
 const pURL = 'https://r.jina.ai/' + URL;
@@ -452,6 +503,72 @@ function exportRecsToPDF() {
     window.print();
 }
 
+// FORM İŞLEMLERİ VE DOĞRULAMA
+function popF(){
+    const emps=[...new Set(RAW.map(r=>r.calisan))].sort();
+    const presses=[...new Set([...RAW.map(r=>r.pres1), ...RAW.map(r=>r.pres2)].filter(x=>x))].sort();
+    const fasons=[...new Set([...RAW.map(r=>r.fason1), ...RAW.map(r=>r.fason2)].filter(x=>x))].sort();
+    
+    $('f-calisan').innerHTML='<option value="">Seçiniz...</option>'+emps.map(e=>`<option value="${e}">${e}</option>`).join('');
+    const pOpts='<option value="">Seçiniz...</option>'+presses.map(p=>`<option value="${p}">${p}</option>`).join('');
+    $('f-pres1').innerHTML=pOpts; $('f-pres2').innerHTML=pOpts.replace('Seçiniz...','Yok/Seçiniz...');
+    const fOpts='<option value="">Yok/Seçiniz...</option>'+fasons.map(f=>`<option value="${f}">${f}</option>`).join('');
+    $('f-fason1').innerHTML=fOpts; $('f-fason2').innerHTML=fOpts;
+    
+    if(!$('f-tarih').value) $('f-tarih').value=new Date().toISOString().split('T')[0];
+}
+
+async function submitForm(e){
+    e.preventDefault();
+    const trh=$('f-tarih').value.split('-').reverse().join('.'); const cal=$('f-calisan').value;
+    if(RAW.some(r=>r.tarih===trh && r.calisan===cal)){
+        alert(`HATA: ${cal} isimli çalışan için ${trh} tarihinde zaten bir üretim kaydı bulunuyor!\n\n(Kural: Bir kişi aynı gün içinde sadece 1 kez form doldurabilir)`); return;
+    }
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    const origTxt = btn.innerHTML;
+    btn.innerHTML = '⏳ KAYDEDİLİYOR...'; 
+    btn.disabled = true;
+
+    // DİKKAT: Sol taraftaki anahtar isimleri (Tarih, Çalışan vb.) Google Sheets'teki 
+    // birinci satırda yer alan sütun başlıklarınızla HARFİ HARFİNE AYNI olmalıdır.
+    const payload = {
+        "Tarih": trh,
+        "Çalışan": cal, // Tablonuzdaki başlık 'Çalışan Adı' ise burayı da öyle değiştirin
+        "Vardiya": $('f-vardiya').value,
+        "Pres1": $('f-pres1').value,
+        "Fason1": $('f-fason1').value,
+        "Çalışılan Süre İle Üretilmesi Gereken Adet 1": $('f-hedef1').value, // Tablodaki tam hedefin başlığı
+        "Üretilen Adet 1": $('f-uretim1').value,
+        "Duruş Süresi 1 (dk)": $('f-durus1').value || 0,
+        "Pres2": $('f-pres2').value,
+        "Fason2": $('f-fason2').value,
+        "Çalışılan Süre İle Üretilmesi Gereken Adet2": $('f-hedef2').value || "", 
+        "Üretilen Adet 2": $('f-uretim2').value || "",
+        "Duruş Süresi 2 (dk)": $('f-durus2').value || 0
+        // Performans vb. gibi hücreleriniz Google Sheets'te formüllü ise buraya eklemenize gerek yok.
+    };
+
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            redirect: 'follow', // Google script yönlendirmelerini takip edebilmek için şart
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORS (sunucu köken) kısıtlamalarına takılmamak için text/plain
+            body: JSON.stringify(payload)
+        });
+        const out = await res.json();
+        if(out.status === 'success') { 
+            alert('✔️ BAŞARIYLA KAYDEDİLDİ!'); 
+            e.target.reset(); // Formu sıfırla
+            fetchCSV(); // Yeni veriyi Dashboard'a yansıt
+        } else throw new Error(out.message || 'Bilinmeyen Hata');
+    } catch(err) {
+        alert('❌ HATA: ' + err.message + '\n\nSCRIPT_URL değerini eklediğinizden veya Sütun başlıklarının eşleştiğinden emin olun.');
+    } finally {
+        btn.innerHTML = origTxt; btn.disabled = false;
+    }
+}
+
 // DATA FETCH & PARSE
 function parse(t){
     if(t.includes('Markdown Content:')) t=t.split('Markdown Content:')[1];
@@ -493,6 +610,7 @@ function fetchCSV(){
         }
         
         const s=calc(RAW); $('hdr-total').innerText=n(s.u); $('hdr-perf').innerText=s.p.toFixed(1)+'%'; $('hdr-workers').innerText=new Set(RAW.map(r=>r.calisan)).size;
+        popF(); // Form için verileri doldur
         $('src-status').innerText='● CANLI VERİ'; $('src-status').style.color='#a8e063'; $('src-info').innerText=`${RAW.length} kayıt`;
         swT(cTab, document.querySelector('.text-accent.border-accent')||document.querySelector('nav div'));
     }).catch(e=>{$('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';}).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false;});
