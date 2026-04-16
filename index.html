@@ -35,6 +35,10 @@
         .ayin-elemani-kutu { border: 1px solid rgba(245, 200, 66, 0.4); box-shadow: 0 0 15px rgba(245, 200, 66, 0.15); animation: pulseBox 2s infinite; }
         @keyframes pulseBox { 0% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } 50% { box-shadow: 0 0 20px rgba(245,200,66,0.3); } 100% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } }
 
+        /* Login Modal Stilleri */
+        #login-modal { backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .main-content.blurred { filter: blur(5px); pointer-events: none; transition: filter 0.3s; }
+
         /* YAZDIRMA (CTRL+P) AYARLARI: Tamamen Ekran Görüntüsü Kalitesinde */
         @media print {
             body { 
@@ -45,13 +49,13 @@
             }
             .panel:not(.active) { display: none !important; opacity: 0 !important; }
             .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
-            #main-nav, header button, #emp-modal, #recs-modal { display: none !important; }
+            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #user-info { display: none !important; }
             .overflow-auto { max-height: none !important; overflow: visible !important; }
             canvas { max-height: 250px !important; }
         }
     </style>
 </head>
-<body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm">
+<body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
 
     <header class="flex flex-col xl:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 rounded shadow-lg relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
@@ -77,7 +81,11 @@
             </div>
         </div>
 
-        <div class="flex gap-2 flex-shrink-0">
+        <div class="flex items-center gap-3 flex-shrink-0">
+            <div id="user-info" class="hidden items-center gap-2 font-mono text-xs">
+                <span id="user-name" class="text-text2"></span>
+                <button onclick="logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors">ÇIKIŞ</button>
+            </div>
             <button onclick="exportToPDF()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors">
                 📥 PDF İNDİR
             </button>
@@ -87,7 +95,8 @@
         </div>
     </header>
 
-    <nav class="flex overflow-x-auto gap-2 border-b border-border pb-1 no-scrollbar" id="main-nav">
+    <div class="main-content flex-1 flex flex-col min-h-0">
+    <nav class="flex overflow-x-auto gap-2 border-b border-border pb-1 no-scrollbar shrink-0" id="main-nav">
         <div onclick="swT('gunluk',this)" class="px-4 py-2 text-accent border-b-2 border-accent cursor-pointer font-bebas tracking-wider whitespace-nowrap">GÜNLÜK RAPOR</div>
         <div onclick="swT('haftalik',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">HAFTALIK RAPOR</div>
         <div onclick="swT('aylik',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">AYLIK RAPOR</div>
@@ -95,6 +104,8 @@
         <div onclick="swT('calisan',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">ÇALIŞAN PERFORMANSI</div>
         <div onclick="swT('pres',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">PRES MAKİNE</div>
         <div onclick="swT('fason',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">FASON DETAY</div>
+        <div onclick="swT('kaliphane',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">KALIPHANE</div>
+        <div onclick="swT('kayitlar',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">TÜM KAYITLAR</div>
         <div onclick="swT('form',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">VERİ GİRİŞ FORMU</div>
     </nav>
 
@@ -220,15 +231,27 @@
                         <div class="bg-bg3 border border-border rounded p-4">
                             <h3 class="font-bebas text-lg text-accent4 mb-3 border-b border-border/50 pb-1 tracking-wider">BÖLÜM 1 (KAFA 1)</h3>
                             <div class="space-y-3">
-                                <div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres1" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Fason</label><select id="f-fason1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div></div>
-                                <div class="grid grid-cols-3 gap-2"><div><label class="block text-[10px] text-text3 mb-1 uppercase">Hedef</label><input type="number" id="f-hedef1" required min="1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim1" required min="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus1" min="0" value="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div></div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres1" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div>
+                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Fason</label><select id="f-fason1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim1" required min="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus1" min="0" value="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="bg-bg3 border border-border rounded p-4 opacity-90 hover:opacity-100 transition-opacity">
                             <h3 class="font-bebas text-lg text-accent2 mb-3 border-b border-border/50 pb-1 tracking-wider">BÖLÜM 2 (KAFA 2 - İsteğe Bağlı)</h3>
                             <div class="space-y-3">
-                                <div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres2" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Fason</label><select id="f-fason2" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div></div>
-                                <div class="grid grid-cols-3 gap-2"><div><label class="block text-[10px] text-text3 mb-1 uppercase">Hedef</label><input type="number" id="f-hedef2" min="1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim2" min="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div><div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus2" min="0" value="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div></div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres2" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div>
+                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Fason</label><select id="f-fason2" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim2" min="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus2" min="0" value="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -237,7 +260,23 @@
                 </form>
             </div>
         </div>
+
+        <div class="panel hidden" id="panel-kaliphane">
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">KALIPHANE LOKASYONLARI</span><input type="text" onkeyup="fT('tb-kalip',this.value)" placeholder="Kalıp Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="overflow-auto max-h-[70vh] p-4 text-text2">Bu bölüm için veri kaynağı henüz bağlanmadı.</div>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="panel-kayitlar">
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">TÜM ÜRETİM KAYITLARI</span><input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="overflow-auto max-h-[70vh] p-4 text-text2">Bu bölüm için veri kaynağı henüz bağlanmadı.</div>
+            </div>
+        </div>
+
     </main>
+    </div>
 
     <div id="emp-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-bg2 border border-border rounded-lg p-6 max-w-5xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
@@ -268,10 +307,26 @@
         </div>
     </div>
 
+    <div id="login-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg2 border border-border rounded-lg p-8 max-w-sm w-full shadow-2xl text-center">
+            <h2 class="font-bebas text-2xl tracking-[2px] text-accent mb-2">SİSTEM GİRİŞİ</h2>
+            <p class="text-text3 text-xs font-mono mb-6">Lütfen kullanıcı bilgilerinizi girin.</p>
+            <form onsubmit="login(event)" class="space-y-4">
+                <input type="text" id="login-user" placeholder="Kullanıcı Adı" required class="w-full bg-bg3 border border-border text-text rounded p-3 outline-none focus:border-accent transition-colors text-center">
+                <input type="password" id="login-pass" placeholder="Şifre" required class="w-full bg-bg3 border border-border text-text rounded p-3 outline-none focus:border-accent transition-colors text-center">
+                <p id="login-error" class="text-accent2 text-xs h-4"></p>
+                <button type="submit" class="w-full px-6 py-3 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105">GİRİŞ YAP</button>
+            </form>
+        </div>
+    </div>
+
 <script>
 let RAW=[], DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
+let LOGGED_IN_USER = null;
+// Not: Bu kullanıcı listesi ve şifreler normalde ayrı bir "Çalışanlar" Google Sheet'inden çekilmelidir. Bu geçici bir çözümdür.
+const USER_DATA = { "Yusuf Yalçıntaş": { pass: "12345", role: "admin" }, "Ahmet Yılmaz": { pass: "123", role: "user" }, "Mehmet Demir": { pass: "456", role: "user" } };
 
 const SCRIPT_URL = 'BURAYA_KOPYALADIGINIZ_URL_GELECEK'; // Apps Script Web App linkini buraya yapıştırın
 
@@ -314,7 +369,7 @@ function swT(t,el){
     });
     el.classList.remove('text-text2','border-transparent');
     el.classList.add('text-accent','border-accent');
-    const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active','block'),10);}
+    const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
     if(!RAW.length)return;
     if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF();
 }
@@ -412,6 +467,9 @@ function rF(){
     $('tb-fas').innerHTML=fl.map(x=>tr([`<b>${x.f}</b>`, n(x.b), n(x.u), pb(x.a), x.c])).join('');
 }
 
+function rKaliphane() { /* Bir sonraki adımda doldurulacak */ }
+function rKayitlar() { /* Bir sonraki adımda doldurulacak */ }
+
 // ETKİLEŞİM & MODALLAR
 function showKpiDet(tab, type) {
     let data = [], title = '';
@@ -505,13 +563,22 @@ function exportRecsToPDF() {
 
 // FORM İŞLEMLERİ VE DOĞRULAMA
 function popF(){
-    const emps=[...new Set(RAW.map(r=>r.calisan))].sort();
+    const calisanSelect = $('f-calisan');
+    if (LOGGED_IN_USER.role === 'admin') {
+        const emps=[...new Set(RAW.map(r=>r.calisan))].sort();
+        calisanSelect.innerHTML='<option value="">Seçiniz...</option>'+emps.map(e=>`<option value="${e}">${e}</option>`).join('');
+        calisanSelect.disabled = false;
+    } else {
+        calisanSelect.innerHTML = `<option value="${LOGGED_IN_USER.name}" selected>${LOGGED_IN_USER.name}</option>`;
+        calisanSelect.disabled = true;
+    }
+
     const presses=[...new Set([...RAW.map(r=>r.pres1), ...RAW.map(r=>r.pres2)].filter(x=>x))].sort();
     const fasons=[...new Set([...RAW.map(r=>r.fason1), ...RAW.map(r=>r.fason2)].filter(x=>x))].sort();
     
-    $('f-calisan').innerHTML='<option value="">Seçiniz...</option>'+emps.map(e=>`<option value="${e}">${e}</option>`).join('');
     const pOpts='<option value="">Seçiniz...</option>'+presses.map(p=>`<option value="${p}">${p}</option>`).join('');
     $('f-pres1').innerHTML=pOpts; $('f-pres2').innerHTML=pOpts.replace('Seçiniz...','Yok/Seçiniz...');
+    
     const fOpts='<option value="">Yok/Seçiniz...</option>'+fasons.map(f=>`<option value="${f}">${f}</option>`).join('');
     $('f-fason1').innerHTML=fOpts; $('f-fason2').innerHTML=fOpts;
     
@@ -538,12 +605,10 @@ async function submitForm(e){
         "Vardiya": $('f-vardiya').value,
         "Pres1": $('f-pres1').value,
         "Fason1": $('f-fason1').value,
-        "Çalışılan Süre İle Üretilmesi Gereken Adet 1": $('f-hedef1').value, // Tablodaki tam hedefin başlığı
         "Üretilen Adet 1": $('f-uretim1').value,
         "Duruş Süresi 1 (dk)": $('f-durus1').value || 0,
         "Pres2": $('f-pres2').value,
         "Fason2": $('f-fason2').value,
-        "Çalışılan Süre İle Üretilmesi Gereken Adet2": $('f-hedef2').value || "", 
         "Üretilen Adet 2": $('f-uretim2').value || "",
         "Duruş Süresi 2 (dk)": $('f-durus2').value || 0
         // Performans vb. gibi hücreleriniz Google Sheets'te formüllü ise buraya eklemenize gerek yok.
@@ -567,6 +632,37 @@ async function submitForm(e){
     } finally {
         btn.innerHTML = origTxt; btn.disabled = false;
     }
+}
+
+// KULLANICI GİRİŞ SİSTEMİ
+function showLogin() {
+    $('.main-content').classList.add('blurred');
+    const el = $('login-modal'); el.classList.remove('hidden'); el.classList.add('flex'); 
+    setTimeout(()=>el.classList.remove('opacity-0'),10);
+}
+
+function login(e) {
+    e.preventDefault();
+    const user = $('login-user').value;
+    const pass = $('login-pass').value;
+    const errorEl = $('login-error');
+
+    if (USER_DATA[user] && USER_DATA[user].pass === pass) {
+        LOGGED_IN_USER = { name: user, role: USER_DATA[user].role };
+        errorEl.innerText = '';
+        const el = $('login-modal'); el.classList.add('opacity-0');
+        setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
+        $('.main-content').classList.remove('blurred');
+        $('user-name').innerText = `👤 ${user}`;
+        $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
+        fetchCSV(); // Giriş başarılı, verileri çek
+    } else {
+        errorEl.innerText = 'Kullanıcı adı veya şifre hatalı.';
+    }
+}
+
+function logout() {
+    location.reload(); // Sayfayı yeniden yükleyerek çıkış yap ve login ekranını göster
 }
 
 // DATA FETCH & PARSE
@@ -616,7 +712,7 @@ function fetchCSV(){
     }).catch(e=>{$('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';}).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false;});
 }
 
-fetchCSV();
+showLogin(); // Sayfa ilk açıldığında verileri çekmek yerine giriş ekranını göster
 </script>
 </body>
 </html>
