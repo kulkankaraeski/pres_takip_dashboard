@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pres Üretim Takip Dashboard</title>
+    <meta name="theme-color" content="#121410">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -36,6 +41,7 @@
         @keyframes pulseBox { 0% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } 50% { box-shadow: 0 0 20px rgba(245,200,66,0.3); } 100% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } }
 
         /* Login Modal Stilleri */
+        /* FIX #1: .main-content blur artık JS querySelector ile yönetiliyor */
         #login-modal { backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
         .main-content.blurred { filter: blur(5px); pointer-events: none; transition: filter 0.3s; }
 
@@ -74,7 +80,8 @@
             <div class="flex flex-col"><span class="text-[9px] uppercase tracking-wider text-text3">Ort. Perf</span><span id="hdr-perf" class="text-lg font-bold text-accent4">-</span></div>
             <div class="flex flex-col"><span class="text-[9px] uppercase tracking-wider text-text3">Çalışan</span><span id="hdr-workers" class="text-lg font-bold text-text">-</span></div>
             
-            <div id="hdr-best" class="hidden flex-col justify-center px-4 py-1.5 ayin-elemani-kutu rounded bg-bg3 cursor-pointer transition-transform hover:scale-105">
+            <!-- FIX #3: onclick eklendi — cursor-pointer'ın arkasında handler yoktu -->
+            <div id="hdr-best" class="hidden flex-col justify-center px-4 py-1.5 ayin-elemani-kutu rounded bg-bg3 cursor-pointer transition-transform hover:scale-105" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
                 <span class="text-[9px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
                 <span id="hdr-best-name" class="text-base md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
                 <span id="hdr-best-det" class="text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
@@ -120,6 +127,11 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                 <div class="bg-bg2 border border-border rounded p-4 lg:col-span-2"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">GÜNLÜK PERFORMANS (Çubuklara Tıklayın)</div><div class="h-[240px] relative"><canvas id="c1"></canvas></div></div>
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">VARDİYA ORANI (Dilimlere Tıklayın)</div><div class="h-[240px] relative"><canvas id="c2"></canvas></div></div>
+            </div>
+            <!-- FIX #2: canvas id="c3" eklendi — rG() bu elementi çiziyordu ama HTML'de yoktu, Chart.js hata fırlatıyordu -->
+            <div class="bg-bg2 border border-border rounded p-4 mb-4">
+                <div class="font-bebas text-base tracking-[2px] text-text2 mb-2">PRES KULLANIMI (Çubuklara Tıklayın)</div>
+                <div class="h-[200px] relative"><canvas id="c3"></canvas></div>
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
                 <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">GÜNLÜK LİSTE (KAFALARA GÖRE AYRILMIŞ)</span><input type="text" onkeyup="fT('tb-gun',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
@@ -375,7 +387,10 @@ const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2 bo
 
 // Tıklanabilir Grafikler
 function mc(id,t,d,o={}){
-    if(charts[id])charts[id].destroy(); 
+    if(charts[id])charts[id].destroy();
+    const el=$(id);
+    // FIX #2 guard: canvas elementi yoksa hata fırlatma
+    if(!el) { console.warn('mc(): canvas bulunamadı → id='+id); return; }
     const c={
         responsive:true,maintainAspectRatio:false,
         onClick: (e, elements, chart) => {
@@ -385,7 +400,7 @@ function mc(id,t,d,o={}){
         scales:{x:{grid:{color:'rgba(42,48,36,.4)'},ticks:{color:'#8a9680',font:{size:9}}},y:{grid:{color:'rgba(42,48,36,.4)'},ticks:{color:'#8a9680',font:{size:9}}}}
     }; 
     if(o.y)c.scales.y=o.y; if(o.x)c.scales.x=o.x; if(o.idx)c.indexAxis=o.idx; 
-    charts[id]=new Chart($(id),{type:t,data:d,options:c});
+    charts[id]=new Chart(el,{type:t,data:d,options:c});
 }
 
 function swT(t,el){
@@ -425,8 +440,11 @@ function rG(){
     
     mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?'#a8e063bb':r.tP>=90?'#5bb8e8bb':r.tP>=70?'#f5c842bb':'#e86d3abb')}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
     mc('c2','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,dd.length-sab-aks],backgroundColor:['#a8e063bb','#5bb8e8bb','#f5c842bb']}]},{x:{display:false},y:{display:false}});
+    
+    // FIX #2: c3 artık HTML'de var, pres kullanım grafiği çiziliyor
     const pm={}; dd.forEach(r=>{if(r.pres1)pm[r.pres1]=(pm[r.pres1]||0)+r.uretim1; if(r.pres2)pm[r.pres2]=(pm[r.pres2]||0)+r.uretim2;});
-    const ps=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,12); mc('c3','bar',{labels:ps.map(x=>x[0]),datasets:[{label:'Üretim',data:ps.map(x=>x[1]),backgroundColor:'#a8e063bb'}]});
+    const ps=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,12);
+    mc('c3','bar',{labels:ps.map(x=>x[0]),datasets:[{label:'Üretim (Adet)',data:ps.map(x=>x[1]),backgroundColor:'#a8e063bb'}]});
     
     $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
     $('tb-gun').innerHTML=dd.map((r,i)=>trD([
@@ -467,7 +485,8 @@ function rH(){
     mc('h1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:'#a8e063',backgroundColor:'#a8e06333',fill:true}]});
     mc('h2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:'#5bb8e8',backgroundColor:'#5bb8e833',fill:true}]},{y:{min:60,max:130}});
     const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u).slice(0,10);
-    mc('h3','bar',{labels:ws.map(x=>x.w.calisan||x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:'#a8e063bb'}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
+    // FIX #4: x.w.calisan her zaman undefined'dı (x.w zaten string). Düzeltildi.
+    mc('h3','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:'#a8e063bb'}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
 }
 
 function rC(){
@@ -695,8 +714,10 @@ async function submitForm(e){
 }
 
 // KULLANICI GİRİŞ SİSTEMİ
+// FIX #1: $() sadece getElementById'dir, class seçici ALAMAZ.
+// showLogin ve login fonksiyonlarında document.querySelector('.main-content') kullanılıyor.
 function showLogin() {
-    $('.main-content').classList.add('blurred');
+    document.querySelector('.main-content').classList.add('blurred');
     const el = $('login-modal'); el.classList.remove('hidden'); el.classList.add('flex'); 
     setTimeout(()=>el.classList.remove('opacity-0'),10);
 }
@@ -713,7 +734,8 @@ function login(e) {
         errorEl.innerText = '';
         const el = $('login-modal'); el.classList.add('opacity-0');
         setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
-        $('.main-content').classList.remove('blurred');
+        // FIX #1: document.querySelector ile düzeltildi
+        document.querySelector('.main-content').classList.remove('blurred');
         $('user-name').innerText = `👤 ${user}`;
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         fetchCSV(); // Giriş başarılı, verileri çek
@@ -810,7 +832,12 @@ function fetchCSV(){
         const s=calc(RAW); $('hdr-total').innerText=n(s.u); $('hdr-perf').innerText=s.p.toFixed(1)+'%'; $('hdr-workers').innerText=new Set(RAW.map(r=>r.calisan)).size;
         popF(); // Form için verileri doldur
         $('src-status').innerText='● CANLI VERİ'; $('src-status').style.color='#a8e063'; $('src-info').innerText=`${RAW.length} kayıt`;
-        swT(cTab, document.querySelector('.text-accent.border-accent')||document.querySelector('nav div'));
+        
+        // FIX #5: Aktif sekmenin nav elementini cTab'a göre güvenilir şekilde bul.
+        // Eski kod: querySelector('.text-accent.border-accent') — veri yüklenirken henüz
+        // class atanmamış olabiliyor ve fallback her zaman ilk sekmeyi döndürüyordu.
+        const activeNavEl = document.querySelector(`#main-nav div[onclick*="'${cTab}'"]`);
+        swT(cTab, activeNavEl || document.querySelector('#main-nav div'));
     }).catch(e=>{$('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';}).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false;});
 }
 
@@ -826,6 +853,13 @@ if(savedUser) {
 }
 
 setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled) fetchCSV(); }, 60000);
+
+// SERVICE WORKER (PWA) KAYDI
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Kayıt Hatası:', err));
+    });
+}
 </script>
 </body>
 </html>
