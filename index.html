@@ -348,12 +348,17 @@ const USER_DATA = { "Yusuf Yalçıntaş": { pass: "12345", role: "admin" }, "Ahm
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
 
-const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/export?format=csv';
+const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const pURL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(URL);
 const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
 const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const pDENEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(DENEME_URL);
+
+// FORM İÇİN SABİT TANIMLAR (Kendinize Göre Değiştirebilirsiniz)
+const SABIT_CALISANLAR = ["Yusuf Yalçıntaş", "Ahmet Yılmaz", "Mehmet Demir"];
+const SABIT_PRESLER = ["PRES 1", "PRES 2", "PRES 3", "PRES 4", "PRES 5"];
+const SABIT_FASONLAR = ["FASON 1", "FASON 2", "FASON 3"];
 
 function $(id){return document.getElementById(id);}
 function n(v){return v>0?v.toLocaleString('tr-TR'):'-';}
@@ -611,8 +616,10 @@ function exportRecsToPDF() {
 // FORM İŞLEMLERİ VE DOĞRULAMA
 function popF(){
     const calisanSelect = $('f-calisan');
+    const vC = calisanSelect.value, vP1 = $('f-pres1').value, vP2 = $('f-pres2').value, vF1 = $('f-fason1').value, vF2 = $('f-fason2').value;
+
     if (LOGGED_IN_USER.role === 'admin') {
-        const emps=[...new Set(RAW.map(r=>r.calisan))].sort();
+        const emps=[...new Set([...SABIT_CALISANLAR, ...RAW.map(r=>r.calisan)])].filter(x=>x).sort();
         calisanSelect.innerHTML='<option value="">Seçiniz...</option>'+emps.map(e=>`<option value="${e}">${e}</option>`).join('');
         calisanSelect.disabled = false;
     } else {
@@ -620,8 +627,8 @@ function popF(){
         calisanSelect.disabled = true;
     }
 
-    const presses=[...new Set([...RAW.map(r=>r.pres1), ...RAW.map(r=>r.pres2)].filter(x=>x))].sort();
-    const fasons=[...new Set([...RAW.map(r=>r.fason1), ...RAW.map(r=>r.fason2)].filter(x=>x))].sort();
+    const presses=[...new Set([...SABIT_PRESLER, ...RAW.map(r=>r.pres1), ...RAW.map(r=>r.pres2)])].filter(x=>x).sort();
+    const fasons=[...new Set([...SABIT_FASONLAR, ...RAW.map(r=>r.fason1), ...RAW.map(r=>r.fason2)])].filter(x=>x).sort();
     
     const pOpts='<option value="">Seçiniz...</option>'+presses.map(p=>`<option value="${p}">${p}</option>`).join('');
     $('f-pres1').innerHTML=pOpts; $('f-pres2').innerHTML=pOpts.replace('Seçiniz...','Yok/Seçiniz...');
@@ -629,6 +636,12 @@ function popF(){
     const fOpts='<option value="">Yok/Seçiniz...</option>'+fasons.map(f=>`<option value="${f}">${f}</option>`).join('');
     $('f-fason1').innerHTML=fOpts; $('f-fason2').innerHTML=fOpts;
     
+    if(vC && LOGGED_IN_USER.role === 'admin') calisanSelect.value = vC;
+    if(vP1) $('f-pres1').value = vP1;
+    if(vP2) $('f-pres2').value = vP2;
+    if(vF1) $('f-fason1').value = vF1;
+    if(vF2) $('f-fason2').value = vF2;
+
     if(!$('f-tarih').value) $('f-tarih').value=new Date().toISOString().split('T')[0];
 }
 
@@ -696,6 +709,7 @@ function login(e) {
 
     if (USER_DATA[user] && USER_DATA[user].pass === pass) {
         LOGGED_IN_USER = { name: user, role: USER_DATA[user].role };
+        sessionStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
         errorEl.innerText = '';
         const el = $('login-modal'); el.classList.add('opacity-0');
         setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
@@ -709,6 +723,7 @@ function login(e) {
 }
 
 function logout() {
+    sessionStorage.removeItem('loggedUser');
     location.reload(); // Sayfayı yeniden yükleyerek çıkış yap ve login ekranını göster
 }
 
@@ -771,13 +786,13 @@ function fetchCSV(){
         fetch(KALIP_URL,{cache:'no-store'}).catch(()=>fetch(pKALIP_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
         fetch(DENEME_URL,{cache:'no-store'}).catch(()=>fetch(pDENEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
     ]).then(([t, k_text, d_text]) => {
-        RAW=parse(t); if(!RAW.length)throw 'Boş';
+        RAW=parse(t);
         KALIP_RAW=parseKalip(k_text);
         DENEME_RAW=parseGeneric(d_text);
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
-        sD=DATES[DATES.length-1]; sM=MONTHS[MONTHS.length-1]; sW=WEEKS[WEEKS.length-1];
+        sD=DATES.length ? DATES[DATES.length-1] : ''; sM=MONTHS.length ? MONTHS[MONTHS.length-1] : ''; sW=WEEKS.length ? WEEKS[WEEKS.length-1] : '';
         
         // Ayın Elemanını Hesapla ve Yazdır
         if(sM) {
@@ -799,7 +814,18 @@ function fetchCSV(){
     }).catch(e=>{$('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';}).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false;});
 }
 
-showLogin(); // Sayfa ilk açıldığında verileri çekmek yerine giriş ekranını göster
+// OTOMATİK GÜNCELLEME VE OTURUM KONTROLÜ
+const savedUser = sessionStorage.getItem('loggedUser');
+if(savedUser) {
+    LOGGED_IN_USER = JSON.parse(savedUser);
+    $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
+    $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
+    fetchCSV();
+} else {
+    showLogin();
+}
+
+setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled) fetchCSV(); }, 60000);
 </script>
 </body>
 </html>
