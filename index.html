@@ -331,7 +331,7 @@
     </div>
 
 <script>
-let RAW=[], DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
+let RAW=[], KALIP_RAW=[], DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
@@ -342,6 +342,8 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq
 
 const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/export?format=csv';
 const pURL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(URL);
+const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
+const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
 
 function $(id){return document.getElementById(id);}
 function n(v){return v>0?v.toLocaleString('tr-TR'):'-';}
@@ -478,16 +480,8 @@ function rF(){
 }
 
 function rKaliphane() {
-    const kalipMap = {};
-    RAW.forEach(r => {
-        if(r.pres1) kalipMap[r.pres1] = (kalipMap[r.pres1]||0) + r.uretim1;
-        if(r.pres2) kalipMap[r.pres2] = (kalipMap[r.pres2]||0) + r.uretim2;
-        if(r.fason1) kalipMap[r.fason1] = (kalipMap[r.fason1]||0) + r.uretim1;
-        if(r.fason2) kalipMap[r.fason2] = (kalipMap[r.fason2]||0) + r.uretim2;
-    });
-    const kList = Object.entries(kalipMap).map(([k,v]) => ({k, v})).sort((a,b)=>b.v-a.v);
-    $('th-kalip').innerHTML = th(['Kalıp / Makine / Fason Adı', 'Toplam Üretim (Adet)']);
-    $('tb-kalip').innerHTML = kList.map(x => tr([`<b>${x.k}</b>`, n(x.v)])).join('');
+    $('th-kalip').innerHTML = th(['Fason / Kalıp Adı', 'Lokasyon']);
+    $('tb-kalip').innerHTML = KALIP_RAW.map(x => tr([`<b>${x.f}</b>`, `<span class="text-accent2 font-mono">${x.l}</span>`])).join('');
 }
 
 function rKayitlar() {
@@ -712,11 +706,37 @@ function parse(t){
     } return p.map(x=>{if(x.tP>0&&x.tP<=1)x.tP*=100; return x;});
 }
 
+function parseKalip(t){
+    if(!t) return [];
+    const l=t.split('\n').map(x=>x.trim()).filter(x=>x), p=[];
+    if(l.length < 2) return [];
+    const hLine = l[0];
+    let hCols=[], curH='', iQH=false;
+    for(let ch of hLine){if(ch==='"')iQH=!iQH; else if(ch===','&&!iQH){hCols.push(curH.trim().replace(/"/g,''));curH='';} else curH+=ch;} hCols.push(curH.trim().replace(/"/g,''));
+    let idxF = 0, idxL = 1;
+    hCols.forEach((col, i) => {
+        const low = col.toLowerCase();
+        if(low.includes('fason') || low.includes('kalıp')) idxF = i;
+        if(low.includes('lokasyon') || low.includes('yer')) idxL = i;
+    });
+    for(let i=1;i<l.length;i++){
+        let c=[], cur='', iQ=false;
+        for(let ch of l[i]){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim());cur='';} else cur+=ch;} c.push(cur.trim());
+        c = c.map(x=>x.replace(/"/g,'').trim());
+        if(c[idxF] || c[idxL]) p.push({f: c[idxF]||'', l: c[idxL]||''});
+    }
+    return p;
+}
+
 function fetchCSV(){
     const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
     ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
-    fetch(URL,{cache:'no-store'}).catch(()=>fetch(pURL)).then(r=>{if(!r.ok)throw 'Hata';return r.text();}).then(t=>{
+    Promise.all([
+        fetch(URL,{cache:'no-store'}).catch(()=>fetch(pURL)).then(r=>{if(!r.ok)throw 'Hata';return r.text();}),
+        fetch(KALIP_URL,{cache:'no-store'}).catch(()=>fetch(pKALIP_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
+    ]).then(([t, k_text]) => {
         RAW=parse(t); if(!RAW.length)throw 'Boş';
+        KALIP_RAW=parseKalip(k_text);
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
