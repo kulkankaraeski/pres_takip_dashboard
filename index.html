@@ -264,14 +264,24 @@
         <div class="panel hidden" id="panel-kaliphane">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
                 <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">KALIPHANE LOKASYONLARI</span><input type="text" onkeyup="fT('tb-kalip',this.value)" placeholder="Kalıp Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
-                <div class="overflow-auto max-h-[70vh] p-4 text-text2">Bu bölüm için veri kaynağı henüz bağlanmadı.</div>
+                <div class="overflow-auto max-h-[70vh]">
+                    <table class="w-full text-left border-collapse" id="t-kalip">
+                        <thead id="th-kalip"></thead>
+                        <tbody id="tb-kalip"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <div class="panel hidden" id="panel-kayitlar">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
                 <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">TÜM ÜRETİM KAYITLARI</span><input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
-                <div class="overflow-auto max-h-[70vh] p-4 text-text2">Bu bölüm için veri kaynağı henüz bağlanmadı.</div>
+                <div class="overflow-auto max-h-[70vh]">
+                    <table class="w-full text-left border-collapse" id="t-kayit">
+                        <thead id="th-kayit"></thead>
+                        <tbody id="tb-kayit"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -328,10 +338,10 @@ let LOGGED_IN_USER = null;
 // Not: Bu kullanıcı listesi ve şifreler normalde ayrı bir "Çalışanlar" Google Sheet'inden çekilmelidir. Bu geçici bir çözümdür.
 const USER_DATA = { "Yusuf Yalçıntaş": { pass: "12345", role: "admin" }, "Ahmet Yılmaz": { pass: "123", role: "user" }, "Mehmet Demir": { pass: "456", role: "user" } };
 
-const SCRIPT_URL = 'BURAYA_KOPYALADIGINIZ_URL_GELECEK'; // Apps Script Web App linkini buraya yapıştırın
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
 
 const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/export?format=csv';
-const pURL = 'https://r.jina.ai/' + URL;
+const pURL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(URL);
 
 function $(id){return document.getElementById(id);}
 function n(v){return v>0?v.toLocaleString('tr-TR'):'-';}
@@ -371,7 +381,7 @@ function swT(t,el){
     el.classList.add('text-accent','border-accent');
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
     if(!RAW.length)return;
-    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF();
+    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='kayitlar')rKayitlar();
 }
 
 // Arama
@@ -467,8 +477,28 @@ function rF(){
     $('tb-fas').innerHTML=fl.map(x=>tr([`<b>${x.f}</b>`, n(x.b), n(x.u), pb(x.a), x.c])).join('');
 }
 
-function rKaliphane() { /* Bir sonraki adımda doldurulacak */ }
-function rKayitlar() { /* Bir sonraki adımda doldurulacak */ }
+function rKaliphane() {
+    const kalipMap = {};
+    RAW.forEach(r => {
+        if(r.pres1) kalipMap[r.pres1] = (kalipMap[r.pres1]||0) + r.uretim1;
+        if(r.pres2) kalipMap[r.pres2] = (kalipMap[r.pres2]||0) + r.uretim2;
+        if(r.fason1) kalipMap[r.fason1] = (kalipMap[r.fason1]||0) + r.uretim1;
+        if(r.fason2) kalipMap[r.fason2] = (kalipMap[r.fason2]||0) + r.uretim2;
+    });
+    const kList = Object.entries(kalipMap).map(([k,v]) => ({k, v})).sort((a,b)=>b.v-a.v);
+    $('th-kalip').innerHTML = th(['Kalıp / Makine / Fason Adı', 'Toplam Üretim (Adet)']);
+    $('tb-kalip').innerHTML = kList.map(x => tr([`<b>${x.k}</b>`, n(x.v)])).join('');
+}
+
+function rKayitlar() {
+    $('th-kayit').innerHTML = thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
+    $('tb-kayit').innerHTML = [...RAW].sort((a,b)=>a.tarih.split('.').reverse().join('')<b.tarih.split('.').reverse().join('')?1:-1).map(r => trD([
+        r.tarih, `<b class="emp-link" onclick="openModal('${r.calisan}')">${r.calisan}</b>`, r.vardiya||'-', 
+        r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="text-accent2">${r.durus1} dk</span>`:'-', 
+        r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="text-accent2">${r.durus2} dk</span>`:'-', 
+        n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
+    ])).join('');
+}
 
 // ETKİLEŞİM & MODALLAR
 function showKpiDet(tab, type) {
@@ -685,7 +715,7 @@ function parse(t){
 function fetchCSV(){
     const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
     ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
-    fetch(pURL,{cache:'no-store'}).catch(()=>fetch(URL)).then(r=>{if(!r.ok)throw 'Hata';return r.text();}).then(t=>{
+    fetch(URL,{cache:'no-store'}).catch(()=>fetch(pURL)).then(r=>{if(!r.ok)throw 'Hata';return r.text();}).then(t=>{
         RAW=parse(t); if(!RAW.length)throw 'Boş';
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
