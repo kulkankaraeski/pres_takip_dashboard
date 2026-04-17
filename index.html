@@ -49,7 +49,7 @@
             }
             .panel:not(.active) { display: none !important; opacity: 0 !important; }
             .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
-            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #user-info { display: none !important; }
+            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #user-info { display: none !important; }
             .overflow-auto { max-height: none !important; overflow: visible !important; }
             canvas { max-height: 250px !important; }
         }
@@ -105,7 +105,7 @@
         <div onclick="swT('pres',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">PRES MAKİNE</div>
         <div onclick="swT('fason',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">FASON DETAY</div>
         <div onclick="swT('kaliphane',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">KALIPHANE</div>
-        <div onclick="swT('kayitlar',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">TÜM KAYITLAR</div>
+        <div onclick="swT('kayitlar',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
         <div onclick="swT('form',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">VERİ GİRİŞ FORMU</div>
     </nav>
 
@@ -275,7 +275,7 @@
 
         <div class="panel hidden" id="panel-kayitlar">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">TÜM ÜRETİM KAYITLARI</span><input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM TAKİP DENEMELERİ</span><input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Kayıt Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
                 <div class="overflow-auto max-h-[70vh]">
                     <table class="w-full text-left border-collapse" id="t-kayit">
                         <thead id="th-kayit"></thead>
@@ -286,6 +286,14 @@
         </div>
 
     </main>
+    </div>
+
+    <div id="generic-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
+            <button onclick="closeGenericModal()" class="absolute top-4 right-4 text-text2 hover:text-accent2 text-3xl font-bold z-10">&times;</button>
+            <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">KAYIT DETAYI</h2>
+            <div id="gen-mdl-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
     </div>
 
     <div id="emp-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
@@ -331,7 +339,7 @@
     </div>
 
 <script>
-let RAW=[], KALIP_RAW=[], DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
+let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
@@ -344,6 +352,8 @@ const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4
 const pURL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(URL);
 const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
 const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
+const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
+const pDENEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(DENEME_URL);
 
 function $(id){return document.getElementById(id);}
 function n(v){return v>0?v.toLocaleString('tr-TR'):'-';}
@@ -485,13 +495,13 @@ function rKaliphane() {
 }
 
 function rKayitlar() {
-    $('th-kayit').innerHTML = thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
-    $('tb-kayit').innerHTML = [...RAW].sort((a,b)=>a.tarih.split('.').reverse().join('')<b.tarih.split('.').reverse().join('')?1:-1).map(r => trD([
-        r.tarih, `<b class="emp-link" onclick="openModal('${r.calisan}')">${r.calisan}</b>`, r.vardiya||'-', 
-        r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="text-accent2">${r.durus1} dk</span>`:'-', 
-        r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="text-accent2">${r.durus2} dk</span>`:'-', 
-        n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
-    ])).join('');
+    if(!DENEME_RAW.h.length) {
+        $('th-kayit').innerHTML = '';
+        $('tb-kayit').innerHTML = '<tr><td class="p-4 text-text3">Veri bulunamadı veya sayfa boş.</td></tr>';
+        return;
+    }
+    $('th-kayit').innerHTML = th(DENEME_RAW.h);
+    $('tb-kayit').innerHTML = DENEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs cursor-pointer transition-colors" onclick="openGenericModal(${idx})">${row.map(c=>`<td class="p-2 whitespace-nowrap">${c}</td>`).join('')}</tr>`).join('');
 }
 
 // ETKİLEŞİM & MODALLAR
@@ -576,6 +586,19 @@ function openModal(emp) {
     const el = $('emp-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
 }
 function closeModal() { const el = $('emp-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300); }
+
+// GENEL KAYIT DETAY MODALI (Üretim Takip Denemeleri İçin)
+function openGenericModal(idx) {
+    const row = DENEME_RAW.r[idx];
+    const headers = DENEME_RAW.h;
+    let html = '';
+    headers.forEach((h, i) => {
+        html += `<div class="bg-bg border border-border rounded p-3 flex flex-col shadow-inner"><span class="text-[10px] font-mono text-text3 mb-1 uppercase">${h}</span><span class="font-bold text-sm text-text break-words whitespace-normal">${row[i] || '-'}</span></div>`;
+    });
+    $('gen-mdl-content').innerHTML = html;
+    const el = $('generic-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
+}
+function closeGenericModal() { const el = $('generic-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300); }
 
 // EKRAN GÖRÜNTÜSÜ ŞEKLİNDE PDF İNDİR (Güncellendi)
 function exportToPDF() {
@@ -728,15 +751,29 @@ function parseKalip(t){
     return p;
 }
 
+function parseGeneric(t){
+    if(!t) return {h:[], r:[]};
+    const l=t.split('\n').map(x=>x.trim()).filter(x=>x);
+    if(l.length < 1) return {h:[], r:[]};
+    const pL = line => {
+        let c=[], cur='', iQ=false;
+        for(let ch of line){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim().replace(/"/g,''));cur='';} else cur+=ch;} c.push(cur.trim().replace(/"/g,''));
+        return c;
+    };
+    return { h: pL(l[0]), r: l.slice(1).map(pL) };
+}
+
 function fetchCSV(){
     const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
     ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
     Promise.all([
         fetch(URL,{cache:'no-store'}).catch(()=>fetch(pURL)).then(r=>{if(!r.ok)throw 'Hata';return r.text();}),
-        fetch(KALIP_URL,{cache:'no-store'}).catch(()=>fetch(pKALIP_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
-    ]).then(([t, k_text]) => {
+        fetch(KALIP_URL,{cache:'no-store'}).catch(()=>fetch(pKALIP_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
+        fetch(DENEME_URL,{cache:'no-store'}).catch(()=>fetch(pDENEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
+    ]).then(([t, k_text, d_text]) => {
         RAW=parse(t); if(!RAW.length)throw 'Boş';
         KALIP_RAW=parseKalip(k_text);
+        DENEME_RAW=parseGeneric(d_text);
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
