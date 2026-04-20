@@ -1041,7 +1041,18 @@ function parseGeneric(t){
         for(let ch of line){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim().replace(/"/g,''));cur='';} else cur+=ch;} c.push(cur.trim().replace(/"/g,''));
         return c;
     };
-    return { h: pL(l[0]), r: l.slice(1).map(pL) };
+    
+    let headers = pL(l[0]);
+    let rows = l.slice(1).map(pL);
+    
+    // "ID" veya "ıd" isimli sütunu bulup hem başlıklardan hem de satırlardan çıkar
+    let idIdx = headers.findIndex(h => h.trim().toLowerCase() === 'id' || h.trim().toLowerCase() === 'ıd');
+    if (idIdx > -1) {
+        headers.splice(idIdx, 1);
+        rows = rows.map(r => { r.splice(idIdx, 1); return r; });
+    }
+    
+    return { h: headers, r: rows };
 }
 
 function fetchCSV(){
