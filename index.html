@@ -94,6 +94,12 @@
             <div class="text-[10px] md:text-xs font-mono tracking-[8px] text-text3 mt-2 uppercase">
                 Porselen
             </div>
+            
+            <!-- YENİ: BİLDİRİM KUTUSU (Varsayılan olarak gizli) -->
+            <div id="hdr-notif" class="hidden flex-col justify-center px-4 py-1.5 rounded bg-accent2/10 border border-accent2/30 cursor-pointer transition-transform hover:scale-105 max-w-[160px]" onclick="alert('BİLDİRİM MESAJI:\n\n' + this.dataset.msg)">
+                <span class="text-[9px] tracking-wider text-accent2 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
+                <span id="hdr-notif-text" class="text-[10px] font-mono text-text2 truncate leading-tight"></span>
+            </div>
         </div>
 
         <!-- Yükleme Animasyonu -->
@@ -130,6 +136,8 @@
 
         <div class="flex items-center gap-3 flex-shrink-0">
             <div id="user-info" class="hidden items-center gap-2 font-mono text-xs">
+                <!-- YENİ: KULLANICI AVATARI -->
+                <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border">
                 <span id="user-name" class="text-text2"></span>
                 <button onclick="logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors">ÇIKIŞ</button>
             </div>
@@ -365,24 +373,60 @@
         </div>
 
         <div class="panel hidden" id="panel-admin">
-            <div class="bg-bg2 border border-border rounded p-6 max-w-5xl mx-auto shadow-lg">
-                <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">YÖNETİM PANELİ</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="font-bebas text-xl text-accent2 mb-4 border-b border-border/50 pb-1">SAYFA GÖRÜNÜRLÜĞÜ (NORMAL KULLANICILAR)</h3>
-                        <div id="admin-tabs-list" class="space-y-2"></div>
+            <div class="bg-bg2 border border-border rounded p-6 max-w-6xl mx-auto shadow-lg flex flex-col gap-8">
+                <div class="flex items-center justify-between border-b border-border pb-2">
+                    <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent">YÖNETİM PANELİ</h2>
+                    <button onclick="saveAdminSettings()" class="px-6 py-2 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono text-xs rounded transition-all transform hover:scale-105 shadow-lg">💾 AYARLARI KAYDET</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Bildirim Gönderme Modülü -->
+                    <div class="bg-bg3 border border-border rounded p-4">
+                        <h3 class="font-bebas text-xl text-accent2 mb-4 border-b border-border/50 pb-1 flex items-center gap-2">🔔 BİLDİRİM GÖNDER</h3>
+                        <form id="admin-n-form" onsubmit="sendNotif(event)" class="space-y-3">
+                            <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kullanıcı Seçin</label><select id="admin-n-user" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div>
+                            <div><label class="block text-[10px] text-text3 mb-1 uppercase">Mesajınız</label><textarea id="admin-n-msg" rows="3" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent resize-none"></textarea></div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="flex-1 px-3 py-2 bg-accent2 hover:bg-red-500 text-white rounded font-mono text-[10px] font-bold transition-colors">GÖNDER</button>
+                                <button type="button" onclick="clearNotif()" class="px-3 py-2 bg-bg hover:bg-border text-text2 rounded font-mono text-[10px] transition-colors border border-border">SİL</button>
+                            </div>
+                        </form>
                     </div>
+                    
+                    <!-- Sayfa Görünürlüğü (Sekme İzinleri) -->
                     <div>
-                        <h3 class="font-bebas text-xl text-accent4 mb-4 border-b border-border/50 pb-1">KULLANICI ROLLERİ</h3>
-                        <div class="overflow-auto max-h-[400px] border border-border rounded bg-bg3">
-                            <table class="w-full text-left border-collapse text-sm">
-                                <thead><tr><th class="p-2 border-b border-border text-text3 font-mono sticky top-0 bg-bg3">Çalışan</th><th class="p-2 border-b border-border text-text3 font-mono sticky top-0 bg-bg3">Rol</th></tr></thead>
+                        <h3 class="font-bebas text-xl text-accent4 mb-4 border-b border-border/50 pb-1">SAYFA GÖRÜNÜRLÜĞÜ (ÜYELER)</h3>
+                        <div id="admin-tabs-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm"></div>
+                    </div>
+                </div>
+                
+                <!-- Gelişmiş Kullanıcı Yönetimi Modülü -->
+                <div>
+                    <h3 class="font-bebas text-xl text-accent mb-4 border-b border-border/50 pb-1">KULLANICI YÖNETİMİ</h3>
+                    <div class="flex flex-col lg:flex-row gap-6 items-start">
+                        <div class="w-full lg:w-1/3 bg-bg3 border border-border rounded p-4 sticky top-4">
+                            <h4 class="font-bebas text-lg text-text2 mb-3">YENİ EKLE / DÜZENLE</h4>
+                            <form id="admin-u-form" onsubmit="saveUserObj(event)" class="space-y-3">
+                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Ad Soyad</label><input type="text" id="admin-u-name" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Şifre</label><input type="text" id="admin-u-pass" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Rol</label><select id="admin-u-role" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="user">Üye (Normal)</option><option value="admin">Yönetici</option></select></div>
+                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Fotoğraf URL (İsteğe Bağlı)</label><input type="url" id="admin-u-photo" placeholder="https://..." class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                <div class="flex gap-2 pt-2">
+                                    <button type="submit" class="flex-1 px-3 py-2 bg-accent hover:bg-accent/80 text-bg2 rounded font-mono text-[10px] font-bold transition-colors">KAYDET</button>
+                                    <button type="button" onclick="$('admin-u-form').reset()" class="px-3 py-2 bg-bg hover:bg-border text-text2 rounded font-mono text-[10px] transition-colors border border-border">İPTAL</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="w-full lg:w-2/3 overflow-auto max-h-[500px] border border-border rounded bg-bg3">
+                            <table class="w-full text-left border-collapse text-xs md:text-sm">
+                                <thead><tr><th class="p-3 border-b border-border text-text3 font-mono sticky top-0 bg-bg3 w-10">Foto</th><th class="p-3 border-b border-border text-text3 font-mono sticky top-0 bg-bg3">Ad Soyad</th><th class="p-3 border-b border-border text-text3 font-mono sticky top-0 bg-bg3">Rol</th><th class="p-3 border-b border-border text-text3 font-mono sticky top-0 bg-bg3 text-right">İşlemler</th></tr></thead>
                                 <tbody id="admin-users-list"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-                <div class="mt-6 border-t border-border pt-4 flex justify-end"><button onclick="saveAdminSettings()" class="px-6 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105 shadow-lg">💾 AYARLARI KAYDET</button></div>
+
             </div>
         </div>
 
@@ -458,7 +502,7 @@ let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
 let USER_DATA = {};
-let adminSettings = JSON.parse(localStorage.getItem('adminSettings')) || { hiddenTabs: [], roleOverrides: {} };
+let adminSettings = JSON.parse(localStorage.getItem('adminSettings')) || { hiddenTabs: [] };
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
 
@@ -918,6 +962,23 @@ function applyRoleRestrictions() {
     }
 }
 
+function checkNotifs() {
+    const el = $('hdr-notif'); const txt = $('hdr-notif-text');
+    if(!LOGGED_IN_USER) return;
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let msg = an[LOGGED_IN_USER.name];
+    if(msg) {
+        txt.innerText = msg;
+        el.dataset.msg = msg;
+        el.classList.remove('hidden'); el.classList.add('flex');
+        
+        // Yöneticiler girdiği anda kendi gönderme ekranına kullanıcının seçili olmasını sağlar
+        if($('admin-n-user') && LOGGED_IN_USER.role === 'admin') { $('admin-n-user').value = LOGGED_IN_USER.name; $('admin-n-msg').value = msg; }
+    } else {
+        el.classList.add('hidden'); el.classList.remove('flex');
+    }
+}
+
 async function fetchUsers() {
     try {
         let res = await fetch(USERS_URL, {cache:'no-store'}).catch(() => fetch(pUSERS_URL));
@@ -929,7 +990,8 @@ async function fetchUsers() {
             const headers = lines[0].split(',').map(x=>x.replace(/"/g,'').trim().toLowerCase());
             let nameIdx = headers.findIndex(h => h.includes('çalışan') || h.includes('ad'));
             let passIdx = headers.findIndex(h => h.includes('şifre') || h.includes('sifre'));
-            let roleIdx = headers.findIndex(h => h.includes('rol'));
+            let roleIdx = headers.findIndex(h => h === 'rol' || h === 'yetki');
+            let photoIdx = headers.findIndex(h => h.includes('fotoğraf') || h.includes('fotograf') || h.includes('resim'));
             
             if (nameIdx === -1) nameIdx = 0;
             if (passIdx === -1) passIdx = 1;
@@ -941,12 +1003,22 @@ async function fetchUsers() {
                 
                 let name = cols[nameIdx];
                 let pass = cols[passIdx] || '1234';
-                let role = (roleIdx !== -1 && cols[roleIdx]) ? cols[roleIdx].toLowerCase() : 'user';
-                if (name === "Yusuf Yalçıntaş") role = "admin"; // Kalıcı Yönetici
-                if (adminSettings.roleOverrides[name]) role = adminSettings.roleOverrides[name];
+                let role = 'user';
+                if (roleIdx !== -1 && cols[roleIdx]) {
+                    let r = cols[roleIdx].toLowerCase().trim();
+                    if (r === 'yönetici' || r === 'admin') role = 'admin';
+                    else if (r === 'üye' || r === 'user') role = 'user';
+                }
+                let photo = (photoIdx !== -1 && cols[photoIdx]) ? cols[photoIdx] : '';
                 
-                if (name) USER_DATA[name] = { pass: String(pass), role: role };
+                if (name) USER_DATA[name] = { pass: String(pass), role: role, photo: photo };
             }
+            
+            // Uygulama içinden eklenen veya düzenlenen kullanıcıları yerel bellekten yükle (Senkronize et)
+            let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+            Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
+            
+            if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
         }
     } catch(e) {
         console.error("Kullanıcı listesi çekilemedi", e);
@@ -1008,8 +1080,15 @@ function login(e) {
         // FIX #1: document.querySelector ile düzeltildi
         document.querySelector('.main-content').classList.remove('blurred');
         $('user-name').innerText = `👤 ${user}`;
+        
+        if(USER_DATA[userKey].photo) {
+            $('user-avatar').src = USER_DATA[userKey].photo;
+            $('user-avatar').classList.remove('hidden');
+        } else { $('user-avatar').classList.add('hidden'); }
+        
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         applyRoleRestrictions();
+        checkNotifs();
         fetchCSV(); // Giriş başarılı, verileri çek
     } else {
         errorEl.innerText = 'Kullanıcı adı veya şifre hatalı.';
@@ -1028,26 +1107,75 @@ function rAdmin() {
         {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
         {id: 'form', name: 'VERİ GİRİŞ FORMU'}
     ];
-    $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-3 p-2 hover:bg-bg3 rounded cursor-pointer border border-transparent hover:border-border transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-bebas tracking-wider text-text2">${t.name}</span></label>`).join('');
+    $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
     
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
-        return `<tr class="border-b border-border/50 hover:bg-bg3"><td class="p-2 font-bold text-text">${u}</td><td class="p-2"><select class="admin-role-sel w-full bg-bg border border-border rounded p-1 text-xs outline-none focus:border-accent text-text2" data-user="${u}" ${isYusuf ? 'disabled' : ''}><option value="user" ${role==='user'?'selected':''}>Normal Kullanıcı</option><option value="admin" ${role==='admin'?'selected':''}>Yönetici</option></select></td></tr>`;
+        const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
+        const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold">YÖNETİCİ</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px]">ÜYE</span>';
+        return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3 font-bold text-text">${u}</td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
     }).join('');
+    
+    $('admin-n-user').innerHTML = '<option value="">Seçiniz...</option>' + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+}
+
+function saveUserObj(e) {
+    e.preventDefault();
+    const name = $('admin-u-name').value.trim();
+    if(!name) return;
+    const pass = $('admin-u-pass').value.trim();
+    const role = $('admin-u-role').value;
+    const photo = $('admin-u-photo').value.trim();
+    
+    USER_DATA[name] = { pass, role, photo };
+    let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+    lu[name] = { pass, role, photo };
+    localStorage.setItem('localUsers', JSON.stringify(lu));
+    
+    rAdmin(); $('admin-u-form').reset(); toast('Kullanıcı bilgileri kaydedildi.', 'ok');
+}
+
+function editUser(name) {
+    const u = USER_DATA[name]; if(!u) return;
+    $('admin-u-name').value = name;
+    $('admin-u-pass').value = u.pass || '';
+    $('admin-u-role').value = u.role || 'user';
+    $('admin-u-photo').value = u.photo || '';
+}
+
+function deleteUser(name) {
+    if(name === 'Yusuf Yalçıntaş') return toast('Ana yönetici silinemez!', 'err');
+    if(confirm(name + ' adlı kullanıcıyı sistemden silmek istediğinize emin misiniz?')) {
+        delete USER_DATA[name];
+        let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+        lu[name] = { deleted: true };
+        localStorage.setItem('localUsers', JSON.stringify(lu));
+        rAdmin(); toast('Kullanıcı silindi.', 'ok');
+    }
+}
+
+function sendNotif(e) {
+    e.preventDefault();
+    const user = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
+    if(!user || !msg) return;
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    an[user] = msg;
+    localStorage.setItem('appNotifs', JSON.stringify(an));
+    toast(user + ' kullanıcısına bildirim gönderildi.', 'ok'); checkNotifs();
+}
+
+function clearNotif() {
+    const user = $('admin-n-user').value; if(!user) return toast('Önce bir kullanıcı seçin.', 'warn');
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    delete an[user]; localStorage.setItem('appNotifs', JSON.stringify(an));
+    $('admin-n-msg').value = '';
+    toast('Kullanıcının mevcut bildirimi silindi.', 'ok'); checkNotifs();
 }
 
 function saveAdminSettings() {
     const hiddenTabs = [];
     document.querySelectorAll('.admin-tab-cb').forEach(cb => { if(!cb.checked) hiddenTabs.push(cb.value); });
-    
-    const roleOverrides = {};
-    document.querySelectorAll('.admin-role-sel').forEach(sel => {
-        const u = sel.getAttribute('data-user'); const role = sel.value;
-        if(u !== "Yusuf Yalçıntaş") roleOverrides[u] = role;
-        if(USER_DATA[u]) USER_DATA[u].role = role;
-    });
-    
-    adminSettings = { hiddenTabs, roleOverrides };
+    adminSettings = { hiddenTabs };
     localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
     toast('Yönetim ayarları başarıyla kaydedildi!', 'ok');
     applyRoleRestrictions();
@@ -1208,8 +1336,13 @@ const savedUser = sessionStorage.getItem('loggedUser');
 if(savedUser) {
     LOGGED_IN_USER = JSON.parse(savedUser);
     $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
+    if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
+        $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
+        $('user-avatar').classList.remove('hidden');
+    }
     $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
     applyRoleRestrictions();
+    checkNotifs();
         fetchUsers().then(() => fetchCSV());
 } else {
     showLogin();
