@@ -446,7 +446,7 @@ const thD=(cols)=>`<tr>${cols.map((c,i)=>{ let cls="sticky-th p-2 text-left font
 const trD=(cols)=>`<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs">${cols.map((c,i)=>{ let cls="p-2 whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1"; else if(i>=9&&i<=14) cls+=" kafa2"; return `<td class="${cls}">${c}</td>`; }).join('')}</tr>`;
 const th=(cols)=>`<tr>${cols.map(c=>`<th class="sticky-th p-2 text-left font-mono text-[10px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg">${c}</th>`).join('')}</tr>`;
 const tr=(cols)=>`<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs">${cols.map(c=>`<td class="p-2 whitespace-nowrap">${c}</td>`).join('')}</tr>`;
-const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2 border border-border border-l-4 ${c} rounded p-3 ${clk?'cursor-pointer hover:bg-bg3 hover:shadow-lg transition-colors group':''}"><div class="font-bebas text-sm text-text2 ${clk?'group-hover:text-text':''}">${l}</div><div class="font-mono text-xl font-bold text-text my-1">${v}</div><div class="text-[10px] text-text3">${s}</div></div>`;
+const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2 border border-border border-l-4 ${c} rounded p-3 ${clk?'cursor-pointer hover:bg-bg3 hover:shadow-lg transition-colors group':''}"><div class="font-bebas text-sm text-text2 ${clk?'group-hover:text-text':''}">${l}</div><div class="font-mono text-xl font-bold ${l.includes('Duruş') ? 'text-accent2' : 'text-text'} my-1">${v}</div><div class="text-[10px] text-text3">${s}</div></div>`;
 
 // Tıklanabilir Grafikler
 function mc(id,t,d,o={}){
@@ -525,9 +525,9 @@ function rG(){
     
     $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
     $('tb-gun').innerHTML=dd.map((r,i)=>trD([
-        i+1, `<b class="emp-link" onclick="openModal('${r.calisan}')">${r.calisan}</b>`, r.vardiya||'-', 
-        r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="text-accent2">${r.durus1} dk</span>`:'-', 
-        r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="text-accent2">${r.durus2} dk</span>`:'-', 
+        i+1, `<b class="emp-link" onclick="openModal('${r.calisan}')">${r.calisan}</b>`, r.vardiya||'-',
+        r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
+        r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
         n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
     ])).join('');
 }
@@ -649,8 +649,8 @@ function openRecsModal(title, data) {
     $('t-recs').innerHTML = `<thead>${thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf'])}</thead><tbody id="recs-body" class="text-xs">` + 
         data.map(r => trD([
             r.tarih, `<a class="emp-link font-bold" onclick="closeRecsModal(); setTimeout(()=>openModal('${r.calisan}'), 300);">${r.calisan}</a>`, r.vardiya||'-', 
-            r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="text-accent2">${r.durus1} dk</span>`:'-', 
-            r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="text-accent2">${r.durus2} dk</span>`:'-', 
+            r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
+            r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
             n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
         ])).join('') + `</tbody>`;
     
@@ -667,7 +667,7 @@ function openModal(emp) {
             <div class="flex items-baseline gap-1"><span class="font-bold text-xl text-text">${n(val.u)}</span><span class="text-[10px] text-text3 mb-1"> / ${n(val.b)} Hdf</span></div>
             <div class="flex justify-between items-center mt-2 border-t border-border/50 pt-2 gap-2">
                 <span class="text-[11px] ${val.p>=100?'text-accent':'text-accent2'} font-bold">${val.p.toFixed(1)}% Perf.</span>
-                <span class="text-[11px] font-mono text-accent3">${n(val.d)} dk Duruş</span>
+                <span class="text-[11px] font-mono text-accent2">${n(val.d)} dk Duruş</span>
             </div>
         </div>`;
     $('mdl-stats').innerHTML = cCard(`GÜNLÜK (${sD})`, calc(data.filter(r => r.tarih === sD))) + cCard('HAFTALIK', calc(data.filter(r => isoW(r.tarih) === sW))) + cCard(`AYLIK (${sM})`, calc(data.filter(r => r.tarih.endsWith(sM)))) + cCard('TÜM ZAMANLAR', calc(data));
@@ -682,7 +682,7 @@ function openModal(emp) {
             <td class="p-3 font-mono text-text3">${n(r.tB)}</td>
             <td class="p-3 font-mono font-bold text-accent">${n(r.tU)}</td>
             <td class="p-3">${pb(r.tP)}</td>
-            <td class="p-3 font-mono text-accent3">${topD > 0 ? n(topD) + ' dk' : '-'}</td>
+            <td class="p-3 font-mono">${topD > 0 ? `<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${n(topD)} dk</span>` : '-'}</td>
         </tr>`;}).join('');
     const el = $('emp-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
 }
@@ -1042,8 +1042,11 @@ function parseGeneric(t){
         return c;
     };
     
-    let headers = pL(l[0]);
-    let rows = l.slice(1).map(pL);
+        }
+    }
+    
+    let headers = pL(l[headerIdx]);
+    let rows = l.slice(headerIdx + 1).map(pL);
     
     // "ID" veya "ıd" isimli sütunu bulup hem başlıklardan hem de satırlardan çıkar
     let idIdx = headers.findIndex(h => h.trim().toLowerCase() === 'id' || h.trim().toLowerCase() === 'ıd');
