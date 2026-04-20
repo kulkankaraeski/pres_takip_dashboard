@@ -355,8 +355,7 @@ let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[]
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
-// Not: Bu kullanıcı listesi ve şifreler normalde ayrı bir "Çalışanlar" Google Sheet'inden çekilmelidir. Bu geçici bir çözümdür.
-const USER_DATA = { "Yusuf Yalçıntaş": { pass: "12345", role: "admin" }, "Ahmet Yılmaz": { pass: "123", role: "user" }, "Mehmet Demir": { pass: "456", role: "user" } };
+let USER_DATA = {};
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
 
@@ -366,6 +365,8 @@ const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm
 const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const pDENEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(DENEME_URL);
+const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
+const pUSERS_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(USERS_URL);
 
 // FORM İÇİN SABİT TANIMLAR (Kendinize Göre Değiştirebilirsiniz)
 const SABIT_CALISANLAR = ["Yusuf Yalçıntaş", "Ahmet Yılmaz", "Mehmet Demir"];
@@ -638,7 +639,7 @@ function popF(){
     const vC = calisanSelect.value, vP1 = $('f-pres1').value, vP2 = $('f-pres2').value, vF1 = $('f-fason1').value, vF2 = $('f-fason2').value;
 
     if (LOGGED_IN_USER.role === 'admin') {
-        const emps=[...new Set([...SABIT_CALISANLAR, ...RAW.map(r=>r.calisan)])].filter(x=>x).sort();
+        const emps=[...new Set([...Object.keys(USER_DATA), ...SABIT_CALISANLAR, ...RAW.map(r=>r.calisan)])].filter(x=>x).sort();
         calisanSelect.innerHTML='<option value="">Seçiniz...</option>'+emps.map(e=>`<option value="${e}">${e}</option>`).join('');
         calisanSelect.disabled = false;
     } else {
@@ -716,20 +717,85 @@ async function submitForm(e){
 // KULLANICI GİRİŞ SİSTEMİ
 // FIX #1: $() sadece getElementById'dir, class seçici ALAMAZ.
 // showLogin ve login fonksiyonlarında document.querySelector('.main-content') kullanılıyor.
+
+function applyRoleRestrictions() {
+    // Tüm sekmeleri (menü butonlarını) önce görünür yap
+    document.querySelectorAll('#main-nav div').forEach(el => el.style.display = 'block');
+    
+    // Oturum açan kişi admin değilse bazı sekmeleri gizle
+    if (LOGGED_IN_USER && LOGGED_IN_USER.role !== 'admin') {
+        const hiddenTabs = ['genel', 'calisan', 'pres', 'fason', 'kaliphane', 'kayitlar'];
+        hiddenTabs.forEach(tab => {
+            const navEl = document.querySelector(`#main-nav div[onclick*="'${tab}'"]`);
+            if(navEl) navEl.style.display = 'none';
+        });
+        // Eğer normal kullanıcı gizli bir sekmedeyken sayfayı yenilerse onu 'gunluk' sekmesine at
+        if(hiddenTabs.includes(cTab)) swT('gunluk', document.querySelector(`#main-nav div[onclick*="'gunluk'"]`));
+    }
+}
+
+async function fetchUsers() {
+    try {
+        let res = await fetch(USERS_URL, {cache:'no-store'}).catch(() => fetch(pUSERS_URL));
+        if (!res || !res.ok) throw new Error('Bağlantı Hatası');
+        let text = await res.text();
+        
+        const lines = text.split('\n').map(x=>x.trim()).filter(x=>x);
+        if (lines.length > 1) {
+            const headers = lines[0].split(',').map(x=>x.replace(/"/g,'').trim().toLowerCase());
+            let nameIdx = headers.findIndex(h => h.includes('çalışan') || h.includes('ad'));
+            let passIdx = headers.findIndex(h => h.includes('şifre') || h.includes('sifre'));
+            let roleIdx = headers.findIndex(h => h.includes('rol'));
+            
+            if (nameIdx === -1) nameIdx = 0;
+            if (passIdx === -1) passIdx = 1;
+            
+            USER_DATA = {};
+            for(let i=1; i<lines.length; i++) {
+                let cols=[], cur='', iQ=false;
+                for(let ch of lines[i]){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){cols.push(cur.trim().replace(/"/g,''));cur='';} else cur+=ch;} cols.push(cur.trim().replace(/"/g,''));
+                
+                let name = cols[nameIdx];
+                let pass = cols[passIdx] || '1234';
+                let role = (roleIdx !== -1 && cols[roleIdx]) ? cols[roleIdx].toLowerCase() : 'user';
+                
+                if (name) USER_DATA[name] = { pass: String(pass), role: role };
+            }
+        }
+    } catch(e) {
+        console.error("Kullanıcı listesi çekilemedi", e);
+    }
+}
+
 function showLogin() {
     document.querySelector('.main-content').classList.add('blurred');
     const el = $('login-modal'); el.classList.remove('hidden'); el.classList.add('flex'); 
     setTimeout(()=>el.classList.remove('opacity-0'),10);
+    
+    $('login-error').innerText = 'Kullanıcı listesi yükleniyor...';
+    $('login-user').disabled = true;
+    $('login-pass').disabled = true;
+    fetchUsers().then(() => {
+        $('login-user').disabled = false;
+        $('login-pass').disabled = false;
+        if(Object.keys(USER_DATA).length > 0) {
+            $('login-error').innerText = '';
+        } else {
+            $('login-error').innerText = 'Kullanıcı listesi çekilemedi.';
+        }
+    });
 }
 
 function login(e) {
     e.preventDefault();
-    const user = $('login-user').value;
-    const pass = $('login-pass').value;
+    const user = $('login-user').value.trim();
+    const pass = $('login-pass').value.trim();
     const errorEl = $('login-error');
 
-    if (USER_DATA[user] && USER_DATA[user].pass === pass) {
-        LOGGED_IN_USER = { name: user, role: USER_DATA[user].role };
+    const userKey = Object.keys(USER_DATA).find(k => k.toLowerCase() === user.toLowerCase());
+
+    if (userKey && String(USER_DATA[userKey].pass) === pass) {
+        LOGGED_IN_USER = { name: userKey, role: USER_DATA[userKey].role };
         sessionStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
         errorEl.innerText = '';
         const el = $('login-modal'); el.classList.add('opacity-0');
@@ -738,6 +804,7 @@ function login(e) {
         document.querySelector('.main-content').classList.remove('blurred');
         $('user-name').innerText = `👤 ${user}`;
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
+        applyRoleRestrictions();
         fetchCSV(); // Giriş başarılı, verileri çek
     } else {
         errorEl.innerText = 'Kullanıcı adı veya şifre hatalı.';
@@ -847,7 +914,8 @@ if(savedUser) {
     LOGGED_IN_USER = JSON.parse(savedUser);
     $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
     $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
-    fetchCSV();
+    applyRoleRestrictions();
+        fetchUsers().then(() => fetchCSV());
 } else {
     showLogin();
 }
