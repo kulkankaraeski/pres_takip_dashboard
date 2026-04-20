@@ -11,5 +11,6 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     // PWA şartını sağlamak için boş bir fetch dinleyicisi ekliyoruz.
     // Canlı Google Sheets verilerini bozmamak için dosyaları her zaman internetten çekiyoruz.
-    event.respondWith(fetch(event.request).catch(() => new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')));
+    event.respondWith(fetch(event.request).catch(() => new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.'
+    })));
 });

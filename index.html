@@ -969,30 +969,20 @@ function parse(t){
 
     const idx = {
         tarih: headers.findIndex(h => h.includes('tarih')),
-        calisan: headers.findIndex(h => h.includes('çalışan') || h.includes('calisan')),
         calisan: headers.findIndex(h => h.includes('çalışan') || h.includes('calisan') || h.includes('ad')),
         vardiya: headers.findIndex(h => h.includes('vardiya')),
-        pres1: headers.findIndex(h => h === 'pres1'),
-        fason1: headers.findIndex(h => h === 'fason1'),
         pres1: headers.findIndex(h => h === 'pres1' || h.includes('pres 1')),
         fason1: headers.findIndex(h => h === 'fason1' || h.includes('fason 1')),
         uretim1: headers.findIndex(h => h.includes('üretilen adet 1') || h.includes('uretilen adet 1')),
-        durus1: headers.findIndex(h => h.includes('duruş süresi 1') || h.includes('durus suresi 1')),
-        pres2: headers.findIndex(h => h === 'pres2'),
-        fason2: headers.findIndex(h => h === 'fason2'),
         durus1: headers.findIndex(h => h.includes('duruş süresi 1') || h.includes('durus suresi 1') || h.includes('duruş 1')),
         pres2: headers.findIndex(h => h === 'pres2' || h.includes('pres 2')),
         fason2: headers.findIndex(h => h === 'fason2' || h.includes('fason 2')),
         uretim2: headers.findIndex(h => h.includes('üretilen adet 2') || h.includes('uretilen adet 2')),
-        durus2: headers.findIndex(h => h.includes('duruş süresi 2') || h.includes('durus suresi 2')),
         durus2: headers.findIndex(h => h.includes('duruş süresi 2') || h.includes('durus suresi 2') || h.includes('duruş 2')),
         perf1: headers.findIndex(h => h.includes('yüzdesi (performans)') && !h.includes('2')),
-        perf2: headers.findIndex(h => h.includes('yüzdesi (performans)2')),
         perf2: headers.findIndex(h => h.includes('yüzdesi (performans)2') || (h.includes('performans') && h.includes('2'))),
         hedef1: headers.findIndex(h => (h.includes('üretilmesi gereken') && h.includes('1')) || h === 'hedef 1'),
         hedef2: headers.findIndex(h => (h.includes('üretilmesi gereken') && (h.includes('2') || h.includes('adet2'))) || h === 'hedef 2'),
-        toplamUretim: headers.findIndex(h => h.includes('toplam üretilen')),
-        toplamPerf: headers.findIndex(h => h.includes('günlük toplam performans')),
         toplamUretim: headers.findIndex(h => h.includes('toplam üretilen') || h.includes('toplam uretilen')),
         toplamPerf: headers.findIndex(h => h.includes('günlük toplam performans') || h.includes('gunluk toplam performans')),
     };
@@ -1042,9 +1032,7 @@ function parseGeneric(t){
         return c;
     };
     
-        }
-    }
-    
+    let headerIdx = 0;
     let headers = pL(l[headerIdx]);
     let rows = l.slice(headerIdx + 1).map(pL);
     
@@ -1058,7 +1046,25 @@ function parseGeneric(t){
     return { h: headers, r: rows };
 }
 
-function fetchCSV(){
+function showLoader() {
+    const el = $('global-loader');
+    if (el) {
+        el.classList.remove('hidden');
+        el.classList.add('flex');
+        setTimeout(() => el.classList.remove('opacity-0'), 10);
+    }
+}
+
+function hideLoader() {
+    const el = $('global-loader');
+    if (el) {
+        el.classList.add('opacity-0');
+        setTimeout(() => { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
+    }
+}
+
+function fetchCSV(isBg = false) {
+    if(!isBg) showLoader();
     const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
     ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
     Promise.all([
@@ -1114,7 +1120,7 @@ if(savedUser) {
     showLogin();
 }
 
-setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled) fetchCSV(); }, 60000);
+setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled) fetchCSV(true); }, 60000);
 
 // SERVICE WORKER (PWA) KAYDI
 if ('serviceWorker' in navigator) {
