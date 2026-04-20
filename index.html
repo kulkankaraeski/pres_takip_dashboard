@@ -818,18 +818,50 @@ function logout() {
 
 // DATA FETCH & PARSE
 function parse(t){
-    if(t.includes('Markdown Content:')) t=t.split('Markdown Content:')[1];
-    const l=t.split('\n').map(x=>x.trim()).filter(x=>x), h=l[0].split(',').map(x=>x.replace(/"/g,'').trim()), p=[];
-    const tN=v=>{if(!v||v==='-')return 0; return parseFloat(v.toString().replace(/\./g,'').replace(',','.').replace('%',''))||0;};
-    for(let i=1;i<l.length;i++){
+    if(!t || t.includes('<html')) return []; // Gelen veri boş veya bir hata sayfası ise boş dizi dön
+    if(t.includes('Markdown Content:')) t = t.split('Markdown Content:')[1];
+    const l = t.split('\n').map(x => x.trim()).filter(x => x);
+    if (l.length < 2) return [];
+
+    const pL = line => {
         let c=[], cur='', iQ=false;
-        for(let ch of l[i]){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim());cur='';} else cur+=ch;} c.push(cur.trim());
-        let rw={}; h.forEach((k,j)=>rw[k]=c[j]?c[j].replace(/"/g,'').trim():'');
-        let tarih=rw['Tarih']||'', cal=rw['Çalışan']||rw['Çalışan Adı']||''; if(!tarih||!cal)continue;
-        let u1=tN(rw['Üretilen Adet 1']), p1=tN(rw['Üretim Yüzdesi (Performans)']), u2=tN(rw['Üretilen Adet 2']), p2=tN(rw['Üretim Yüzdesi (Performans)2']);
-        let b1=tN(rw['Çalışılan Süre İle Üretilmesi Gereken Adet 1']||rw['Hedef 1']), b2=tN(rw['Çalışılan Süre İle Üretilmesi Gereken Adet2']||rw['Hedef 2']);
-        let tU=tN(rw['Toplam Üretilen Çift Kafa Günlük Adet'])||(u1+u2), tB=b1+b2; if(!tU)continue;
-        p.push({tarih:tarih, calisan:cal, vardiya:rw['Vardiya']||'', pres1:rw['Pres1']||'', fason1:rw['Fason1']||'', beklenen1:b1, uretim1:u1, perf1:p1>0&&p1<=1?p1*100:p1, durus1:tN(rw['Duruş Süresi 1 (dk)']), pres2:rw['Pres2']||'', fason2:rw['Fason2']||'', beklenen2:b2, uretim2:u2, perf2:p2>0&&p2<=1?p2*100:p2, durus2:tN(rw['Duruş Süresi 2 (dk)']), tB:tB, tU:tU, tP:(tN(rw['Günlük Toplam Performans'])||(p1&&p2?(p1+p2)/2:p1||p2))});
+        for(let ch of line){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim().replace(/"/g,''));cur='';} else cur+=ch;} c.push(cur.trim().replace(/"/g,''));
+        return c;
+    };
+
+    const headers = pL(l[0]).map(h => h.toLowerCase());
+    const p = [];
+
+    const idx = {
+        tarih: headers.findIndex(h => h.includes('tarih')),
+        calisan: headers.findIndex(h => h.includes('çalışan') || h.includes('calisan')),
+        vardiya: headers.findIndex(h => h.includes('vardiya')),
+        pres1: headers.findIndex(h => h === 'pres1'),
+        fason1: headers.findIndex(h => h === 'fason1'),
+        uretim1: headers.findIndex(h => h.includes('üretilen adet 1') || h.includes('uretilen adet 1')),
+        durus1: headers.findIndex(h => h.includes('duruş süresi 1') || h.includes('durus suresi 1')),
+        pres2: headers.findIndex(h => h === 'pres2'),
+        fason2: headers.findIndex(h => h === 'fason2'),
+        uretim2: headers.findIndex(h => h.includes('üretilen adet 2') || h.includes('uretilen adet 2')),
+        durus2: headers.findIndex(h => h.includes('duruş süresi 2') || h.includes('durus suresi 2')),
+        perf1: headers.findIndex(h => h.includes('yüzdesi (performans)') && !h.includes('2')),
+        perf2: headers.findIndex(h => h.includes('yüzdesi (performans)2')),
+        hedef1: headers.findIndex(h => (h.includes('üretilmesi gereken') && h.includes('1')) || h === 'hedef 1'),
+        hedef2: headers.findIndex(h => (h.includes('üretilmesi gereken') && (h.includes('2') || h.includes('adet2'))) || h === 'hedef 2'),
+        toplamUretim: headers.findIndex(h => h.includes('toplam üretilen')),
+        toplamPerf: headers.findIndex(h => h.includes('günlük toplam performans')),
+    };
+
+    const tN=v=>{if(!v||v==='-')return 0; return parseFloat(v.toString().replace(/\./g,'').replace(',','.').replace('%',''))||0;};
+    
+    const rows = l.slice(1).map(pL);
+    for(const c of rows){
+        const get = (key) => idx[key] > -1 ? c[idx[key]] : '';
+        let tarih=get('tarih'), cal=get('calisan'); if(!tarih||!cal)continue;
+        let u1=tN(get('uretim1')), p1=tN(get('perf1')), u2=tN(get('uretim2')), p2=tN(get('perf2'));
+        let b1=tN(get('hedef1')), b2=tN(get('hedef2'));
+        let tU=tN(get('toplamUretim'))||(u1+u2), tB=b1+b2; if(!tU)continue;
+        p.push({tarih:tarih, calisan:cal, vardiya:get('vardiya')||'', pres1:get('pres1')||'', fason1:get('fason1')||'', beklenen1:b1, uretim1:u1, perf1:p1>0&&p1<=1?p1*100:p1, durus1:tN(get('durus1')), pres2:get('pres2')||'', fason2:get('fason2')||'', beklenen2:b2, uretim2:u2, perf2:p2>0&&p2<=1?p2*100:p2, durus2:tN(get('durus2')), tB:tB, tU:tU, tP:(tN(get('toplamPerf'))||(p1&&p2?(p1+p2)/2:p1||p2))});
     } return p.map(x=>{if(x.tP>0&&x.tP<=1)x.tP*=100; return x;});
 }
 
