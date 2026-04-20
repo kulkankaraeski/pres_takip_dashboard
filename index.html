@@ -14,10 +14,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script>
-        tailwind.config={theme:{extend:{colors:{bg:'#121410',bg2:'#1a1d17',bg3:'#22261e',border:'#2a3024',text:'#e0e2db',text2:'#a3a89e',text3:'#5e6358',accent:'#a8e063',accent2:'#e86d3a',accent3:'#f5c842',accent4:'#5bb8e8'},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace'],bebas:['Bebas Neue','sans-serif']}}}}
+        tailwind.config={theme:{extend:{colors:{bg:'var(--bg)',bg2:'var(--bg2)',bg3:'var(--bg3)',border:'var(--border)',text:'var(--text)',text2:'var(--text2)',text3:'var(--text3)',accent:'var(--accent)',accent2:'var(--accent2)',accent3:'var(--accent3)',accent4:'var(--accent4)'},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace'],bebas:['Bebas Neue','sans-serif']}}}}
     </script>
     <style>
-        body{background-color:#121410;color:#e0e2db;font-family:'Inter',sans-serif}
+        :root {
+            --bg: #121410; --bg2: #1a1d17; --bg3: #22261e; --border: #2a3024;
+            --text: #e0e2db; --text2: #a3a89e; --text3: #5e6358;
+            --accent: #a8e063; --accent2: #e86d3a; --accent3: #f5c842; --accent4: #5bb8e8;
+            --c-accent: 168, 224, 99; --c-accent2: 232, 109, 58; --c-accent3: 245, 200, 66; --c-accent4: 91, 184, 232; --c-border: 42, 48, 36; --c-text3: 94, 99, 88;
+        }
+        .light-mode {
+            --bg: #f4f6f0; --bg2: #e9ece4; --bg3: #dfe2d8; --border: #c4c8bc;
+            --text: #1a1d17; --text2: #4a4f44; --text3: #6b7064;
+            --accent: #4a8e23; --accent2: #c84d1a; --accent3: #d5a822; --accent4: #2b7da8;
+            --c-accent: 74, 142, 35; --c-accent2: 200, 77, 26; --c-accent3: 213, 168, 34; --c-accent4: 43, 125, 168; --c-border: 196, 200, 188; --c-text3: 107, 112, 100;
+        }
+        body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.3s, color 0.3s;}
         ::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-track{background:#1a1d17} ::-webkit-scrollbar-thumb{background:#2a3024;border-radius:4px}
         .panel{display:none;opacity:0;transition:opacity 0.3s} .panel.active{display:block;opacity:1;animation:fadeIn 0.4s forwards}
         @keyframes fadeIn{from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)}}
@@ -25,6 +37,10 @@
         @keyframes skel{0%{background-position:200% 0} 100%{background-position:-200% 0}}
         .emp-link{cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-color:#2a3024;transition:all 0.2s}
         .emp-link:hover{color:#a8e063;text-decoration-color:#a8e063}
+        
+        /* Panel Görünümlü Navigasyon Butonları (Mobil Uyumlu) */
+        .nav-btn { flex: 1 1 auto; text-align: center; padding: 8px 12px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; font-size: 13px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease-in-out; border-width: 1px; white-space: nowrap; user-select: none; }
+        @media (max-width: 768px) { .nav-btn { font-size: 11px; padding: 6px 8px; flex-basis: 30%; } }
         
         /* Tablo Başlık Sabitleme & Renkler */
         .sticky-th { position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
@@ -117,6 +133,9 @@
                 <span id="user-name" class="text-text2"></span>
                 <button onclick="logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors">ÇIKIŞ</button>
             </div>
+            <button onclick="toggleTheme()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm">
+                🌓 TEMA
+            </button>
             <button onclick="exportToPDF()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors">
                 📥 PDF İNDİR
             </button>
@@ -127,18 +146,18 @@
     </header>
 
     <div class="main-content flex-1 flex flex-col min-h-0">
-    <nav class="flex overflow-x-auto gap-2 border-b border-border pb-1 no-scrollbar shrink-0" id="main-nav">
-        <div onclick="swT('gunluk',this)" class="px-4 py-2 text-accent border-b-2 border-accent cursor-pointer font-bebas tracking-wider whitespace-nowrap">GÜNLÜK RAPOR</div>
-        <div onclick="swT('haftalik',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">HAFTALIK RAPOR</div>
-        <div onclick="swT('aylik',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">AYLIK RAPOR</div>
-        <div onclick="swT('genel',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">GENEL ÖZET</div>
-        <div onclick="swT('calisan',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">ÇALIŞAN PERFORMANSI</div>
-        <div onclick="swT('pres',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">PRES MAKİNE</div>
-        <div onclick="swT('fason',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">FASON DETAY</div>
-        <div onclick="swT('kaliphane',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">KALIPHANE</div>
-        <div onclick="swT('kayitlar',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
-        <div onclick="swT('form',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">VERİ GİRİŞ FORMU</div>
-        <div id="nav-admin" onclick="swT('admin',this)" class="hidden px-4 py-2 text-accent2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-accent2">YÖNETİM PANELİ</div>
+    <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2 p-1.5 md:p-2 rounded-lg border border-border shrink-0 shadow-sm" id="main-nav">
+        <div onclick="swT('gunluk',this)" class="nav-btn bg-accent text-bg2 border-accent shadow-md">GÜNLÜK RAPOR</div>
+        <div onclick="swT('haftalik',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">HAFTALIK RAPOR</div>
+        <div onclick="swT('aylik',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">AYLIK RAPOR</div>
+        <div onclick="swT('genel',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">GENEL ÖZET</div>
+        <div onclick="swT('calisan',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÇALIŞAN PERFORMANSI</div>
+        <div onclick="swT('pres',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">PRES MAKİNE</div>
+        <div onclick="swT('fason',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">FASON DETAY</div>
+        <div onclick="swT('kaliphane',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">KALIPHANE</div>
+        <div onclick="swT('kayitlar',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
+        <div onclick="swT('form',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ GİRİŞ FORMU</div>
+        <div id="nav-admin" onclick="swT('admin',this)" class="nav-btn hidden bg-bg3 text-accent2 border-border hover:bg-border">YÖNETİM PANELİ</div>
     </nav>
 
     <main class="flex-1 relative min-h-[500px]">
@@ -400,6 +419,9 @@
     </div>
 
 <script>
+if (localStorage.getItem('theme') === 'light') {
+    document.documentElement.classList.add('light-mode');
+}
 let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
@@ -469,11 +491,11 @@ function mc(id,t,d,o={}){
 function swT(t,el){
     cTab=t; document.querySelectorAll('.panel').forEach(e=>{e.classList.remove('active','block');e.classList.add('hidden');});
     document.querySelectorAll('#main-nav div').forEach(e=>{
-        e.classList.remove('text-accent','border-accent');
-        e.classList.add('text-text2','border-transparent');
+        e.classList.remove('bg-accent', 'text-bg2', 'border-accent', 'shadow-md');
+        e.classList.add('bg-bg3', 'text-text2', 'border-border', 'hover:bg-border', 'hover:text-text');
     });
-    el.classList.remove('text-text2','border-transparent');
-    el.classList.add('text-accent','border-accent');
+    el.classList.remove('bg-bg3', 'text-text2', 'border-border', 'hover:bg-border', 'hover:text-text');
+    el.classList.add('bg-accent', 'text-bg2', 'border-accent', 'shadow-md');
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
     if(!RAW.length)return;
     if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='kayitlar')rKayitlar(); if(t==='admin')rAdmin();
@@ -484,13 +506,9 @@ function toggleTheme() {
     document.documentElement.classList.toggle('light-mode');
     const isLight = document.documentElement.classList.contains('light-mode');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    
-    $('favicon').href = isLight ? 'icon-512-light.png' : 'icon-512.png';
-    $('apple-touch-icon').href = isLight ? 'icon-192-light.png' : 'icon-192.png';
-    $('meta-theme-color').content = isLight ? '#f4f6f0' : '#121410';
 
     const activeNavEl = document.querySelector(`#main-nav div[onclick*="'${cTab}'"]`);
-    if(RAW.length) swT(cTab, activeNavEl || document.querySelector('#main-nav div.active'));
+    if(RAW.length) swT(cTab, activeNavEl || document.querySelector('#main-nav div'));
 }
 
 // Arama
@@ -781,20 +799,19 @@ async function submitForm(e){
     };
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        await fetch(SCRIPT_URL, {
             method: 'POST',
-            redirect: 'follow', // Google script yönlendirmelerini takip edebilmek için şart
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORS (sunucu köken) kısıtlamalarına takılmamak için text/plain
+            mode: 'no-cors', // Opaque response göndererek CORS hatalarını baypas eder.
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        const out = await res.json();
-        if(out.status === 'success') { 
-            alert('✔️ BAŞARIYLA KAYDEDİLDİ!'); 
-            e.target.reset(); // Formu sıfırla
-            fetchCSV(); // Yeni veriyi Dashboard'a yansıt
-        } else throw new Error(out.message || 'Bilinmeyen Hata');
+        
+        toast('BAŞARIYLA KAYDEDİLDİ!', 'ok'); 
+        e.target.reset(); // Formu sıfırla
+        popF(); // Veri formunu başlangıç haline getir
+        setTimeout(() => fetchCSV(), 1000); // 1 saniye sonra verileri yenile
     } catch(err) {
-        alert('❌ HATA: ' + err.message + '\n\nSCRIPT_URL değerini eklediğinizden veya Sütun başlıklarının eşleştiğinden emin olun.');
+        alert('❌ GÖNDERİM HATASI: İnternet bağlantınızı kontrol edin.');
     } finally {
         btn.innerHTML = origTxt; btn.disabled = false;
     }
