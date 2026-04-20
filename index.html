@@ -12,25 +12,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
-        tailwind.config={theme:{extend:{colors:{bg:'var(--bg)',bg2:'var(--bg2)',bg3:'var(--bg3)',border:'var(--border)',text:'var(--text)',text2:'var(--text2)',text3:'var(--text3)',accent:'var(--accent)',accent2:'var(--accent2)',accent3:'var(--accent3)',accent4:'var(--accent4)'},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace'],bebas:['Bebas Neue','sans-serif']}}}}
+        tailwind.config={theme:{extend:{colors:{bg:'var(--bg)',bg2:'var(--bg2)',bg3:'var(--bg3)',border:'var(--border)',text:'var(--text)',text2:'var(--text2)',text3:'var(--text3)',accent:'var(--accent)',accent2:'var(--accent2)',accent3:'var(--accent3)',accent4:'var(--accent4)'},fontFamily:{sans:['Inter','sans-serif'],mono:['Fira Code','monospace'],bebas:['Poppins','sans-serif']}}}}
     </script>
     <style>
         :root {
-            --bg: #121410; --bg2: #1a1d17; --bg3: #22261e; --border: #2a3024;
-            --text: #e0e2db; --text2: #a3a89e; --text3: #5e6358;
-            --accent: #a8e063; --accent2: #e86d3a; --accent3: #f5c842; --accent4: #5bb8e8;
-            --c-accent: 168, 224, 99; --c-accent2: 232, 109, 58; --c-accent3: 245, 200, 66; --c-accent4: 91, 184, 232; --c-border: 42, 48, 36; --c-text3: 94, 99, 88;
+            --bg: #0f172a; --bg2: #1e293b; --bg3: #334155; --border: #475569;
+            --text: #f8fafc; --text2: #cbd5e1; --text3: #94a3b8;
+            --accent: #3b82f6; --accent2: #ef4444; --accent3: #f59e0b; --accent4: #10b981;
+            --c-accent: 59, 130, 246; --c-accent2: 239, 68, 68; --c-accent3: 245, 158, 11; --c-accent4: 16, 185, 129; --c-border: 71, 85, 105; --c-text3: 148, 163, 184;
         }
         .light-mode {
-            --bg: #f4f6f0; --bg2: #e9ece4; --bg3: #dfe2d8; --border: #c4c8bc;
-            --text: #1a1d17; --text2: #4a4f44; --text3: #6b7064;
-            --accent: #4a8e23; --accent2: #c84d1a; --accent3: #d5a822; --accent4: #2b7da8;
-            --c-accent: 74, 142, 35; --c-accent2: 200, 77, 26; --c-accent3: 213, 168, 34; --c-accent4: 43, 125, 168; --c-border: 196, 200, 188; --c-text3: 107, 112, 100;
+            --bg: #f8fafc; --bg2: #f1f5f9; --bg3: #e2e8f0; --border: #cbd5e1;
+            --text: #0f172a; --text2: #334155; --text3: #64748b;
+            --accent: #2563eb; --accent2: #dc2626; --accent3: #d97706; --accent4: #059669;
+            --c-accent: 37, 99, 235; --c-accent2: 220, 38, 38; --c-accent3: 217, 119, 6; --c-accent4: 5, 150, 105; --c-border: 203, 213, 225; --c-text3: 100, 116, 139;
         }
         body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.3s, color 0.3s;}
-        ::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-track{background:#1a1d17} ::-webkit-scrollbar-thumb{background:#2a3024;border-radius:4px}
+        ::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-track{background:var(--bg2)} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
         .panel{display:none;opacity:0;} .panel.active{display:block;opacity:1;animation:slideIn 0.35s ease-out forwards}
         @keyframes slideIn{from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)}}
         .skeleton{background:linear-gradient(90deg,#1c2018 25%,#2a3024 50%,#1c2018 75%);background-size:200% 100%;animation:skel 1.5s infinite;border-radius:4px}
@@ -44,11 +44,11 @@
         
         /* Tablo Başlık Sabitleme & Renkler */
         .sticky-th { position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .th-bg { background-color: #22261e; }
-        .kafa1 { background-color: rgba(91, 184, 232, 0.08); color: #93c5fd; }
-        .kafa2 { background-color: rgba(232, 109, 58, 0.08); color: #fdba74; }
-        .kafa1-th { background-color: #1a2a30; color: #5bb8e8; }
-        .kafa2-th { background-color: #332015; color: #e86d3a; }
+        .th-bg { background-color: var(--bg3); }
+        .kafa1 { background-color: rgba(var(--c-accent), 0.08); color: var(--accent); }
+        .kafa2 { background-color: rgba(var(--c-accent3), 0.08); color: var(--accent3); }
+        .kafa1-th { background-color: rgba(var(--c-accent), 0.15); color: var(--accent); }
+        .kafa2-th { background-color: rgba(var(--c-accent3), 0.15); color: var(--accent3); }
 
         /* Ayın Elemanı Animasyonları */
         .ayin-elemani { background: linear-gradient(90deg, #f5c842, #ff9b44, #f5c842); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shineText 3s linear infinite; }
@@ -66,8 +66,8 @@
             body { 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important; 
-                background-color: #121410 !important; 
-                color: #e0e2db !important; 
+                background-color: #0f172a !important; 
+                color: #f8fafc !important; 
             }
             .panel:not(.active) { display: none !important; opacity: 0 !important; }
             .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
@@ -80,7 +80,7 @@
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
 
     <!-- GLOBAL YÜKLEME EKRANI -->
-    <div id="global-loader" class="fixed inset-0 bg-[#121410]/95 z-[9999] hidden flex-col items-center justify-center opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+    <div id="global-loader" class="fixed inset-0 bg-[var(--bg)]/95 z-[9999] hidden flex-col items-center justify-center opacity-0 transition-opacity duration-300 backdrop-blur-sm">
         
         <!-- KURUMSAL LOGO (PORLAND PORSELEN) -->
         <!-- Eğer elinizde resmi .png veya .svg dosyası varsa, hemen alt satırdaki yorumu açıp dosya adını 'src' kısmına yazabilirsiniz. -->
@@ -512,7 +512,7 @@ function mc(id,t,d,o={}){
         onClick: (e, elements, chart) => {
             if(elements.length > 0) { const label = String(chart.data.labels[elements[0].index]); handleChartClick(id, label); }
         },
-        plugins:{legend:{labels:{color:cR('text3'),font:{family:"'JetBrains Mono'",size:10}}}},
+        plugins:{legend:{labels:{color:cR('text3'),font:{family:"'Fira Code'",size:10}}}},
         scales:{x:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}},y:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}}}
     }; 
     if(o.y)c.scales.y=o.y; if(o.x)c.scales.x=o.x; if(o.idx)c.indexAxis=o.idx; 
