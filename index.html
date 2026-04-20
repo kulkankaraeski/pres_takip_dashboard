@@ -63,6 +63,30 @@
 </head>
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
 
+    <!-- GLOBAL YÜKLEME EKRANI -->
+    <div id="global-loader" class="fixed inset-0 bg-[#121410]/95 z-[9999] hidden flex-col items-center justify-center opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        
+        <!-- KURUMSAL LOGO (PORLAND PORSELEN) -->
+        <!-- Eğer elinizde resmi .png veya .svg dosyası varsa, hemen alt satırdaki yorumu açıp dosya adını 'src' kısmına yazabilirsiniz. -->
+        <!-- <img src="porland-logo.png" alt="Porland Logo" class="h-12 md:h-16 object-contain mb-8 animate-pulse"> -->
+        
+        <!-- Eğer görseliniz yoksa, Porland'ın marka kimliğine uygun zarif tipografik tasarım (Varsayılan): -->
+        <div id="text-logo" class="mb-10 flex flex-col items-center select-none">
+            <div class="text-3xl md:text-5xl font-light tracking-[10px] md:tracking-[15px] text-white opacity-90" style="font-family: 'Times New Roman', serif;">
+                PORLAND
+            </div>
+            <div class="text-[10px] md:text-xs font-mono tracking-[8px] text-text3 mt-2 uppercase">
+                Porselen
+            </div>
+        </div>
+
+        <!-- Yükleme Animasyonu -->
+        <div class="flex flex-col items-center gap-4">
+            <div class="w-8 h-8 border-2 border-bg3 border-t-accent rounded-full animate-spin"></div>
+            <div id="loader-text" class="font-mono text-[10px] tracking-[4px] text-text2 animate-pulse">YÜKLENİYOR...</div>
+        </div>
+    </div>
+
     <header class="flex flex-col xl:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 rounded shadow-lg relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
         
@@ -359,7 +383,7 @@ let USER_DATA = {};
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
 
-const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
+const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
 const pURL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(URL);
 const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
 const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
@@ -835,21 +859,31 @@ function parse(t){
     const idx = {
         tarih: headers.findIndex(h => h.includes('tarih')),
         calisan: headers.findIndex(h => h.includes('çalışan') || h.includes('calisan')),
+        calisan: headers.findIndex(h => h.includes('çalışan') || h.includes('calisan') || h.includes('ad')),
         vardiya: headers.findIndex(h => h.includes('vardiya')),
         pres1: headers.findIndex(h => h === 'pres1'),
         fason1: headers.findIndex(h => h === 'fason1'),
+        pres1: headers.findIndex(h => h === 'pres1' || h.includes('pres 1')),
+        fason1: headers.findIndex(h => h === 'fason1' || h.includes('fason 1')),
         uretim1: headers.findIndex(h => h.includes('üretilen adet 1') || h.includes('uretilen adet 1')),
         durus1: headers.findIndex(h => h.includes('duruş süresi 1') || h.includes('durus suresi 1')),
         pres2: headers.findIndex(h => h === 'pres2'),
         fason2: headers.findIndex(h => h === 'fason2'),
+        durus1: headers.findIndex(h => h.includes('duruş süresi 1') || h.includes('durus suresi 1') || h.includes('duruş 1')),
+        pres2: headers.findIndex(h => h === 'pres2' || h.includes('pres 2')),
+        fason2: headers.findIndex(h => h === 'fason2' || h.includes('fason 2')),
         uretim2: headers.findIndex(h => h.includes('üretilen adet 2') || h.includes('uretilen adet 2')),
         durus2: headers.findIndex(h => h.includes('duruş süresi 2') || h.includes('durus suresi 2')),
+        durus2: headers.findIndex(h => h.includes('duruş süresi 2') || h.includes('durus suresi 2') || h.includes('duruş 2')),
         perf1: headers.findIndex(h => h.includes('yüzdesi (performans)') && !h.includes('2')),
         perf2: headers.findIndex(h => h.includes('yüzdesi (performans)2')),
+        perf2: headers.findIndex(h => h.includes('yüzdesi (performans)2') || (h.includes('performans') && h.includes('2'))),
         hedef1: headers.findIndex(h => (h.includes('üretilmesi gereken') && h.includes('1')) || h === 'hedef 1'),
         hedef2: headers.findIndex(h => (h.includes('üretilmesi gereken') && (h.includes('2') || h.includes('adet2'))) || h === 'hedef 2'),
         toplamUretim: headers.findIndex(h => h.includes('toplam üretilen')),
         toplamPerf: headers.findIndex(h => h.includes('günlük toplam performans')),
+        toplamUretim: headers.findIndex(h => h.includes('toplam üretilen') || h.includes('toplam uretilen')),
+        toplamPerf: headers.findIndex(h => h.includes('günlük toplam performans') || h.includes('gunluk toplam performans')),
     };
 
     const tN=v=>{if(!v||v==='-')return 0; return parseFloat(v.toString().replace(/\./g,'').replace(',','.').replace('%',''))||0;};
