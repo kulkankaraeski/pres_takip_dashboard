@@ -939,24 +939,20 @@ function applyRoleRestrictions() {
     document.querySelectorAll('.nav-tab, #nav-dropdown-raporlar').forEach(el => el.style.display = '');
     const adminBtn = $('nav-admin');
     if(adminBtn) adminBtn.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
-    const adminOpt=document.querySelector('#mobile-nav-sel option[value="admin"]');
-    if(adminOpt) adminOpt.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
     
     if (LOGGED_IN_USER && LOGGED_IN_USER.role !== 'admin') {
         adminSettings.hiddenTabs.forEach(tab => {
-            const navEl = document.querySelector(`#main-nav div[onclick*="'${tab}'"]`);
+            const navEl = document.querySelector(`.nav-tab[onclick*="'${tab}'"]`);
             if(navEl) navEl.style.display = 'none';
-            const opt = document.querySelector(`#mobile-nav-sel option[value="${tab}"]`);
-            if(opt) opt.style.display = 'none';
         });
         
         if(adminSettings.hiddenTabs.includes(cTab)) {
-            const firstVisible = Array.from(document.querySelectorAll('#main-nav div')).find(el => el.style.display !== 'none' && el.id !== 'nav-admin');
+            const firstVisible = Array.from(document.querySelectorAll('.nav-tab')).find(el => el.style.display !== 'none' && el.id !== 'nav-admin');
             if(firstVisible) {
                 const t = firstVisible.getAttribute('onclick').match(/'([^']+)'/)[1];
                 swT(t, firstVisible);
             } else {
-                swT('gunluk', document.querySelector(`#main-nav div[onclick*="'gunluk'"]`));
+                swT('gunluk', document.querySelector(`.nav-tab[onclick*="'gunluk'"]`));
             }
         }
     }
@@ -1323,8 +1319,8 @@ function fetchCSV(isBg = false) {
         // FIX #5: Aktif sekmenin nav elementini cTab'a göre güvenilir şekilde bul.
         // Eski kod: querySelector('.text-accent.border-accent') — veri yüklenirken henüz
         // class atanmamış olabiliyor ve fallback her zaman ilk sekmeyi döndürüyordu.
-        const activeNavEl = document.querySelector(`#main-nav div[onclick*="'${cTab}'"]`);
-        swT(cTab, activeNavEl || document.querySelector('#main-nav div'));
+        const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
+        swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
     }).catch(e=>{
         $('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';
         if(!isBg) toast('Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
@@ -1336,14 +1332,16 @@ const savedUser = sessionStorage.getItem('loggedUser');
 if(savedUser) {
     LOGGED_IN_USER = JSON.parse(savedUser);
     $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
-    if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
-        $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
-        $('user-avatar').classList.remove('hidden');
-    }
     $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
     applyRoleRestrictions();
-    checkNotifs();
-        fetchUsers().then(() => fetchCSV());
+    fetchUsers().then(() => {
+        if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
+            $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
+            $('user-avatar').classList.remove('hidden');
+        }
+        checkNotifs();
+        fetchCSV();
+    });
 } else {
     showLogin();
 }
