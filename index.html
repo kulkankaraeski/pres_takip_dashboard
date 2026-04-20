@@ -31,8 +31,8 @@
         }
         body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.3s, color 0.3s;}
         ::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-track{background:#1a1d17} ::-webkit-scrollbar-thumb{background:#2a3024;border-radius:4px}
-        .panel{display:none;opacity:0;transition:opacity 0.3s} .panel.active{display:block;opacity:1;animation:fadeIn 0.4s forwards}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)}}
+        .panel{display:none;opacity:0;} .panel.active{display:block;opacity:1;animation:slideIn 0.35s ease-out forwards}
+        @keyframes slideIn{from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)}}
         .skeleton{background:linear-gradient(90deg,#1c2018 25%,#2a3024 50%,#1c2018 75%);background-size:200% 100%;animation:skel 1.5s infinite;border-radius:4px}
         @keyframes skel{0%{background-position:200% 0} 100%{background-position:-200% 0}}
         .emp-link{cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-color:#2a3024;transition:all 0.2s}
@@ -145,7 +145,7 @@
         </div>
     </header>
 
-    <div class="main-content flex-1 flex flex-col min-h-0">
+    <div class="main-content flex-1 flex flex-col min-h-0 overflow-x-hidden">
     <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2 p-1.5 md:p-2 rounded-lg border border-border shrink-0 shadow-sm" id="main-nav">
         <div onclick="swT('gunluk',this)" class="nav-btn bg-accent text-bg2 border-accent shadow-md">GÜNLÜK RAPOR</div>
         <div onclick="swT('haftalik',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">HAFTALIK RAPOR</div>
@@ -156,6 +156,7 @@
         <div onclick="swT('fason',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">FASON DETAY</div>
         <div onclick="swT('kaliphane',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">KALIPHANE</div>
         <div onclick="swT('kayitlar',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
+        <div onclick="swT('plan',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM PLANI</div>
         <div onclick="swT('form',this)" class="nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ GİRİŞ FORMU</div>
         <div id="nav-admin" onclick="swT('admin',this)" class="nav-btn hidden bg-bg3 text-accent2 border-border hover:bg-border">YÖNETİM PANELİ</div>
     </nav>
@@ -341,6 +342,17 @@
             </div>
         </div>
 
+        <div class="panel hidden" id="panel-plan">
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col h-[75vh] shadow-sm">
+                <div class="p-3 md:p-4 border-b border-border flex justify-between items-center bg-bg3 shrink-0">
+                    <span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM PLANI</span>
+                    <a href="https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?usp=sharing" target="_blank" class="px-3 py-1 bg-accent/20 text-accent hover:bg-accent hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">🔗 YENİ SEKMEDE AÇ</a>
+                </div>
+                <!-- Google E-Tablo Embed -->
+                <iframe id="plan-frame" src="" class="w-full flex-1 border-none bg-[#ffffff]"></iframe>
+            </div>
+        </div>
+
         <div class="panel hidden" id="panel-admin">
             <div class="bg-bg2 border border-border rounded p-6 max-w-5xl mx-auto shadow-lg">
                 <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">YÖNETİM PANELİ</h2>
@@ -498,7 +510,7 @@ function swT(t,el){
     el.classList.add('bg-accent', 'text-bg2', 'border-accent', 'shadow-md');
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
     if(!RAW.length)return;
-    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='kayitlar')rKayitlar(); if(t==='admin')rAdmin();
+    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='kayitlar')rKayitlar(); if(t==='plan')rPlan(); if(t==='admin')rAdmin();
 }
 
 // Tema Değiştirme
@@ -621,6 +633,13 @@ function rKayitlar() {
     }
     $('th-kayit').innerHTML = `<tr>${DENEME_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
     $('tb-kayit').innerHTML = DENEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx})">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
+}
+
+function rPlan() {
+    const frame = $('plan-frame');
+    if(frame && !frame.src) {
+        frame.src = "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?embedded=true";
+    }
 }
 
 // ETKİLEŞİM & MODALLAR
@@ -940,7 +959,7 @@ function rAdmin() {
     const allTabs = [
         {id: 'gunluk', name: 'GÜNLÜK RAPOR'}, {id: 'haftalik', name: 'HAFTALIK RAPOR'}, {id: 'aylik', name: 'AYLIK RAPOR'},
         {id: 'genel', name: 'GENEL ÖZET'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
-        {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'},
+        {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
         {id: 'form', name: 'VERİ GİRİŞ FORMU'}
     ];
     $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-3 p-2 hover:bg-bg3 rounded cursor-pointer border border-transparent hover:border-border transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-bebas tracking-wider text-text2">${t.name}</span></label>`).join('');
