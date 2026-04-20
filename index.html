@@ -996,7 +996,7 @@ function parseKalip(t){
     hCols.forEach((col, i) => {
         const low = col.toLowerCase();
         if(low.includes('fason') || low.includes('kalıp')) idxF = i;
-        if(low.includes('lokasyon') || low.includes('yer')) idxL = i;
+        if(low.includes('lokasyon') || low.includes('yer') || low.includes('raf')) idxL = i;
     });
     for(let i=1;i<l.length;i++){
         let c=[], cur='', iQ=false;
