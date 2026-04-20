@@ -601,8 +601,8 @@ function rKayitlar() {
         $('tb-kayit').innerHTML = '<tr><td class="p-4 text-text3">Veri bulunamadı veya sayfa boş.</td></tr>';
         return;
     }
-    $('th-kayit').innerHTML = th(DENEME_RAW.h);
-    $('tb-kayit').innerHTML = DENEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs cursor-pointer transition-colors" onclick="openGenericModal(${idx})">${row.map(c=>`<td class="p-2 whitespace-nowrap">${c}</td>`).join('')}</tr>`).join('');
+    $('th-kayit').innerHTML = `<tr>${DENEME_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
+    $('tb-kayit').innerHTML = DENEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx})">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
 }
 
 // ETKİLEŞİM & MODALLAR
