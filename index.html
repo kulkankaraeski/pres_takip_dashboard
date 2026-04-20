@@ -430,6 +430,17 @@ function isoW(d){const[D,M,Y]=d.split('.').map(Number);const dt=new Date(Y,M-1,D
 function calc(arr){return{u:arr.reduce((s,r)=>s+r.tU,0),b:arr.reduce((s,r)=>s+r.tB,0),p:arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0,d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
 const cR=(v,a=1)=>`rgba(${getComputedStyle(document.documentElement).getPropertyValue('--c-'+v).trim()},${a})`;
 
+// TOAST BİLDİRİM
+function toast(msg, type='ok') {
+    const t = document.createElement('div');
+    t.className = `toast-el toast-${type}`;
+    t.innerHTML = (type==='ok'?'✔ ':type==='err'?'✘ ':'⚠ ') + msg;
+    t.style.cssText = 'opacity:0;transform:translateY(8px)';
+    document.body.appendChild(t);
+    requestAnimationFrame(() => { t.style.opacity='1'; t.style.transform='translateY(0)'; });
+    setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),350); }, 3500);
+}
+
 // Renklendirilmiş & Sabit (Sticky) Tablo Başlıkları
 const thD=(cols)=>`<tr>${cols.map((c,i)=>{ let cls="sticky-th p-2 text-left font-mono text-[10px] border-b border-border uppercase whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1-th"; else if(i>=9&&i<=14) cls+=" kafa2-th"; else cls+=" text-text3 th-bg"; return `<th class="${cls}">${c}</th>`; }).join('')}</tr>`;
 const trD=(cols)=>`<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs">${cols.map((c,i)=>{ let cls="p-2 whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1"; else if(i>=9&&i<=14) cls+=" kafa2"; return `<td class="${cls}">${c}</td>`; }).join('')}</tr>`;
@@ -489,11 +500,11 @@ function fT(id,q){
 }
 
 function chD(x){const i=DATES.indexOf(sD); if(DATES[i+x]){sD=DATES[i+x]; rG();}}
-function pkD(v){const f=v.split('-').reverse().join('.'); if(DATES.includes(f)){sD=f; rG();}else alert('Veri yok');}
+function pkD(v){const f=v.split('-').reverse().join('.'); if(DATES.includes(f)){sD=f; rG();}else toast('Bu tarihte veri yok','warn');}
 function chW(x){const i=WEEKS.indexOf(sW); if(WEEKS[i+x]){sW=WEEKS[i+x]; rW();}}
-function pkW(v){if(WEEKS.includes(v)){sW=v; rW();}else alert('Veri yok');}
+function pkW(v){if(WEEKS.includes(v)){sW=v; rW();}else toast('Bu haftada veri yok','warn');}
 function chM(x){const i=MONTHS.indexOf(sM); if(MONTHS[i+x]){sM=MONTHS[i+x]; rM();}}
-function pkM(v){const f=v.split('-').reverse().join('.'); if(MONTHS.includes(f)){sM=f; rM();}else alert('Veri yok');}
+function pkM(v){const f=v.split('-').reverse().join('.'); if(MONTHS.includes(f)){sM=f; rM();}else toast('Bu ayda veri yok','warn');}
 
 function rG(){
     if(!sD)return; $('c-day').innerText=sD; $('d-pick').value=sD.split('.').reverse().join('-');
@@ -603,7 +614,7 @@ function showKpiDet(tab, type) {
     if(type === 'd') { data = dd.filter(r=>r.durus1>0 || r.durus2>0); title += ' Duruş Yapanlar'; }
     if(type === 'lo') { data = dd.filter(r=>r.tP>0 && r.tP<80); title += ' Düşük Performans (<%80)'; }
     if(type === 'hi') { data = dd.filter(r=>r.tP>=110); title += ' Yüksek Performans (≥%110)'; }
-    if(data.length > 0) openRecsModal(title.toUpperCase(), data); else alert("Bu kritere uygun kayıt bulunamadı.");
+    if(data.length > 0) openRecsModal(title.toUpperCase(), data); else toast("Bu kritere uygun kayıt bulunamadı.", "warn");
 }
 
 function handleChartClick(id, label) {
@@ -730,11 +741,21 @@ function popF(){
     if(!$('f-tarih').value) $('f-tarih').value=new Date().toISOString().split('T')[0];
 }
 
+function checkDuplicate(){
+    const trh=$('f-tarih').value.split('-').reverse().join('.');
+    const cal=$('f-calisan').value;
+    const warn=$('dup-warn'), txt=$('dup-warn-text');
+    if(!trh||!cal) { warn.classList.add('hidden'); return; }
+    const exists=RAW.some(r=>r.tarih===trh&&r.calisan===cal);
+    if(exists){ txt.innerText=`${cal} için ${trh} tarihinde kayıt zaten mevcut! Gönderirseniz hata alırsınız.`; warn.classList.remove('hidden'); }
+    else warn.classList.add('hidden');
+}
+
 async function submitForm(e){
     e.preventDefault();
     const trh=$('f-tarih').value.split('-').reverse().join('.'); const cal=$('f-calisan').value;
     if(RAW.some(r=>r.tarih===trh && r.calisan===cal)){
-        alert(`HATA: ${cal} isimli çalışan için ${trh} tarihinde zaten bir üretim kaydı bulunuyor!\n\n(Kural: Bir kişi aynı gün içinde sadece 1 kez form doldurabilir)`); return;
+        toast(`${cal} için ${trh} tarihinde kayıt zaten mevcut!`, 'err'); return;
     }
 
     const btn = e.target.querySelector('button[type="submit"]');
@@ -787,11 +808,15 @@ function applyRoleRestrictions() {
     document.querySelectorAll('#main-nav div').forEach(el => el.style.display = '');
     const adminBtn = $('nav-admin');
     if(adminBtn) adminBtn.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
+    const adminOpt=document.querySelector('#mobile-nav-sel option[value="admin"]');
+    if(adminOpt) adminOpt.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
     
     if (LOGGED_IN_USER && LOGGED_IN_USER.role !== 'admin') {
         adminSettings.hiddenTabs.forEach(tab => {
             const navEl = document.querySelector(`#main-nav div[onclick*="'${tab}'"]`);
             if(navEl) navEl.style.display = 'none';
+            const opt = document.querySelector(`#mobile-nav-sel option[value="${tab}"]`);
+            if(opt) opt.style.display = 'none';
         });
         
         if(adminSettings.hiddenTabs.includes(cTab)) {
@@ -922,7 +947,7 @@ function saveAdminSettings() {
     
     adminSettings = { hiddenTabs, roleOverrides };
     localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
-    alert('✔️ Yönetim ayarları başarıyla kaydedildi!');
+    toast('Yönetim ayarları başarıyla kaydedildi!', 'ok');
     applyRoleRestrictions();
 }
 
@@ -1057,7 +1082,10 @@ function fetchCSV(){
         // class atanmamış olabiliyor ve fallback her zaman ilk sekmeyi döndürüyordu.
         const activeNavEl = document.querySelector(`#main-nav div[onclick*="'${cTab}'"]`);
         swT(cTab, activeNavEl || document.querySelector('#main-nav div'));
-    }).catch(e=>{$('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';}).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false;});
+    }).catch(e=>{
+        $('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';
+        if(!isBg) toast('Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
+    }).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false; if(!isBg) hideLoader();});
 }
 
 // OTOMATİK GÜNCELLEME VE OTURUM KONTROLÜ
