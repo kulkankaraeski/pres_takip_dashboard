@@ -354,10 +354,17 @@
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col h-[75vh] shadow-sm">
                 <div class="p-3 md:p-4 border-b border-border flex justify-between items-center bg-bg3 shrink-0">
                     <span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM PLANI</span>
-                    <a href="https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?usp=sharing" target="_blank" class="px-3 py-1 bg-accent/20 text-accent hover:bg-accent hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">🔗 YENİ SEKMEDE AÇ</a>
+                    <div class="flex items-center gap-2 md:gap-3">
+                        <input type="text" onkeyup="fT('tb-plan',this.value)" placeholder="Plan Ara..." class="bg-bg2 border border-border text-text2 text-[10px] md:text-xs rounded px-2 py-1 outline-none focus:border-accent w-24 md:w-48">
+                        <a href="https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?usp=sharing" target="_blank" class="px-3 py-1.5 bg-accent/20 text-accent hover:bg-accent hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">🔗 YENİ SEKMEDE AÇ</a>
+                    </div>
                 </div>
-                <!-- Google E-Tablo Embed -->
-                <iframe id="plan-frame" src="" class="w-full flex-1 border-none bg-[#ffffff]"></iframe>
+                <div class="overflow-auto flex-1 bg-bg3">
+                    <table class="w-full text-left border-collapse" id="t-plan">
+                        <thead id="th-plan"></thead>
+                        <tbody id="tb-plan"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -442,7 +449,7 @@
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
 }
-let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
+let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, PLAN_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
@@ -457,6 +464,8 @@ const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm
 const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const pDENEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(DENEME_URL);
+const PLAN_URL = 'https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/gviz/tq?tqx=out:csv';
+const pPLAN_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(PLAN_URL);
 const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
 const pUSERS_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(USERS_URL);
 
@@ -658,10 +667,13 @@ function rKayitlar() {
 }
 
 function rPlan() {
-    const frame = $('plan-frame');
-    if(frame && !frame.src) {
-        frame.src = "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?embedded=true";
+    if(!PLAN_RAW.h.length) {
+        $('th-plan').innerHTML = '';
+        $('tb-plan').innerHTML = '<tr><td class="p-4 text-text3">Veri bulunamadı veya sayfa boş.</td></tr>';
+        return;
     }
+    $('th-plan').innerHTML = `<tr>${PLAN_RAW.h.map(c=>`<th class="sticky-th px-3 py-2 text-left font-mono text-[10px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg">${c}</th>`).join('')}</tr>`;
+    $('tb-plan').innerHTML = PLAN_RAW.r.map((row) => `<tr class="hover:bg-bg2 border-b border-border/50 text-[11px] md:text-xs transition-colors cursor-default">${row.map(c=>`<td class="px-3 py-2 whitespace-nowrap">${c||'-'}</td>`).join('')}</tr>`).join('');
 }
 
 // ETKİLEŞİM & MODALLAR
@@ -816,6 +828,8 @@ async function submitForm(e){
     if(RAW.some(r=>r.tarih===trh && r.calisan===cal)){
         toast(`${cal} için ${trh} tarihinde kayıt zaten mevcut!`, 'err'); return;
     }
+
+    if(!confirm('Bu veriyi kaydetmek ve göndermek istediğinize emin misiniz?')) return;
 
     const btn = e.target.querySelector('button[type="submit"]');
     const origTxt = btn.innerHTML;
@@ -1121,11 +1135,13 @@ function fetchCSV(isBg = false) {
     Promise.all([
         fetch(URL,{cache:'no-store'}).catch(()=>fetch(pURL)).then(r=>{if(!r.ok)throw 'Hata';return r.text();}),
         fetch(KALIP_URL,{cache:'no-store'}).catch(()=>fetch(pKALIP_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
-        fetch(DENEME_URL,{cache:'no-store'}).catch(()=>fetch(pDENEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
-    ]).then(([t, k_text, d_text]) => {
+        fetch(DENEME_URL,{cache:'no-store'}).catch(()=>fetch(pDENEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
+        fetch(PLAN_URL,{cache:'no-store'}).catch(()=>fetch(pPLAN_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
+    ]).then(([t, k_text, d_text, p_text]) => {
         RAW=parse(t);
         KALIP_RAW=parseKalip(k_text);
         DENEME_RAW=parseGeneric(d_text);
+        PLAN_RAW=parseGeneric(p_text);
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
