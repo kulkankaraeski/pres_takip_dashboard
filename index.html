@@ -428,6 +428,7 @@ function n(v){return v>0?v.toLocaleString('tr-TR'):'-';}
 function pb(p){const c=p>=120?'bg-accent/20 text-accent':p>=90?'bg-accent4/20 text-accent4':p>=70?'bg-accent2/20 text-accent2':'bg-accent3/20 text-accent3'; return `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${c}">${p.toFixed(1)}%</span>`;}
 function isoW(d){const[D,M,Y]=d.split('.').map(Number);const dt=new Date(Y,M-1,D);dt.setDate(dt.getDate()+4-(dt.getDay()||7));return `${dt.getFullYear()}-W${String(Math.ceil((((dt-new Date(dt.getFullYear(),0,1))/86400000)+1)/7)).padStart(2,'0')}`;}
 function calc(arr){return{u:arr.reduce((s,r)=>s+r.tU,0),b:arr.reduce((s,r)=>s+r.tB,0),p:arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0,d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
+const cR=(v,a=1)=>`rgba(${getComputedStyle(document.documentElement).getPropertyValue('--c-'+v).trim()},${a})`;
 
 // Renklendirilmiş & Sabit (Sticky) Tablo Başlıkları
 const thD=(cols)=>`<tr>${cols.map((c,i)=>{ let cls="sticky-th p-2 text-left font-mono text-[10px] border-b border-border uppercase whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1-th"; else if(i>=9&&i<=14) cls+=" kafa2-th"; else cls+=" text-text3 th-bg"; return `<th class="${cls}">${c}</th>`; }).join('')}</tr>`;
@@ -447,8 +448,8 @@ function mc(id,t,d,o={}){
         onClick: (e, elements, chart) => {
             if(elements.length > 0) { const label = String(chart.data.labels[elements[0].index]); handleChartClick(id, label); }
         },
-        plugins:{legend:{labels:{color:'#8a9680',font:{family:"'JetBrains Mono'",size:10}}}},
-        scales:{x:{grid:{color:'rgba(42,48,36,.4)'},ticks:{color:'#8a9680',font:{size:9}}},y:{grid:{color:'rgba(42,48,36,.4)'},ticks:{color:'#8a9680',font:{size:9}}}}
+        plugins:{legend:{labels:{color:cR('text3'),font:{family:"'JetBrains Mono'",size:10}}}},
+        scales:{x:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}},y:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}}}
     }; 
     if(o.y)c.scales.y=o.y; if(o.x)c.scales.x=o.x; if(o.idx)c.indexAxis=o.idx; 
     charts[id]=new Chart(el,{type:t,data:d,options:c});
@@ -465,6 +466,20 @@ function swT(t,el){
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
     if(!RAW.length)return;
     if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='kayitlar')rKayitlar(); if(t==='admin')rAdmin();
+}
+
+// Tema Değiştirme
+function toggleTheme() {
+    document.documentElement.classList.toggle('light-mode');
+    const isLight = document.documentElement.classList.contains('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    
+    $('favicon').href = isLight ? 'icon-512-light.png' : 'icon-512.png';
+    $('apple-touch-icon').href = isLight ? 'icon-192-light.png' : 'icon-192.png';
+    $('meta-theme-color').content = isLight ? '#f4f6f0' : '#121410';
+
+    const activeNavEl = document.querySelector(`#main-nav div[onclick*="'${cTab}'"]`);
+    if(RAW.length) swT(cTab, activeNavEl || document.querySelector('#main-nav div.active'));
 }
 
 // Arama
@@ -489,13 +504,13 @@ function rG(){
     const eM={}; dd.forEach(r=>{if(!eM[r.calisan])eM[r.calisan]={pSum:0,c:0}; eM[r.calisan].pSum+=r.tP; eM[r.calisan].c++;});
     const sr=Object.entries(eM).map(([c,v])=>({calisan:c, tP:v.pSum/v.c})).sort((a,b)=>b.tP-a.tP);
     
-    mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?'#a8e063bb':r.tP>=90?'#5bb8e8bb':r.tP>=70?'#f5c842bb':'#e86d3abb')}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
-    mc('c2','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,dd.length-sab-aks],backgroundColor:['#a8e063bb','#5bb8e8bb','#f5c842bb']}]},{x:{display:false},y:{display:false}});
+    mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?cR('accent',0.75):r.tP>=90?cR('accent4',0.75):r.tP>=70?cR('accent3',0.75):cR('accent2',0.75))}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
+    mc('c2','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,dd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
     // FIX #2: c3 artık HTML'de var, pres kullanım grafiği çiziliyor
     const pm={}; dd.forEach(r=>{if(r.pres1)pm[r.pres1]=(pm[r.pres1]||0)+r.uretim1; if(r.pres2)pm[r.pres2]=(pm[r.pres2]||0)+r.uretim2;});
     const ps=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,12);
-    mc('c3','bar',{labels:ps.map(x=>x[0]),datasets:[{label:'Üretim (Adet)',data:ps.map(x=>x[1]),backgroundColor:'#a8e063bb'}]});
+    mc('c3','bar',{labels:ps.map(x=>x[0]),datasets:[{label:'Üretim (Adet)',data:ps.map(x=>x[1]),backgroundColor:cR('accent',0.75)}]});
     
     $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
     $('tb-gun').innerHTML=dd.map((r,i)=>trD([
@@ -511,8 +526,8 @@ function rW(){
     const wd=RAW.filter(r=>isoW(r.tarih)===sW), s=calc(wd);
     $('w-kpi').innerHTML=card('border-l-accent','Haftalık Üretim',n(s.u),'Adet',`showKpiDet('w','u')`)+card('border-l-accent4','Haftalık Perf',s.p.toFixed(1)+'%',s.c+' Kayıt',`showKpiDet('w','p')`)+card('border-l-accent2','Haftalık Duruş',n(s.d),'Dk',`showKpiDet('w','d')`)+card('border-l-accent3','Çalışılan Gün',new Set(wd.map(r=>r.tarih)).size,'Gün',`showKpiDet('w','c')`);
     const dt=[...new Set(wd.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,5), ...calc(wd.filter(r=>r.tarih===d))}));
-    mc('w1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:'#a8e063',backgroundColor:'#a8e06333',fill:true}]});
-    mc('w2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:'#5bb8e8',backgroundColor:'#5bb8e833',fill:true}]},{y:{min:60,max:130}});
+    mc('w1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
+    mc('w2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
     const ws=[...new Set(wd.map(r=>r.calisan))].map(w=>({w,...calc(wd.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     $('th-haf').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${w.w}')">${w.w}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
@@ -523,8 +538,8 @@ function rM(){
     const md=RAW.filter(r=>r.tarih.endsWith(sM)), s=calc(md);
     $('m-kpi').innerHTML=card('border-l-accent','Aylık Üretim',n(s.u),'Adet',`showKpiDet('m','u')`)+card('border-l-accent4','Aylık Perf',s.p.toFixed(1)+'%',s.c+' Kayıt',`showKpiDet('m','p')`)+card('border-l-accent2','Aylık Duruş',n(s.d),'Dk',`showKpiDet('m','d')`)+card('border-l-accent3','Çalışılan Gün',new Set(md.map(r=>r.tarih)).size,'Gün',`showKpiDet('m','c')`);
     const dt=[...new Set(md.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,2), ...calc(md.filter(r=>r.tarih===d))}));
-    mc('m1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:'#a8e063',backgroundColor:'#a8e06333',fill:true}]});
-    mc('m2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:'#5bb8e8',backgroundColor:'#5bb8e833',fill:true}]},{y:{min:60,max:130}});
+    mc('m1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
+    mc('m2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
     const ws=[...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${w.w}')">${w.w}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
@@ -533,16 +548,16 @@ function rM(){
 function rH(){
     const s=calc(RAW); $('h-kpi').innerHTML=card('border-l-accent','Genel Üretim',n(s.u),'Tümü',`showKpiDet('h','u')`)+card('border-l-accent4','Genel Perf',s.p.toFixed(1)+'%',s.c+' Kayıt',`showKpiDet('h','p')`)+card('border-l-accent2','Genel Duruş',n(s.d),'Dk',`showKpiDet('h','d')`)+card('border-l-accent3','Kayıtlı Gün',DATES.length,'Gün',`showKpiDet('h','c')`);
     const dt=DATES.map(d=>({l:d.slice(0,5), ...calc(RAW.filter(r=>r.tarih===d))}));
-    mc('h1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:'#a8e063',backgroundColor:'#a8e06333',fill:true}]});
-    mc('h2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:'#5bb8e8',backgroundColor:'#5bb8e833',fill:true}]},{y:{min:60,max:130}});
+    mc('h1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
+    mc('h2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
     const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u).slice(0,10);
     // FIX #4: x.w.calisan her zaman undefined'dı (x.w zaten string). Düzeltildi.
-    mc('h3','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:'#a8e063bb'}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
+    mc('h3','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
 }
 
 function rC(){
     const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
-    mc('ca1','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:'#a8e063bb'}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
+    mc('ca1','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
     $('th-cal').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-cal').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${w.w}')">${w.w}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
 }
@@ -550,7 +565,7 @@ function rC(){
 function rP(){
     const pM={}; RAW.forEach(r=>{[1,2].forEach(i=>{const p=r['pres'+i]; if(p){if(!pM[p])pM[p]={b:0,u:0,pp:[],d:0,c:0}; pM[p].b+=r['beklenen'+i]; pM[p].u+=r['uretim'+i]; if(r['perf'+i])pM[p].pp.push(r['perf'+i]); pM[p].d+=r['durus'+i]; pM[p].c++;}});});
     const pl=Object.entries(pM).map(([p,v])=>({p, b:v.b, u:v.u, d:v.d, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
-    mc('p1','bar',{labels:pl.map(x=>x.p),datasets:[{label:'Üretim',data:pl.map(x=>x.u),backgroundColor:'#a8e063bb'}]});
+    mc('p1','bar',{labels:pl.map(x=>x.p),datasets:[{label:'Üretim',data:pl.map(x=>x.u),backgroundColor:cR('accent',0.75)}]});
     $('th-pre').innerHTML=th(['Pres','Hedef (Adet)','Top.Üretim','Ort.Perf','Kayıt','Duruş (Dk)']);
     $('tb-pre').innerHTML=pl.map(x=>tr([`<b>${x.p}</b>`, n(x.b), n(x.u), pb(x.a), x.c, n(x.d)])).join('');
 }
@@ -558,8 +573,8 @@ function rP(){
 function rF(){
     const fM={}; RAW.forEach(r=>{[1,2].forEach(i=>{const f=r['fason'+i]; if(f){if(!fM[f])fM[f]={b:0,u:0,pp:[],c:0}; fM[f].b+=r['beklenen'+i]; fM[f].u+=r['uretim'+i]; if(r['perf'+i])fM[f].pp.push(r['perf'+i]); fM[f].c++;}});});
     const fl=Object.entries(fM).map(([f,v])=>({f, b:v.b, u:v.u, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
-    mc('f1','bar',{labels:fl.slice(0,15).map(x=>x.f),datasets:[{label:'Üretim',data:fl.slice(0,15).map(x=>x.u),backgroundColor:'#a8e063bb'}]},{idx:'y'});
-    mc('f2','bar',{labels:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.f),datasets:[{label:'Perf %',data:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.a),backgroundColor:'#5bb8e8bb'}]},{idx:'y'});
+    mc('f1','bar',{labels:fl.slice(0,15).map(x=>x.f),datasets:[{label:'Üretim',data:fl.slice(0,15).map(x=>x.u),backgroundColor:cR('accent',0.75)}]},{idx:'y'});
+    mc('f2','bar',{labels:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.f),datasets:[{label:'Perf %',data:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.a),backgroundColor:cR('accent4',0.75)}]},{idx:'y'});
     $('th-fas').innerHTML=th(['Fason','Hedef (Adet)','Top.Üretim','Ort.Perf','Kayıt']);
     $('tb-fas').innerHTML=fl.map(x=>tr([`<b>${x.f}</b>`, n(x.b), n(x.u), pb(x.a), x.c])).join('');
 }
@@ -769,9 +784,9 @@ async function submitForm(e){
 // showLogin ve login fonksiyonlarında document.querySelector('.main-content') kullanılıyor.
 
 function applyRoleRestrictions() {
-    document.querySelectorAll('#main-nav div').forEach(el => el.style.display = 'block');
+    document.querySelectorAll('#main-nav div').forEach(el => el.style.display = '');
     const adminBtn = $('nav-admin');
-    if(adminBtn) adminBtn.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? 'block' : 'none';
+    if(adminBtn) adminBtn.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
     
     if (LOGGED_IN_USER && LOGGED_IN_USER.role !== 'admin') {
         adminSettings.hiddenTabs.forEach(tab => {
