@@ -24,7 +24,21 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // PWA şartını sağlamak için boş bir fetch dinleyicisi ekliyoruz.
-    // Canlı Google Sheets verilerini bozmamak için dosyaları her zaman internetten çekiyoruz.
-    event.respondWith(fetch(event.request).catch(() => new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')));
+    // Canlı Google Sheets verilerini bozmamak için Google isteklerini önbelleğe almıyoruz.
+    if (event.request.url.includes('google') || event.request.url.includes('script.google.com')) {
+        event.respondWith(fetch(event.request).catch(() => new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')));
+        return;
+    }
+    
+    // Diğer statik dosyalar için "Ağ Öncelikli (Network First)" stratejisi.
+    // Bu sayede uygulama dosyaları önbelleğe alınır, açılış hızı ciddi oranda artar.
+    event.respondWith(
+        fetch(event.request)
+            .then(response => {
+                const responseClone = response.clone();
+                caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
+                return response;
+            })
+            .catch(() => caches.match(event.request).then(res => res || new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')))
+    );
 });
