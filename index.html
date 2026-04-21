@@ -384,7 +384,7 @@
                     <div class="bg-bg3 border border-border rounded p-4">
                         <h3 class="font-bebas text-xl text-accent2 mb-4 border-b border-border/50 pb-1 flex items-center gap-2">🔔 BİLDİRİM GÖNDER</h3>
                         <form id="admin-n-form" onsubmit="sendNotif(event)" class="space-y-3">
-                            <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kullanıcı Seçin</label><select id="admin-n-user" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div>
+                            <div><label class="block text-[10px] text-text3 mb-1 uppercase">Hedef Seçin</label><select id="admin-n-user" required onchange="loadUserNotif(this.value)" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div>
                             <div><label class="block text-[10px] text-text3 mb-1 uppercase">Mesajınız</label><textarea id="admin-n-msg" rows="3" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent resize-none"></textarea></div>
                             <div class="flex gap-2">
                                 <button type="submit" class="flex-1 px-3 py-2 bg-accent2 hover:bg-red-500 text-white rounded font-mono text-[10px] font-bold transition-colors">GÖNDER</button>
@@ -962,14 +962,11 @@ function checkNotifs() {
     const el = $('hdr-notif'); const txt = $('hdr-notif-text');
     if(!LOGGED_IN_USER) return;
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
-    let msg = an[LOGGED_IN_USER.name];
+    let msg = an[LOGGED_IN_USER.name] || an['GLOBAL'];
     if(msg) {
         txt.innerText = msg;
         el.dataset.msg = msg;
         el.classList.remove('hidden'); el.classList.add('flex');
-        
-        // Yöneticiler girdiği anda kendi gönderme ekranına kullanıcının seçili olmasını sağlar
-        if($('admin-n-user') && LOGGED_IN_USER.role === 'admin') { $('admin-n-user').value = LOGGED_IN_USER.name; $('admin-n-msg').value = msg; }
     } else {
         el.classList.add('hidden'); el.classList.remove('flex');
     }
@@ -1105,17 +1102,23 @@ function rAdmin() {
     ];
     $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
     
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
-        const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
+        const hasNotif = an[u] ? `<span class="px-1.5 py-0.5 bg-accent3/20 text-accent3 rounded text-[9px] ml-2 cursor-help" title="${an[u]}">🔔 BİLDİRİM</span>` : '';
+        const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border border-border">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
         const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold">YÖNETİCİ</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px]">ÜYE</span>';
-        return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3 font-bold text-text">${u}</td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
+        return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3"><div class="flex items-center gap-2"><span class="font-bold text-text">${u}</span>${hasNotif}</div></td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
     }).join('');
     
-    $('admin-n-user').innerHTML = '<option value="">Seçiniz...</option>' + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+    const globalNotif = an['GLOBAL'] ? ' (Aktif Mesaj Var)' : '';
+    $('admin-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER${globalNotif}</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+    loadUserNotif($('admin-n-user').value);
 }
 
 function saveUserObj(e) {
+async function saveUserObj(e) {
     e.preventDefault();
     const name = $('admin-u-name').value.trim();
     if(!name) return;
@@ -1123,10 +1126,28 @@ function saveUserObj(e) {
     const role = $('admin-u-role').value;
     const photo = $('admin-u-photo').value.trim();
     
+    // Yeni Eklenen: Google Sheets'e Kayıt Gönderme
+    const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
+    try {
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    } catch(err) { console.error('Kullanıcı Google Sheets\'e kaydedilirken hata oluştu:', err); }
+
     USER_DATA[name] = { pass, role, photo };
     let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
-    lu[name] = { pass, role, photo };
+    lu[name] = { pass, role, photo, deleted: false };
     localStorage.setItem('localUsers', JSON.stringify(lu));
+    
+    if (LOGGED_IN_USER && LOGGED_IN_USER.name === name) {
+        LOGGED_IN_USER.role = role;
+        sessionStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
+        if (photo) {
+            $('user-avatar').src = photo;
+            $('user-avatar').classList.remove('hidden');
+        } else {
+            $('user-avatar').classList.add('hidden');
+        }
+        applyRoleRestrictions();
+    }
     
     rAdmin(); $('admin-u-form').reset(); toast('Kullanıcı bilgileri kaydedildi.', 'ok');
 }
@@ -1137,6 +1158,8 @@ function editUser(name) {
     $('admin-u-pass').value = u.pass || '';
     $('admin-u-role').value = u.role || 'user';
     $('admin-u-photo').value = u.photo || '';
+    $('admin-u-form').scrollIntoView({behavior: 'smooth', block: 'center'});
+    $('admin-u-name').focus();
 }
 
 function deleteUser(name) {
@@ -1150,6 +1173,12 @@ function deleteUser(name) {
     }
 }
 
+function loadUserNotif(user) {
+    if(!user) { $('admin-n-msg').value = ''; return; }
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    $('admin-n-msg').value = an[user] || '';
+}
+
 function sendNotif(e) {
     e.preventDefault();
     const user = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
@@ -1157,15 +1186,16 @@ function sendNotif(e) {
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
     an[user] = msg;
     localStorage.setItem('appNotifs', JSON.stringify(an));
-    toast(user + ' kullanıcısına bildirim gönderildi.', 'ok'); checkNotifs();
+    toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
+    checkNotifs(); rAdmin();
 }
 
 function clearNotif() {
-    const user = $('admin-n-user').value; if(!user) return toast('Önce bir kullanıcı seçin.', 'warn');
+    const user = $('admin-n-user').value; if(!user) return toast('Önce bir hedef seçin.', 'warn');
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
     delete an[user]; localStorage.setItem('appNotifs', JSON.stringify(an));
     $('admin-n-msg').value = '';
-    toast('Kullanıcının mevcut bildirimi silindi.', 'ok'); checkNotifs();
+    toast('Mevcut bildirim silindi.', 'ok'); checkNotifs(); rAdmin();
 }
 
 function saveAdminSettings() {
