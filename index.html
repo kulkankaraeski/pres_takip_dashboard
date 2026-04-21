@@ -12,27 +12,43 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
-        tailwind.config={theme:{extend:{colors:{bg:'#121410',bg2:'#1a1d17',bg3:'#22261e',border:'#2a3024',text:'#e0e2db',text2:'#a3a89e',text3:'#5e6358',accent:'#a8e063',accent2:'#e86d3a',accent3:'#f5c842',accent4:'#5bb8e8'},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace'],bebas:['Bebas Neue','sans-serif']}}}}
+        tailwind.config={theme:{extend:{colors:{bg:'var(--bg)',bg2:'var(--bg2)',bg3:'var(--bg3)',border:'var(--border)',text:'var(--text)',text2:'var(--text2)',text3:'var(--text3)',accent:'var(--accent)',accent2:'var(--accent2)',accent3:'var(--accent3)',accent4:'var(--accent4)'},fontFamily:{sans:['Inter','sans-serif'],mono:['Fira Code','monospace'],bebas:['Poppins','sans-serif']}}}}
     </script>
     <style>
-        body{background-color:#121410;color:#e0e2db;font-family:'Inter',sans-serif}
-        ::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-track{background:#1a1d17} ::-webkit-scrollbar-thumb{background:#2a3024;border-radius:4px}
-        .panel{display:none;opacity:0;transition:opacity 0.3s} .panel.active{display:block;opacity:1;animation:fadeIn 0.4s forwards}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)}}
+        :root {
+            --bg: #0f172a; --bg2: #1e293b; --bg3: #334155; --border: #475569;
+            --text: #f8fafc; --text2: #cbd5e1; --text3: #94a3b8;
+            --accent: #3b82f6; --accent2: #ef4444; --accent3: #f59e0b; --accent4: #10b981;
+            --c-accent: 59, 130, 246; --c-accent2: 239, 68, 68; --c-accent3: 245, 158, 11; --c-accent4: 16, 185, 129; --c-border: 71, 85, 105; --c-text3: 148, 163, 184;
+        }
+        .light-mode {
+            --bg: #f8fafc; --bg2: #f1f5f9; --bg3: #e2e8f0; --border: #cbd5e1;
+            --text: #0f172a; --text2: #334155; --text3: #64748b;
+            --accent: #2563eb; --accent2: #dc2626; --accent3: #d97706; --accent4: #059669;
+            --c-accent: 37, 99, 235; --c-accent2: 220, 38, 38; --c-accent3: 217, 119, 6; --c-accent4: 5, 150, 105; --c-border: 203, 213, 225; --c-text3: 100, 116, 139;
+        }
+        body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.3s, color 0.3s;}
+        ::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-track{background:var(--bg2)} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+        .panel{display:none;opacity:0;} .panel.active{display:block;opacity:1;animation:slideIn 0.35s ease-out forwards}
+        @keyframes slideIn{from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)}}
         .skeleton{background:linear-gradient(90deg,#1c2018 25%,#2a3024 50%,#1c2018 75%);background-size:200% 100%;animation:skel 1.5s infinite;border-radius:4px}
         @keyframes skel{0%{background-position:200% 0} 100%{background-position:-200% 0}}
         .emp-link{cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-color:#2a3024;transition:all 0.2s}
         .emp-link:hover{color:#a8e063;text-decoration-color:#a8e063}
         
+        /* Panel Görünümlü Navigasyon Butonları (Mobil Uyumlu) */
+        .nav-btn { flex: 1 1 auto; text-align: center; padding: 8px 12px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; font-size: 13px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease-in-out; border-width: 1px; white-space: nowrap; user-select: none; }
+        @media (max-width: 768px) { .nav-btn { font-size: 11px; padding: 6px 8px; flex-basis: 30%; } }
+        
         /* Tablo Başlık Sabitleme & Renkler */
         .sticky-th { position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .th-bg { background-color: #22261e; }
-        .kafa1 { background-color: rgba(91, 184, 232, 0.08); color: #93c5fd; }
-        .kafa2 { background-color: rgba(232, 109, 58, 0.08); color: #fdba74; }
-        .kafa1-th { background-color: #1a2a30; color: #5bb8e8; }
-        .kafa2-th { background-color: #332015; color: #e86d3a; }
+        .th-bg { background-color: var(--bg3); }
+        .kafa1 { background-color: rgba(var(--c-accent), 0.08); color: var(--accent); }
+        .kafa2 { background-color: rgba(var(--c-accent3), 0.08); color: var(--accent3); }
+        .kafa1-th { background-color: rgba(var(--c-accent), 0.15); color: var(--accent); }
+        .kafa2-th { background-color: rgba(var(--c-accent3), 0.15); color: var(--accent3); }
 
         /* Ayın Elemanı Animasyonları */
         .ayin-elemani { background: linear-gradient(90deg, #f5c842, #ff9b44, #f5c842); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shineText 3s linear infinite; }
@@ -50,8 +66,8 @@
             body { 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important; 
-                background-color: #121410 !important; 
-                color: #e0e2db !important; 
+                background-color: #0f172a !important; 
+                color: #f8fafc !important; 
             }
             .panel:not(.active) { display: none !important; opacity: 0 !important; }
             .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
@@ -64,7 +80,7 @@
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
 
     <!-- GLOBAL YÜKLEME EKRANI -->
-    <div id="global-loader" class="fixed inset-0 bg-[#121410]/95 z-[9999] hidden flex-col items-center justify-center opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+    <div id="global-loader" class="fixed inset-0 bg-[var(--bg)]/95 z-[9999] hidden flex-col items-center justify-center opacity-0 transition-opacity duration-300 backdrop-blur-sm">
         
         <!-- KURUMSAL LOGO (PORLAND PORSELEN) -->
         <!-- Eğer elinizde resmi .png veya .svg dosyası varsa, hemen alt satırdaki yorumu açıp dosya adını 'src' kısmına yazabilirsiniz. -->
@@ -77,6 +93,12 @@
             </div>
             <div class="text-[10px] md:text-xs font-mono tracking-[8px] text-text3 mt-2 uppercase">
                 Porselen
+            </div>
+            
+            <!-- YENİ: BİLDİRİM KUTUSU (Varsayılan olarak gizli) -->
+            <div id="hdr-notif" class="hidden flex-col justify-center px-4 py-1.5 rounded bg-accent2/10 border border-accent2/30 cursor-pointer transition-transform hover:scale-105 max-w-[160px]" onclick="alert('BİLDİRİM MESAJI:\n\n' + this.dataset.msg)">
+                <span class="text-[9px] tracking-wider text-accent2 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
+                <span id="hdr-notif-text" class="text-[10px] font-mono text-text2 truncate leading-tight"></span>
             </div>
         </div>
 
@@ -114,9 +136,14 @@
 
         <div class="flex items-center gap-3 flex-shrink-0">
             <div id="user-info" class="hidden items-center gap-2 font-mono text-xs">
+                <!-- YENİ: KULLANICI AVATARI -->
+                <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border">
                 <span id="user-name" class="text-text2"></span>
                 <button onclick="logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors">ÇIKIŞ</button>
             </div>
+            <button onclick="toggleTheme()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm">
+                🌓 TEMA
+            </button>
             <button onclick="exportToPDF()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors">
                 📥 PDF İNDİR
             </button>
@@ -126,19 +153,28 @@
         </div>
     </header>
 
-    <div class="main-content flex-1 flex flex-col min-h-0">
-    <nav class="flex overflow-x-auto gap-2 border-b border-border pb-1 no-scrollbar shrink-0" id="main-nav">
-        <div onclick="swT('gunluk',this)" class="px-4 py-2 text-accent border-b-2 border-accent cursor-pointer font-bebas tracking-wider whitespace-nowrap">GÜNLÜK RAPOR</div>
-        <div onclick="swT('haftalik',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">HAFTALIK RAPOR</div>
-        <div onclick="swT('aylik',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">AYLIK RAPOR</div>
-        <div onclick="swT('genel',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">GENEL ÖZET</div>
-        <div onclick="swT('calisan',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">ÇALIŞAN PERFORMANSI</div>
-        <div onclick="swT('pres',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">PRES MAKİNE</div>
-        <div onclick="swT('fason',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">FASON DETAY</div>
-        <div onclick="swT('kaliphane',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">KALIPHANE</div>
-        <div onclick="swT('kayitlar',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
-        <div onclick="swT('form',this)" class="px-4 py-2 text-text2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-text">VERİ GİRİŞ FORMU</div>
-        <div id="nav-admin" onclick="swT('admin',this)" class="hidden px-4 py-2 text-accent2 border-b-2 border-transparent cursor-pointer font-bebas tracking-wider whitespace-nowrap hover:text-accent2">YÖNETİM PANELİ</div>
+    <div class="main-content flex-1 flex flex-col min-h-0 overflow-x-hidden">
+    <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2 p-1.5 md:p-2 rounded-lg border border-border shrink-0 shadow-sm" id="main-nav">
+        <!-- Raporlar Dropdown -->
+        <div class="relative flex-1 md:flex-none z-50" id="nav-dropdown-raporlar">
+            <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex');" class="nav-btn w-full bg-accent/20 text-accent border-accent flex justify-center items-center gap-2 outline-none">
+                📊 GÜNLÜK RAPOR <span class="text-[10px]">▼</span>
+            </button>
+            <div class="absolute left-0 top-full mt-1 hidden flex-col bg-bg2 border border-border rounded shadow-2xl min-w-[200px] w-full md:w-auto overflow-hidden">
+                <div onclick="swT('gunluk',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-accent text-bg2 shadow-md w-full text-left">GÜNLÜK RAPOR</div>
+                <div onclick="swT('haftalik',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">HAFTALIK RAPOR</div>
+                <div onclick="swT('aylik',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">AYLIK RAPOR</div>
+                <div onclick="swT('genel',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">GENEL ÖZET</div>
+                <div onclick="swT('calisan',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">ÇALIŞAN PERFORMANSI</div>
+                <div onclick="swT('pres',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">PRES MAKİNE</div>
+                <div onclick="swT('fason',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">FASON DETAY</div>
+            </div>
+        </div>
+        <div onclick="swT('kaliphane',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">KALIPHANE</div>
+        <div onclick="swT('kayitlar',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
+        <div onclick="swT('plan',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM PLANI</div>
+        <div onclick="swT('form',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ GİRİŞ FORMU</div>
+        <div id="nav-admin" onclick="swT('admin',this)" class="nav-tab nav-btn hidden bg-bg3 text-accent2 border-border hover:bg-border">YÖNETİM PANELİ</div>
     </nav>
 
     <main class="flex-1 relative min-h-[500px]">
@@ -322,25 +358,75 @@
             </div>
         </div>
 
-        <div class="panel hidden" id="panel-admin">
-            <div class="bg-bg2 border border-border rounded p-6 max-w-5xl mx-auto shadow-lg">
-                <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">YÖNETİM PANELİ</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="font-bebas text-xl text-accent2 mb-4 border-b border-border/50 pb-1">SAYFA GÖRÜNÜRLÜĞÜ (NORMAL KULLANICILAR)</h3>
-                        <div id="admin-tabs-list" class="space-y-2"></div>
+        <div class="panel hidden" id="panel-plan">
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col h-[80vh] shadow-sm relative" id="plan-container">
+                <div class="p-3 md:p-4 border-b border-border flex justify-between items-center bg-bg3 shrink-0">
+                    <span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM PLANI</span>
+                    <div class="flex items-center gap-2 md:gap-3">
+                        <button id="fs-btn" onclick="toggleFullScreen('plan-container')" class="px-3 py-1.5 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">⛶ TAM EKRAN</button>
+                        <a href="https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?usp=sharing" target="_blank" class="px-3 py-1.5 bg-accent/20 text-accent hover:bg-accent hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">🔗 YENİ SEKMEDE AÇ</a>
                     </div>
+                </div>
+                <!-- Iframe arka planı E-Tablo renkleri bozulmasın diye bg-white (beyaz) ayarlandı -->
+                <iframe id="plan-frame" src="" class="w-full flex-1 border-none bg-white"></iframe>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="panel-admin">
+            <div class="bg-bg2 border border-border rounded p-6 max-w-6xl mx-auto shadow-lg flex flex-col gap-8">
+                <div class="flex items-center justify-between border-b border-border pb-2">
+                    <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent">YÖNETİM PANELİ</h2>
+                    <button onclick="saveAdminSettings()" class="px-6 py-2 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono text-xs rounded transition-all transform hover:scale-105 shadow-lg">💾 AYARLARI KAYDET</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Bildirim Gönderme Modülü -->
+                    <div class="bg-bg3 border border-border rounded p-4">
+                        <h3 class="font-bebas text-xl text-accent2 mb-4 border-b border-border/50 pb-1 flex items-center gap-2">🔔 BİLDİRİM GÖNDER</h3>
+                        <form id="admin-n-form" onsubmit="sendNotif(event)" class="space-y-3">
+                            <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kullanıcı Seçin</label><select id="admin-n-user" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div>
+                            <div><label class="block text-[10px] text-text3 mb-1 uppercase">Mesajınız</label><textarea id="admin-n-msg" rows="3" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent resize-none"></textarea></div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="flex-1 px-3 py-2 bg-accent2 hover:bg-red-500 text-white rounded font-mono text-[10px] font-bold transition-colors">GÖNDER</button>
+                                <button type="button" onclick="clearNotif()" class="px-3 py-2 bg-bg hover:bg-border text-text2 rounded font-mono text-[10px] transition-colors border border-border">SİL</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Sayfa Görünürlüğü (Sekme İzinleri) -->
                     <div>
-                        <h3 class="font-bebas text-xl text-accent4 mb-4 border-b border-border/50 pb-1">KULLANICI ROLLERİ</h3>
-                        <div class="overflow-auto max-h-[400px] border border-border rounded bg-bg3">
-                            <table class="w-full text-left border-collapse text-sm">
-                                <thead><tr><th class="p-2 border-b border-border text-text3 font-mono sticky top-0 bg-bg3">Çalışan</th><th class="p-2 border-b border-border text-text3 font-mono sticky top-0 bg-bg3">Rol</th></tr></thead>
+                        <h3 class="font-bebas text-xl text-accent4 mb-4 border-b border-border/50 pb-1">SAYFA GÖRÜNÜRLÜĞÜ (ÜYELER)</h3>
+                        <div id="admin-tabs-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm"></div>
+                    </div>
+                </div>
+                
+                <!-- Gelişmiş Kullanıcı Yönetimi Modülü -->
+                <div>
+                    <h3 class="font-bebas text-xl text-accent mb-4 border-b border-border/50 pb-1">KULLANICI YÖNETİMİ</h3>
+                    <div class="flex flex-col lg:flex-row gap-6 items-start">
+                        <div class="w-full lg:w-1/3 bg-bg3 border border-border rounded p-4 sticky top-4">
+                            <h4 class="font-bebas text-lg text-text2 mb-3">YENİ EKLE / DÜZENLE</h4>
+                            <form id="admin-u-form" onsubmit="saveUserObj(event)" class="space-y-3">
+                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Ad Soyad</label><input type="text" id="admin-u-name" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Şifre</label><input type="text" id="admin-u-pass" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Rol</label><select id="admin-u-role" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="user">Üye (Normal)</option><option value="admin">Yönetici</option></select></div>
+                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Fotoğraf URL (İsteğe Bağlı)</label><input type="url" id="admin-u-photo" placeholder="https://..." class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                <div class="flex gap-2 pt-2">
+                                    <button type="submit" class="flex-1 px-3 py-2 bg-accent hover:bg-accent/80 text-bg2 rounded font-mono text-[10px] font-bold transition-colors">KAYDET</button>
+                                    <button type="button" onclick="$('admin-u-form').reset()" class="px-3 py-2 bg-bg hover:bg-border text-text2 rounded font-mono text-[10px] transition-colors border border-border">İPTAL</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="w-full lg:w-2/3 overflow-auto max-h-[500px] border border-border rounded bg-bg3">
+                            <table class="w-full text-left border-collapse text-xs md:text-sm">
+                                <thead><tr><th class="p-3 border-b border-border text-text3 font-mono sticky top-0 bg-bg3 w-10">Foto</th><th class="p-3 border-b border-border text-text3 font-mono sticky top-0 bg-bg3">Ad Soyad</th><th class="p-3 border-b border-border text-text3 font-mono sticky top-0 bg-bg3">Rol</th><th class="p-3 border-b border-border text-text3 font-mono sticky top-0 bg-bg3 text-right">İşlemler</th></tr></thead>
                                 <tbody id="admin-users-list"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-                <div class="mt-6 border-t border-border pt-4 flex justify-end"><button onclick="saveAdminSettings()" class="px-6 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105 shadow-lg">💾 AYARLARI KAYDET</button></div>
+
             </div>
         </div>
 
@@ -392,7 +478,15 @@
                 <select id="login-user" required class="w-full bg-bg3 border border-border text-text rounded p-3 outline-none focus:border-accent transition-colors text-center appearance-none cursor-pointer">
                     <option value="">Kullanıcı Seçiniz...</option>
                 </select>
-                <input type="password" id="login-pass" placeholder="Şifre" required class="w-full bg-bg3 border border-border text-text rounded p-3 outline-none focus:border-accent transition-colors text-center">
+                <div class="relative">
+                    <input type="password" id="login-pass" placeholder="Şifre" required class="w-full bg-bg3 border border-border text-text rounded py-3 px-10 outline-none focus:border-accent transition-colors text-center">
+                    <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-text3 hover:text-accent transition-colors outline-none" tabindex="-1">
+                        <!-- Açık Göz İkonu -->
+                        <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <!-- Kapalı Göz İkonu -->
+                        <svg id="eye-closed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 hidden"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                    </button>
+                </div>
                 <p id="login-error" class="text-accent2 text-xs h-4"></p>
                 <button type="submit" class="w-full px-6 py-3 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105">GİRİŞ YAP</button>
             </form>
@@ -400,12 +494,15 @@
     </div>
 
 <script>
+if (localStorage.getItem('theme') === 'light') {
+    document.documentElement.classList.add('light-mode');
+}
 let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
 let USER_DATA = {};
-let adminSettings = JSON.parse(localStorage.getItem('adminSettings')) || { hiddenTabs: [], roleOverrides: {} };
+let adminSettings = JSON.parse(localStorage.getItem('adminSettings')) || { hiddenTabs: [] };
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
 
@@ -459,7 +556,7 @@ function mc(id,t,d,o={}){
         onClick: (e, elements, chart) => {
             if(elements.length > 0) { const label = String(chart.data.labels[elements[0].index]); handleChartClick(id, label); }
         },
-        plugins:{legend:{labels:{color:cR('text3'),font:{family:"'JetBrains Mono'",size:10}}}},
+        plugins:{legend:{labels:{color:cR('text3'),font:{family:"'Fira Code'",size:10}}}},
         scales:{x:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}},y:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}}}
     }; 
     if(o.y)c.scales.y=o.y; if(o.x)c.scales.x=o.x; if(o.idx)c.indexAxis=o.idx; 
@@ -468,15 +565,29 @@ function mc(id,t,d,o={}){
 
 function swT(t,el){
     cTab=t; document.querySelectorAll('.panel').forEach(e=>{e.classList.remove('active','block');e.classList.add('hidden');});
-    document.querySelectorAll('#main-nav div').forEach(e=>{
-        e.classList.remove('text-accent','border-accent');
-        e.classList.add('text-text2','border-transparent');
+    document.querySelectorAll('.nav-tab').forEach(e=>{
+        e.classList.remove('bg-accent', 'text-bg2', 'border-accent', 'shadow-md');
+        e.classList.add('bg-bg3', 'text-text2', 'border-border', 'hover:bg-border', 'hover:text-text');
     });
-    el.classList.remove('text-text2','border-transparent');
-    el.classList.add('text-accent','border-accent');
+    el.classList.remove('bg-bg3', 'text-text2', 'border-border', 'hover:bg-border', 'hover:text-text');
+    el.classList.add('bg-accent', 'text-bg2', 'border-accent', 'shadow-md');
+    
+    const dropdownBtn = $('raporlar-btn');
+    const dropdownMenu = dropdownBtn?.nextElementSibling;
+    if (dropdownMenu) { dropdownMenu.classList.add('hidden'); dropdownMenu.classList.remove('flex'); }
+    if (dropdownBtn && el.closest('#nav-dropdown-raporlar')) {
+        dropdownBtn.innerHTML = '📊 ' + el.innerText + ' <span class="text-[10px]">▼</span>';
+        dropdownBtn.classList.add('bg-accent/20', 'text-accent', 'border-accent');
+        dropdownBtn.classList.remove('bg-bg3', 'text-text2', 'border-border');
+    } else if (dropdownBtn) {
+        dropdownBtn.innerHTML = '📊 RAPORLAR <span class="text-[10px]">▼</span>';
+        dropdownBtn.classList.remove('bg-accent/20', 'text-accent', 'border-accent');
+        dropdownBtn.classList.add('bg-bg3', 'text-text2', 'border-border');
+    }
+
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
     if(!RAW.length)return;
-    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='kayitlar')rKayitlar(); if(t==='admin')rAdmin();
+    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='kayitlar')rKayitlar(); if(t==='plan')rPlan(); if(t==='admin')rAdmin();
 }
 
 // Tema Değiştirme
@@ -484,13 +595,9 @@ function toggleTheme() {
     document.documentElement.classList.toggle('light-mode');
     const isLight = document.documentElement.classList.contains('light-mode');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    
-    $('favicon').href = isLight ? 'icon-512-light.png' : 'icon-512.png';
-    $('apple-touch-icon').href = isLight ? 'icon-192-light.png' : 'icon-192.png';
-    $('meta-theme-color').content = isLight ? '#f4f6f0' : '#121410';
 
-    const activeNavEl = document.querySelector(`#main-nav div[onclick*="'${cTab}'"]`);
-    if(RAW.length) swT(cTab, activeNavEl || document.querySelector('#main-nav div.active'));
+    const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
+    if(RAW.length) swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
 }
 
 // Arama
@@ -604,6 +711,29 @@ function rKayitlar() {
     $('th-kayit').innerHTML = `<tr>${DENEME_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
     $('tb-kayit').innerHTML = DENEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx})">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
 }
+
+function rPlan() {
+    const frame = $('plan-frame');
+    if(frame && !frame.src) {
+        // rm=minimal parametresi Google E-Tabloların üst menülerini gizler, daha profesyonel görünür.
+        frame.src = "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?embedded=true&rm=minimal";
+    }
+}
+
+function toggleFullScreen(id) {
+    const el = $(id);
+    if (!document.fullscreenElement) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    } else {
+        if (document.exitFullscreen) { document.exitFullscreen(); }
+        else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+        else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+    }
+}
+
+document.addEventListener('fullscreenchange', () => { const btn = $('fs-btn'); if(btn) btn.innerHTML = document.fullscreenElement ? '✖ ÇIKIŞ' : '⛶ TAM EKRAN'; });
 
 // ETKİLEŞİM & MODALLAR
 function showKpiDet(tab, type) {
@@ -758,6 +888,8 @@ async function submitForm(e){
         toast(`${cal} için ${trh} tarihinde kayıt zaten mevcut!`, 'err'); return;
     }
 
+    if(!confirm('Bu veriyi kaydetmek ve göndermek istediğinize emin misiniz?')) return;
+
     const btn = e.target.querySelector('button[type="submit"]');
     const origTxt = btn.innerHTML;
     btn.innerHTML = '⏳ KAYDEDİLİYOR...'; 
@@ -781,20 +913,19 @@ async function submitForm(e){
     };
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        await fetch(SCRIPT_URL, {
             method: 'POST',
-            redirect: 'follow', // Google script yönlendirmelerini takip edebilmek için şart
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORS (sunucu köken) kısıtlamalarına takılmamak için text/plain
+            mode: 'no-cors', // Opaque response göndererek CORS hatalarını baypas eder.
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        const out = await res.json();
-        if(out.status === 'success') { 
-            alert('✔️ BAŞARIYLA KAYDEDİLDİ!'); 
-            e.target.reset(); // Formu sıfırla
-            fetchCSV(); // Yeni veriyi Dashboard'a yansıt
-        } else throw new Error(out.message || 'Bilinmeyen Hata');
+        
+        toast('BAŞARIYLA KAYDEDİLDİ!', 'ok'); 
+        e.target.reset(); // Formu sıfırla
+        popF(); // Veri formunu başlangıç haline getir
+        setTimeout(() => fetchCSV(), 1000); // 1 saniye sonra verileri yenile
     } catch(err) {
-        alert('❌ HATA: ' + err.message + '\n\nSCRIPT_URL değerini eklediğinizden veya Sütun başlıklarının eşleştiğinden emin olun.');
+        alert('❌ GÖNDERİM HATASI: İnternet bağlantınızı kontrol edin.');
     } finally {
         btn.innerHTML = origTxt; btn.disabled = false;
     }
@@ -805,29 +936,42 @@ async function submitForm(e){
 // showLogin ve login fonksiyonlarında document.querySelector('.main-content') kullanılıyor.
 
 function applyRoleRestrictions() {
-    document.querySelectorAll('#main-nav div').forEach(el => el.style.display = '');
+    document.querySelectorAll('.nav-tab, #nav-dropdown-raporlar').forEach(el => el.style.display = '');
     const adminBtn = $('nav-admin');
     if(adminBtn) adminBtn.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
-    const adminOpt=document.querySelector('#mobile-nav-sel option[value="admin"]');
-    if(adminOpt) adminOpt.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
     
     if (LOGGED_IN_USER && LOGGED_IN_USER.role !== 'admin') {
         adminSettings.hiddenTabs.forEach(tab => {
-            const navEl = document.querySelector(`#main-nav div[onclick*="'${tab}'"]`);
+            const navEl = document.querySelector(`.nav-tab[onclick*="'${tab}'"]`);
             if(navEl) navEl.style.display = 'none';
-            const opt = document.querySelector(`#mobile-nav-sel option[value="${tab}"]`);
-            if(opt) opt.style.display = 'none';
         });
         
         if(adminSettings.hiddenTabs.includes(cTab)) {
-            const firstVisible = Array.from(document.querySelectorAll('#main-nav div')).find(el => el.style.display !== 'none' && el.id !== 'nav-admin');
+            const firstVisible = Array.from(document.querySelectorAll('.nav-tab')).find(el => el.style.display !== 'none' && el.id !== 'nav-admin');
             if(firstVisible) {
                 const t = firstVisible.getAttribute('onclick').match(/'([^']+)'/)[1];
                 swT(t, firstVisible);
             } else {
-                swT('gunluk', document.querySelector(`#main-nav div[onclick*="'gunluk'"]`));
+                swT('gunluk', document.querySelector(`.nav-tab[onclick*="'gunluk'"]`));
             }
         }
+    }
+}
+
+function checkNotifs() {
+    const el = $('hdr-notif'); const txt = $('hdr-notif-text');
+    if(!LOGGED_IN_USER) return;
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let msg = an[LOGGED_IN_USER.name];
+    if(msg) {
+        txt.innerText = msg;
+        el.dataset.msg = msg;
+        el.classList.remove('hidden'); el.classList.add('flex');
+        
+        // Yöneticiler girdiği anda kendi gönderme ekranına kullanıcının seçili olmasını sağlar
+        if($('admin-n-user') && LOGGED_IN_USER.role === 'admin') { $('admin-n-user').value = LOGGED_IN_USER.name; $('admin-n-msg').value = msg; }
+    } else {
+        el.classList.add('hidden'); el.classList.remove('flex');
     }
 }
 
@@ -842,7 +986,8 @@ async function fetchUsers() {
             const headers = lines[0].split(',').map(x=>x.replace(/"/g,'').trim().toLowerCase());
             let nameIdx = headers.findIndex(h => h.includes('çalışan') || h.includes('ad'));
             let passIdx = headers.findIndex(h => h.includes('şifre') || h.includes('sifre'));
-            let roleIdx = headers.findIndex(h => h.includes('rol'));
+            let roleIdx = headers.findIndex(h => h === 'rol' || h === 'yetki');
+            let photoIdx = headers.findIndex(h => h.includes('fotoğraf') || h.includes('fotograf') || h.includes('resim'));
             
             if (nameIdx === -1) nameIdx = 0;
             if (passIdx === -1) passIdx = 1;
@@ -854,15 +999,40 @@ async function fetchUsers() {
                 
                 let name = cols[nameIdx];
                 let pass = cols[passIdx] || '1234';
-                let role = (roleIdx !== -1 && cols[roleIdx]) ? cols[roleIdx].toLowerCase() : 'user';
-                if (name === "Yusuf Yalçıntaş") role = "admin"; // Kalıcı Yönetici
-                if (adminSettings.roleOverrides[name]) role = adminSettings.roleOverrides[name];
+                let role = 'user';
+                if (roleIdx !== -1 && cols[roleIdx]) {
+                    let r = cols[roleIdx].toLowerCase().trim();
+                    if (r === 'yönetici' || r === 'admin') role = 'admin';
+                    else if (r === 'üye' || r === 'user') role = 'user';
+                }
+                let photo = (photoIdx !== -1 && cols[photoIdx]) ? cols[photoIdx] : '';
                 
-                if (name) USER_DATA[name] = { pass: String(pass), role: role };
+                if (name) USER_DATA[name] = { pass: String(pass), role: role, photo: photo };
             }
+            
+            // Uygulama içinden eklenen veya düzenlenen kullanıcıları yerel bellekten yükle (Senkronize et)
+            let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+            Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
+            
+            if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
         }
     } catch(e) {
         console.error("Kullanıcı listesi çekilemedi", e);
+    }
+}
+
+function togglePassword() {
+    const pass = $('login-pass');
+    const eyeOpen = $('eye-open');
+    const eyeClosed = $('eye-closed');
+    if (pass.type === 'password') {
+        pass.type = 'text';
+        eyeOpen.classList.add('hidden');
+        eyeClosed.classList.remove('hidden');
+    } else {
+        pass.type = 'password';
+        eyeOpen.classList.remove('hidden');
+        eyeClosed.classList.add('hidden');
     }
 }
 
@@ -906,8 +1076,15 @@ function login(e) {
         // FIX #1: document.querySelector ile düzeltildi
         document.querySelector('.main-content').classList.remove('blurred');
         $('user-name').innerText = `👤 ${user}`;
+        
+        if(USER_DATA[userKey].photo) {
+            $('user-avatar').src = USER_DATA[userKey].photo;
+            $('user-avatar').classList.remove('hidden');
+        } else { $('user-avatar').classList.add('hidden'); }
+        
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         applyRoleRestrictions();
+        checkNotifs();
         fetchCSV(); // Giriş başarılı, verileri çek
     } else {
         errorEl.innerText = 'Kullanıcı adı veya şifre hatalı.';
@@ -923,29 +1100,78 @@ function rAdmin() {
     const allTabs = [
         {id: 'gunluk', name: 'GÜNLÜK RAPOR'}, {id: 'haftalik', name: 'HAFTALIK RAPOR'}, {id: 'aylik', name: 'AYLIK RAPOR'},
         {id: 'genel', name: 'GENEL ÖZET'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
-        {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'},
+        {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
         {id: 'form', name: 'VERİ GİRİŞ FORMU'}
     ];
-    $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-3 p-2 hover:bg-bg3 rounded cursor-pointer border border-transparent hover:border-border transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-bebas tracking-wider text-text2">${t.name}</span></label>`).join('');
+    $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
     
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
-        return `<tr class="border-b border-border/50 hover:bg-bg3"><td class="p-2 font-bold text-text">${u}</td><td class="p-2"><select class="admin-role-sel w-full bg-bg border border-border rounded p-1 text-xs outline-none focus:border-accent text-text2" data-user="${u}" ${isYusuf ? 'disabled' : ''}><option value="user" ${role==='user'?'selected':''}>Normal Kullanıcı</option><option value="admin" ${role==='admin'?'selected':''}>Yönetici</option></select></td></tr>`;
+        const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
+        const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold">YÖNETİCİ</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px]">ÜYE</span>';
+        return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3 font-bold text-text">${u}</td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
     }).join('');
+    
+    $('admin-n-user').innerHTML = '<option value="">Seçiniz...</option>' + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+}
+
+function saveUserObj(e) {
+    e.preventDefault();
+    const name = $('admin-u-name').value.trim();
+    if(!name) return;
+    const pass = $('admin-u-pass').value.trim();
+    const role = $('admin-u-role').value;
+    const photo = $('admin-u-photo').value.trim();
+    
+    USER_DATA[name] = { pass, role, photo };
+    let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+    lu[name] = { pass, role, photo };
+    localStorage.setItem('localUsers', JSON.stringify(lu));
+    
+    rAdmin(); $('admin-u-form').reset(); toast('Kullanıcı bilgileri kaydedildi.', 'ok');
+}
+
+function editUser(name) {
+    const u = USER_DATA[name]; if(!u) return;
+    $('admin-u-name').value = name;
+    $('admin-u-pass').value = u.pass || '';
+    $('admin-u-role').value = u.role || 'user';
+    $('admin-u-photo').value = u.photo || '';
+}
+
+function deleteUser(name) {
+    if(name === 'Yusuf Yalçıntaş') return toast('Ana yönetici silinemez!', 'err');
+    if(confirm(name + ' adlı kullanıcıyı sistemden silmek istediğinize emin misiniz?')) {
+        delete USER_DATA[name];
+        let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+        lu[name] = { deleted: true };
+        localStorage.setItem('localUsers', JSON.stringify(lu));
+        rAdmin(); toast('Kullanıcı silindi.', 'ok');
+    }
+}
+
+function sendNotif(e) {
+    e.preventDefault();
+    const user = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
+    if(!user || !msg) return;
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    an[user] = msg;
+    localStorage.setItem('appNotifs', JSON.stringify(an));
+    toast(user + ' kullanıcısına bildirim gönderildi.', 'ok'); checkNotifs();
+}
+
+function clearNotif() {
+    const user = $('admin-n-user').value; if(!user) return toast('Önce bir kullanıcı seçin.', 'warn');
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    delete an[user]; localStorage.setItem('appNotifs', JSON.stringify(an));
+    $('admin-n-msg').value = '';
+    toast('Kullanıcının mevcut bildirimi silindi.', 'ok'); checkNotifs();
 }
 
 function saveAdminSettings() {
     const hiddenTabs = [];
     document.querySelectorAll('.admin-tab-cb').forEach(cb => { if(!cb.checked) hiddenTabs.push(cb.value); });
-    
-    const roleOverrides = {};
-    document.querySelectorAll('.admin-role-sel').forEach(sel => {
-        const u = sel.getAttribute('data-user'); const role = sel.value;
-        if(u !== "Yusuf Yalçıntaş") roleOverrides[u] = role;
-        if(USER_DATA[u]) USER_DATA[u].role = role;
-    });
-    
-    adminSettings = { hiddenTabs, roleOverrides };
+    adminSettings = { hiddenTabs };
     localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
     toast('Yönetim ayarları başarıyla kaydedildi!', 'ok');
     applyRoleRestrictions();
@@ -1093,8 +1319,8 @@ function fetchCSV(isBg = false) {
         // FIX #5: Aktif sekmenin nav elementini cTab'a göre güvenilir şekilde bul.
         // Eski kod: querySelector('.text-accent.border-accent') — veri yüklenirken henüz
         // class atanmamış olabiliyor ve fallback her zaman ilk sekmeyi döndürüyordu.
-        const activeNavEl = document.querySelector(`#main-nav div[onclick*="'${cTab}'"]`);
-        swT(cTab, activeNavEl || document.querySelector('#main-nav div'));
+        const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
+        swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
     }).catch(e=>{
         $('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';
         if(!isBg) toast('Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
@@ -1108,7 +1334,14 @@ if(savedUser) {
     $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
     $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
     applyRoleRestrictions();
-        fetchUsers().then(() => fetchCSV());
+    fetchUsers().then(() => {
+        if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
+            $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
+            $('user-avatar').classList.remove('hidden');
+        }
+        checkNotifs();
+        fetchCSV();
+    });
 } else {
     showLogin();
 }
@@ -1121,6 +1354,16 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Kayıt Hatası:', err));
     });
 }
+
+// Açılır menüyü dışarı tıklandığında kapatma mekanizması
+document.addEventListener('click', (e) => {
+    const btn = $('raporlar-btn');
+    const menu = btn?.nextElementSibling;
+    if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.add('hidden');
+        menu.classList.remove('flex');
+    }
+});
 </script>
 </body>
 </html>
