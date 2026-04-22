@@ -171,6 +171,7 @@
             </div>
         </div>
         <div onclick="swT('kaliphane',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">KALIPHANE</div>
+        <div onclick="swT('malzeme',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">PRES MALZEME TAKİP</div>
         <div onclick="swT('kayitlar',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
         <div onclick="swT('plan',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM PLANI</div>
         <div onclick="swT('form',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ GİRİŞ FORMU</div>
@@ -346,6 +347,18 @@
             </div>
         </div>
 
+        <div class="panel hidden" id="panel-malzeme">
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">PRES MALZEME TAKİP LİSTESİ</span><input type="text" onkeyup="fT('tb-malzeme',this.value)" placeholder="Malzeme Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="overflow-auto max-h-[70vh]">
+                    <table class="w-full text-left border-collapse" id="t-malzeme">
+                        <thead id="th-malzeme"></thead>
+                        <tbody id="tb-malzeme"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="panel hidden" id="panel-kayitlar">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
                 <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM TAKİP DENEMELERİ</span><input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Kayıt Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
@@ -497,7 +510,7 @@
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
 }
-let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
+let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, MALZEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
@@ -512,6 +525,8 @@ const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm
 const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const pDENEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(DENEME_URL);
+const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Pres Malzeme Takip Listesi Sayfası');
+const pMALZEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(MALZEME_URL);
 const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
 const pUSERS_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(USERS_URL);
 
@@ -587,7 +602,7 @@ function swT(t,el){
 
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
     if(!RAW.length)return;
-    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='kayitlar')rKayitlar(); if(t==='plan')rPlan(); if(t==='admin')rAdmin();
+    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='malzeme')rMalzeme(); if(t==='kayitlar')rKayitlar(); if(t==='plan')rPlan(); if(t==='admin')rAdmin();
 }
 
 // Tema Değiştirme
@@ -725,7 +740,17 @@ function rKayitlar() {
         return;
     }
     $('th-kayit').innerHTML = `<tr>${DENEME_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
-    $('tb-kayit').innerHTML = DENEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx})">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
+    $('tb-kayit').innerHTML = DENEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'deneme')">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
+}
+
+function rMalzeme() {
+    if(!MALZEME_RAW.h.length) {
+        $('th-malzeme').innerHTML = '';
+        $('tb-malzeme').innerHTML = '<tr><td class="p-4 text-text3">Veri bulunamadı veya sayfa boş.</td></tr>';
+        return;
+    }
+    $('th-malzeme').innerHTML = `<tr>${MALZEME_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
+    $('tb-malzeme').innerHTML = MALZEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'malzeme')">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
 }
 
 function rPlan() {
@@ -834,10 +859,11 @@ function openModal(emp) {
 }
 function closeModal() { const el = $('emp-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300); }
 
-// GENEL KAYIT DETAY MODALI (Üretim Takip Denemeleri İçin)
-function openGenericModal(idx) {
-    const row = DENEME_RAW.r[idx];
-    const headers = DENEME_RAW.h;
+// GENEL KAYIT DETAY MODALI (Üretim Takip Denemeleri & Malzeme Takip İçin)
+function openGenericModal(idx, type = 'deneme') {
+    const rawData = type === 'malzeme' ? MALZEME_RAW : DENEME_RAW;
+    const row = rawData.r[idx];
+    const headers = rawData.h;
     let html = '';
     headers.forEach((h, i) => {
         html += `<div class="bg-white border border-gray-200 rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between shadow-sm hover:shadow-md transition-shadow"><span class="text-[11px] font-mono text-gray-500 mb-1 sm:mb-0 uppercase w-1/3">${h}</span><span class="font-bold text-sm text-gray-800 break-words whitespace-normal w-2/3 sm:text-right">${row[i] || '-'}</span></div>`;
@@ -1113,7 +1139,7 @@ function rAdmin() {
     const allTabs = [
         {id: 'gunluk', name: 'GÜNLÜK RAPOR'}, {id: 'haftalik', name: 'HAFTALIK RAPOR'}, {id: 'aylik', name: 'AYLIK RAPOR'},
         {id: 'genel', name: 'GENEL ÖZET'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
-        {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
+        {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'malzeme', name: 'PRES MALZEME TAKİP'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
         {id: 'form', name: 'VERİ GİRİŞ FORMU'}
     ];
     $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
@@ -1334,11 +1360,13 @@ function fetchCSV(isBg = false) {
     Promise.all([
         fetch(URL,{cache:'no-store'}).catch(()=>fetch(pURL)).then(r=>{if(!r.ok)throw 'Hata';return r.text();}),
         fetch(KALIP_URL,{cache:'no-store'}).catch(()=>fetch(pKALIP_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
-        fetch(DENEME_URL,{cache:'no-store'}).catch(()=>fetch(pDENEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
-    ]).then(([t, k_text, d_text]) => {
+        fetch(DENEME_URL,{cache:'no-store'}).catch(()=>fetch(pDENEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
+        fetch(MALZEME_URL,{cache:'no-store'}).catch(()=>fetch(pMALZEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
+    ]).then(([t, k_text, d_text, m_text]) => {
         RAW=parse(t);
         KALIP_RAW=parseKalip(k_text);
         DENEME_RAW=parseGeneric(d_text);
+        MALZEME_RAW=parseGeneric(m_text);
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
