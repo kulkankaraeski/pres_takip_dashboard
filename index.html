@@ -1060,7 +1060,7 @@ function openNotifModal() {
         html = '<div class="text-text3 text-sm font-mono text-center py-4">Yeni bildiriminiz yok.</div>';
     } else {
         msgs.forEach(m => {
-            html += `<div class="${m.bg} border rounded p-4 flex flex-col gap-2 shadow-sm"><span class="text-[11px] font-bold tracking-wider ${m.col} uppercase flex items-center gap-1">▪ ${m.title}</span><p class="text-sm text-text leading-relaxed whitespace-pre-wrap">${m.text}</p></div>`;
+            html += `<div class="${m.bg} border rounded p-4 flex flex-col gap-2 shadow-sm"><span class="text-[11px] font-bold tracking-wider ${m.col} uppercase flex items-center gap-1">▪ ${m.title}</span><p class="text-sm text-text leading-relaxed whitespace-pre-wrap">${escapeHTML(m.text)}</p></div>`;
         });
     }
     $('notif-content').innerHTML = html;
