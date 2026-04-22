@@ -519,9 +519,11 @@ let adminSettings = JSON.parse(localStorage.getItem('adminSettings')) || { hidde
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
 
-// PRES ŞEKİLLENDİRME PROSESİ GÜNLÜK KAYITLARI DOSYASININ ID'Sİ
-// Lütfen aşağıdaki metni o dosyanın tarayıcı linkindeki benzersiz ID ile değiştirin:
-const MALZEME_DOC_ID = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/edit?usp=sharing';
+// PRES MALZEME TAKİP DOSYASININ ID'Sİ (Veya Tam Linki)
+const MALZEME_DOC_ID = '1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c'; 
+
+// Akıllı ID Çıkarıcı: Eğer yanlışlıkla tüm link yapıştırılırsa sistemi çökertmemesi için sadece ID'yi filtreler.
+const extMalzemeId = MALZEME_DOC_ID.includes('/d/') ? MALZEME_DOC_ID.match(/\/d\/([a-zA-Z0-9-_]+)/)[1] : MALZEME_DOC_ID;
 
 const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
 const pURL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(URL);
@@ -529,7 +531,7 @@ const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm
 const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const pDENEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(DENEME_URL);
-const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + MALZEME_DOC_ID + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Pres Malzeme Takip Listesi');
+const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Pres Malzeme Takip Listesi');
 const pMALZEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(MALZEME_URL);
 const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
 const pUSERS_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(USERS_URL);
@@ -759,9 +761,9 @@ function rMalzeme() {
 
 function rPlan() {
     const frame = $('plan-frame');
-    if(frame && !frame.src) {
+    if(frame && !frame.getAttribute('src')) {
         // rm=minimal parametresi Google E-Tabloların üst menülerini gizler, daha profesyonel görünür.
-        frame.src = "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?embedded=true&rm=minimal";
+        frame.setAttribute('src', "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?embedded=true&rm=minimal");
     }
 }
 
@@ -1324,7 +1326,8 @@ function parseKalip(t){
 }
 
 function parseGeneric(t){
-    if(!t) return {h:[], r:[]};
+    if(!t || t.includes('<html')) return {h:[], r:[]};
+    if(t.includes('Markdown Content:')) t = t.split('Markdown Content:')[1];
     const l=t.split('\n').map(x=>x.trim()).filter(x=>x);
     if(l.length < 1) return {h:[], r:[]};
     const pL = line => {
