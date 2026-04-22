@@ -678,9 +678,9 @@ function rG(){
     
     $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
     $('tb-gun').innerHTML=dd.map((r,i)=>trD([
-        i+1, `<b class="emp-link" onclick="openModal('${r.calisan}')">${r.calisan}</b>`, r.vardiya||'-',
-        r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
-        r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
+        i+1, `<b class="emp-link" onclick="openModal('${escapeHTML(r.calisan).replace(/'/g,"\\'")}')"> ${escapeHTML(r.calisan)}</b>`, escapeHTML(r.vardiya)||'-',
+        escapeHTML(r.pres1)||'-', escapeHTML(r.fason1)||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
+        escapeHTML(r.pres2)||'-', escapeHTML(r.fason2)||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
         n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
     ])).join('');
 }
