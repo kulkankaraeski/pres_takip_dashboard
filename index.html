@@ -71,7 +71,7 @@
             }
             .panel:not(.active) { display: none !important; opacity: 0 !important; }
             .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
-            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #user-info { display: none !important; }
+        #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #notif-modal, #user-info { display: none !important; }
             .overflow-auto { max-height: none !important; overflow: visible !important; }
             canvas { max-height: 250px !important; }
         }
@@ -115,7 +115,7 @@
             </div>
         </div>
         
-        <div class="flex flex-row flex-wrap md:flex-nowrap items-center justify-center gap-4 lg:gap-8 font-mono text-xs md:text-sm text-text2 flex-1">
+        <div class="flex flex-row flex-wrap xl:flex-nowrap items-center justify-center gap-4 lg:gap-6 font-mono text-xs md:text-sm text-text2 flex-1 min-w-0">
             <div class="flex flex-col"><span class="text-[9px] uppercase tracking-wider text-text3">Toplam Üretim</span><span id="hdr-total" class="text-lg font-bold text-text">-</span></div>
             <div class="flex flex-col"><span class="text-[9px] uppercase tracking-wider text-text3">Ort. Perf</span><span id="hdr-perf" class="text-lg font-bold text-accent4">-</span></div>
             <div class="flex flex-col"><span class="text-[9px] uppercase tracking-wider text-text3">Çalışan</span><span id="hdr-workers" class="text-lg font-bold text-text">-</span></div>
@@ -126,21 +126,21 @@
                 <span id="hdr-best-name" class="text-base md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
                 <span id="hdr-best-det" class="text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
             </div>
-
-            <!-- KİŞİSEL BİLDİRİM / UYARI PANELİ -->
-            <div id="hdr-notif" class="hidden flex-col justify-center px-4 py-1.5 rounded bg-accent2/20 border border-accent2 cursor-pointer transition-all hover:scale-105 max-w-[180px] shadow-[0_0_10px_rgba(239,68,68,0.3)] animate-pulse" onclick="alert('🚨 YÖNETİCİ MESAJI:\n\n' + this.dataset.msg)">
-                <span class="text-[10px] tracking-wider text-accent2 font-bold uppercase mb-0.5 flex items-center gap-1">🚨 YENİ BİLDİRİM</span>
-                <span id="hdr-notif-text" class="text-[10px] font-mono text-text truncate leading-tight"></span>
-            </div>
         </div>
 
-        <div class="flex items-center gap-3 flex-shrink-0">
+        <div class="flex flex-wrap items-center justify-center gap-2 md:gap-3 flex-shrink-0">
             <div id="user-info" class="hidden items-center gap-2 font-mono text-xs">
                 <!-- YENİ: KULLANICI AVATARI -->
                 <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border">
                 <span id="user-name" class="text-text2"></span>
                 <button onclick="logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors">ÇIKIŞ</button>
             </div>
+            
+            <!-- YENİ: ROZETLİ BİLDİRİM BUTONU -->
+            <button id="btn-notif" onclick="openNotifModal()" class="hidden relative px-3 py-1.5 bg-accent2/10 hover:bg-accent2/20 text-accent2 border border-accent2/50 rounded font-mono text-[10px] items-center gap-1.5 transition-colors shadow-[0_0_8px_rgba(239,68,68,0.4)] animate-pulse">
+                🔔 BİLDİRİM <span id="notif-badge" class="absolute -top-1.5 -right-1.5 bg-accent2 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow-sm">1</span>
+            </button>
+
             <button onclick="toggleTheme()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm">
                 🌓 TEMA
             </button>
@@ -503,6 +503,15 @@
                 <p id="login-error" class="text-accent2 text-xs h-4"></p>
                 <button type="submit" class="w-full px-6 py-3 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105">GİRİŞ YAP</button>
             </form>
+        </div>
+    </div>
+
+    <!-- YENİ: KULLANICI BİLDİRİM GÖRÜNTÜLEME MODALI -->
+    <div id="notif-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-md w-full shadow-2xl relative">
+            <button onclick="closeNotifModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
+            <h2 class="font-bebas text-2xl tracking-[2px] text-accent2 mb-4 border-b border-border pb-2 flex items-center gap-2">🔔 BİLDİRİMLER</h2>
+            <div id="notif-content" class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1"></div>
         </div>
     </div>
 
@@ -1007,17 +1016,46 @@ function applyRoleRestrictions() {
 }
 
 function checkNotifs() {
-    const el = $('hdr-notif'); const txt = $('hdr-notif-text');
+    const btn = $('btn-notif');
+    if(!LOGGED_IN_USER || !btn) return;
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let count = 0;
+    if(an['GLOBAL']) count++;
+    if(an[LOGGED_IN_USER.name]) count++;
+    
+    if(count > 0) {
+        $('notif-badge').innerText = count;
+        btn.classList.remove('hidden'); btn.classList.add('flex');
+        btn.classList.add('animate-pulse'); // Yeni bildirim geldiğinde titreşsin
+    } else {
+        btn.classList.add('hidden'); btn.classList.remove('flex');
+    }
+}
+
+function openNotifModal() {
     if(!LOGGED_IN_USER) return;
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
-    let msg = an[LOGGED_IN_USER.name] || an['GLOBAL'];
-    if(msg) {
-        txt.innerText = msg;
-        el.dataset.msg = msg;
-        el.classList.remove('hidden'); el.classList.add('flex');
+    let msgs = [];
+    if (an['GLOBAL']) msgs.push({ title: 'GENEL DUYURU', text: an['GLOBAL'], bg: 'bg-accent/10 border-accent/30', col: 'text-accent' });
+    if (an[LOGGED_IN_USER.name]) msgs.push({ title: 'KİŞİSEL MESAJ (' + LOGGED_IN_USER.name + ')', text: an[LOGGED_IN_USER.name], bg: 'bg-accent2/10 border-accent2/30', col: 'text-accent2' });
+
+    let html = '';
+    if(msgs.length === 0) {
+        html = '<div class="text-text3 text-sm font-mono text-center py-4">Yeni bildiriminiz yok.</div>';
     } else {
-        el.classList.add('hidden'); el.classList.remove('flex');
+        msgs.forEach(m => {
+            html += `<div class="${m.bg} border rounded p-4 flex flex-col gap-2 shadow-sm"><span class="text-[11px] font-bold tracking-wider ${m.col} uppercase flex items-center gap-1">▪ ${m.title}</span><p class="text-sm text-text leading-relaxed whitespace-pre-wrap">${m.text}</p></div>`;
+        });
     }
+    $('notif-content').innerHTML = html;
+    $('btn-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle ve titremeyi durdur
+    
+    const el = $('notif-modal'); el.classList.remove('hidden'); el.classList.add('flex');
+    setTimeout(()=>el.classList.remove('opacity-0'),10);
+}
+function closeNotifModal() {
+    const el = $('notif-modal'); el.classList.add('opacity-0');
+    setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
 }
 
 async function fetchUsers() {
