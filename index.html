@@ -103,10 +103,10 @@
         </div>
     </div>
 
-    <header class="flex flex-col lg:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 md:p-4 rounded-lg shadow-lg relative overflow-hidden">
+    <header class="flex flex-col xl:flex-row flex-wrap gap-4 justify-between items-center bg-bg2 border border-border p-3 md:p-4 rounded-lg shadow-lg relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
         
-        <div class="flex flex-col items-center lg:items-start bg-bg3 border border-border rounded-lg p-3 shadow-sm flex-shrink-0 w-full lg:w-auto">
+        <div class="flex flex-col items-center xl:items-start bg-bg3 border border-border rounded-lg p-3 shadow-sm flex-shrink-0 w-full xl:w-auto">
             <h1 class="font-bebas text-xl md:text-2xl tracking-[2px] text-accent leading-none">PRES ÜRETİM TAKİP</h1>
             <div class="flex items-center gap-2 mt-2 text-[9px] md:text-[10px] font-mono text-text3">
                 <span id="src-status">● BAĞLANIYOR...</span>
@@ -115,20 +115,20 @@
             </div>
         </div>
         
-        <div class="flex flex-row flex-wrap items-center justify-center gap-2 md:gap-4 font-mono text-xs md:text-sm text-text2 flex-1 w-full lg:w-auto">
-            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 md:px-4 py-2 shadow-sm flex-1 min-w-[90px] max-w-[150px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam Üretim</span><span id="hdr-total" class="text-lg font-bold text-text">-</span></div>
-            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 md:px-4 py-2 shadow-sm flex-1 min-w-[90px] max-w-[150px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-lg font-bold text-accent4">-</span></div>
-            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 md:px-4 py-2 shadow-sm flex-1 min-w-[90px] max-w-[150px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-lg font-bold text-text">-</span></div>
+        <div class="flex flex-row flex-wrap items-center justify-center gap-2 md:gap-4 font-mono text-xs md:text-sm text-text2 flex-1 w-full xl:w-auto">
+            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 md:px-4 py-2 shadow-sm flex-1 sm:flex-none min-w-[90px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam Üretim</span><span id="hdr-total" class="text-lg font-bold text-text">-</span></div>
+            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 md:px-4 py-2 shadow-sm flex-1 sm:flex-none min-w-[90px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-lg font-bold text-accent4">-</span></div>
+            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 md:px-4 py-2 shadow-sm flex-1 sm:flex-none min-w-[90px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-lg font-bold text-text">-</span></div>
             
             <!-- FIX #3: onclick eklendi — cursor-pointer'ın arkasında handler yoktu -->
-            <div id="hdr-best" class="hidden flex-col items-center justify-center px-4 py-1.5 ayin-elemani-kutu rounded-lg bg-bg3 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 min-w-[120px] max-w-[180px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
+            <div id="hdr-best" class="hidden flex-col items-center justify-center px-4 py-1.5 ayin-elemani-kutu rounded-lg bg-bg3 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 sm:flex-none min-w-[140px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
                 <span class="text-[9px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
                 <span id="hdr-best-name" class="text-base md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
                 <span id="hdr-best-det" class="text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-center gap-2 flex-shrink-0 w-full lg:w-auto">
+        <div class="flex flex-wrap items-center justify-center gap-2 flex-shrink-0 w-full xl:w-auto">
             <div id="user-info" class="hidden items-center gap-2 font-mono text-xs bg-bg3 border border-border rounded-lg p-1.5 md:pr-3 shadow-sm">
                 <!-- YENİ: KULLANICI AVATARI -->
                 <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border">
