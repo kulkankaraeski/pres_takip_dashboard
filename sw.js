@@ -29,7 +29,7 @@ self.addEventListener('fetch', event => {
 
     // Canlı Google Sheets verilerini bozmamak için Google isteklerini önbelleğe almıyoruz.
     if (event.request.url.includes('google') || event.request.url.includes('script.google.com')) {
-        event.respondWith(fetch(event.request).catch(() => new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')));
+        event.respondWith(fetch(event.request)); // Fallback ve hata yönetimi ana dosya (index.html) tarafından yapılır
         return;
     }
     

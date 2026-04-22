@@ -563,6 +563,16 @@ function isoW(d){const[D,M,Y]=d.split('.').map(Number);const dt=new Date(Y,M-1,D
 function calc(arr){return{u:arr.reduce((s,r)=>s+r.tU,0),b:arr.reduce((s,r)=>s+r.tB,0),p:arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0,d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
 const cR=(v,a=1)=>`rgba(${getComputedStyle(document.documentElement).getPropertyValue('--c-'+v).trim()},${a})`;
 
+function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function safeAttr(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
 // TOAST BİLDİRİM
 function toast(msg, type='ok') {
     const t = document.createElement('div');
@@ -684,7 +694,7 @@ function rG(){
     
     $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
     $('tb-gun').innerHTML=dd.map((r,i)=>trD([
-        i+1, `<b class="emp-link" onclick="openModal('${escapeHTML(r.calisan).replace(/'/g,"\\'")}')"> ${escapeHTML(r.calisan)}</b>`, escapeHTML(r.vardiya)||'-',
+        i+1, `<b class="emp-link" onclick="openModal('${safeAttr(r.calisan)}')"> ${escapeHTML(r.calisan)}</b>`, escapeHTML(r.vardiya)||'-',
         escapeHTML(r.pres1)||'-', escapeHTML(r.fason1)||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
         escapeHTML(r.pres2)||'-', escapeHTML(r.fason2)||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
         n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
@@ -700,7 +710,7 @@ function rW(){
     mc('w2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
     const ws=[...new Set(wd.map(r=>r.calisan))].map(w=>({w,...calc(wd.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     $('th-haf').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
-    $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${w.w}')">${w.w}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
+    $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
 }
 
 function rM(){
@@ -712,7 +722,7 @@ function rM(){
     mc('m2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
     const ws=[...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
-    $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${w.w}')">${w.w}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
+    $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
 }
 
 function rH(){
@@ -729,7 +739,7 @@ function rC(){
     const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     mc('ca1','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
     $('th-cal').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
-    $('tb-cal').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${w.w}')">${w.w}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
+    $('tb-cal').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
 }
 
 function rP(){
@@ -840,7 +850,7 @@ function openRecsModal(title, data) {
     
     $('t-recs').innerHTML = `<thead>${thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf'])}</thead><tbody id="recs-body" class="text-xs">` + 
         data.map(r => trD([
-            r.tarih, `<a class="emp-link font-bold" onclick="closeRecsModal(); setTimeout(()=>openModal('${r.calisan}'), 300);">${r.calisan}</a>`, r.vardiya||'-', 
+            r.tarih, `<a class="emp-link font-bold" onclick="closeRecsModal(); setTimeout(()=>openModal('${safeAttr(r.calisan)}'), 300);">${escapeHTML(r.calisan)}</a>`, r.vardiya||'-', 
             r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
             r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
             n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
@@ -1456,8 +1466,12 @@ function fetchCSV(isBg = false) {
         const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
         swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
     }).catch(e=>{
+        console.error('Veri İşleme Hatası:', e);
         $('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';
-        if(!isBg) toast('Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
+        if(!isBg) {
+            if(e instanceof ReferenceError) toast('Sistem Hatası: Kod eksikliği tespit edildi.', 'err');
+            else toast('Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
+        }
     }).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false; if(!isBg) hideLoader();});
 }
 
