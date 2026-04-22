@@ -71,7 +71,7 @@
             }
             .panel:not(.active) { display: none !important; opacity: 0 !important; }
             .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
-            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #user-info { display: none !important; }
+        #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #notif-modal, #user-info { display: none !important; }
             .overflow-auto { max-height: none !important; overflow: visible !important; }
             canvas { max-height: 250px !important; }
         }
@@ -103,25 +103,25 @@
         </div>
     </div>
 
-    <header class="flex flex-col xl:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 rounded shadow-lg relative overflow-hidden">
+    <header class="flex flex-col xl:flex-row flex-wrap gap-4 justify-between items-center bg-bg2 border border-border p-3 md:p-4 rounded-lg shadow-lg relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
         
-        <div class="flex flex-col items-center xl:items-start flex-shrink-0">
+        <div class="flex flex-col items-center xl:items-start bg-bg3 border border-border rounded-lg p-3 shadow-sm flex-shrink-0 w-full xl:w-auto">
             <h1 class="font-bebas text-xl md:text-2xl tracking-[2px] text-accent leading-none">PRES ÜRETİM TAKİP</h1>
-            <div class="flex items-center gap-2 mt-1.5 text-[9px] md:text-[10px] font-mono text-text3">
+            <div class="flex items-center gap-2 mt-2 text-[9px] md:text-[10px] font-mono text-text3">
                 <span id="src-status">● BAĞLANIYOR...</span>
                 <span class="w-1 h-1 bg-text3 rounded-full"></span>
                 <span id="src-info">Veri bekleniyor...</span>
             </div>
         </div>
         
-        <div class="flex flex-row flex-wrap md:flex-nowrap items-center justify-center gap-4 lg:gap-8 font-mono text-xs md:text-sm text-text2 flex-1">
-            <div class="flex flex-col"><span class="text-[9px] uppercase tracking-wider text-text3">Toplam Üretim</span><span id="hdr-total" class="text-lg font-bold text-text">-</span></div>
-            <div class="flex flex-col"><span class="text-[9px] uppercase tracking-wider text-text3">Ort. Perf</span><span id="hdr-perf" class="text-lg font-bold text-accent4">-</span></div>
-            <div class="flex flex-col"><span class="text-[9px] uppercase tracking-wider text-text3">Çalışan</span><span id="hdr-workers" class="text-lg font-bold text-text">-</span></div>
+        <div class="flex flex-row flex-wrap items-center justify-center gap-2 md:gap-4 font-mono text-xs md:text-sm text-text2 flex-1 w-full xl:w-auto">
+            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 md:px-4 py-2 shadow-sm flex-1 sm:flex-none min-w-[90px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam Üretim</span><span id="hdr-total" class="text-lg font-bold text-text">-</span></div>
+            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 md:px-4 py-2 shadow-sm flex-1 sm:flex-none min-w-[90px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-lg font-bold text-accent4">-</span></div>
+            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 md:px-4 py-2 shadow-sm flex-1 sm:flex-none min-w-[90px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-lg font-bold text-text">-</span></div>
             
             <!-- FIX #3: onclick eklendi — cursor-pointer'ın arkasında handler yoktu -->
-            <div id="hdr-best" class="hidden flex-col justify-center px-4 py-1.5 ayin-elemani-kutu rounded bg-bg3 cursor-pointer transition-transform hover:scale-105" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
+            <div id="hdr-best" class="hidden flex-col items-center justify-center px-4 py-1.5 ayin-elemani-kutu rounded-lg bg-bg3 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 sm:flex-none min-w-[140px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
                 <span class="text-[9px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
                 <span id="hdr-best-name" class="text-base md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
                 <span id="hdr-best-det" class="text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
@@ -134,20 +134,26 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3 flex-shrink-0">
-            <div id="user-info" class="hidden items-center gap-2 font-mono text-xs">
+        <div class="flex flex-wrap items-center justify-center gap-2 flex-shrink-0 w-full xl:w-auto">
+            <div id="user-info" class="hidden items-center gap-2 font-mono text-xs bg-bg3 border border-border rounded-lg p-1.5 md:pr-3 shadow-sm">
                 <!-- YENİ: KULLANICI AVATARI -->
                 <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border">
-                <span id="user-name" class="text-text2"></span>
-                <button onclick="logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors">ÇIKIŞ</button>
+                <span id="user-name" class="text-text2 ml-1"></span>
+                <button onclick="logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors ml-2">ÇIKIŞ</button>
             </div>
-            <button onclick="toggleTheme()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm">
+            
+            <!-- YENİ: ROZETLİ BİLDİRİM BUTONU -->
+            <button id="btn-notif" onclick="openNotifModal()" class="hidden relative px-3 py-2 md:py-2.5 bg-accent2/10 hover:bg-accent2/20 text-accent2 border border-accent2/50 rounded-lg font-mono text-[10px] items-center gap-1.5 transition-colors shadow-[0_0_8px_rgba(239,68,68,0.4)] animate-pulse whitespace-nowrap">
+                🔔 BİLDİRİM <span id="notif-badge" class="absolute -top-1.5 -right-1.5 bg-accent2 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow-sm">1</span>
+            </button>
+
+            <button onclick="toggleTheme()" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
                 🌓 TEMA
             </button>
-            <button onclick="exportToPDF()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors">
+            <button onclick="exportToPDF()" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
                 📥 PDF İNDİR
             </button>
-            <button onclick="fetchCSV()" id="btn-refresh" class="px-3 py-1.5 bg-bg3 hover:bg-border text-accent border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors">
+            <button onclick="fetchCSV()" id="btn-refresh" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-accent border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
                 ↻ GÜNCELLE
             </button>
         </div>
@@ -171,6 +177,7 @@
             </div>
         </div>
         <div onclick="swT('kaliphane',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">KALIPHANE</div>
+        <div onclick="swT('malzeme',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">PRES MALZEME TAKİP</div>
         <div onclick="swT('kayitlar',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
         <div onclick="swT('plan',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM PLANI</div>
         <div onclick="swT('form',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ GİRİŞ FORMU</div>
@@ -346,6 +353,18 @@
             </div>
         </div>
 
+        <div class="panel hidden" id="panel-malzeme">
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">PRES MALZEME TAKİP LİSTESİ</span><input type="text" onkeyup="fT('tb-malzeme',this.value)" placeholder="Malzeme Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="overflow-auto max-h-[70vh]">
+                    <table class="w-full text-left border-collapse" id="t-malzeme">
+                        <thead id="th-malzeme"></thead>
+                        <tbody id="tb-malzeme"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="panel hidden" id="panel-kayitlar">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
                 <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM TAKİP DENEMELERİ</span><input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Kayıt Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
@@ -384,7 +403,7 @@
                     <div class="bg-bg3 border border-border rounded p-4">
                         <h3 class="font-bebas text-xl text-accent2 mb-4 border-b border-border/50 pb-1 flex items-center gap-2">🔔 BİLDİRİM GÖNDER</h3>
                         <form id="admin-n-form" onsubmit="sendNotif(event)" class="space-y-3">
-                            <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kullanıcı Seçin</label><select id="admin-n-user" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div>
+                            <div><label class="block text-[10px] text-text3 mb-1 uppercase">Hedef Seçin</label><select id="admin-n-user" required onchange="loadUserNotif(this.value)" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div>
                             <div><label class="block text-[10px] text-text3 mb-1 uppercase">Mesajınız</label><textarea id="admin-n-msg" rows="3" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent resize-none"></textarea></div>
                             <div class="flex gap-2">
                                 <button type="submit" class="flex-1 px-3 py-2 bg-accent2 hover:bg-red-500 text-white rounded font-mono text-[10px] font-bold transition-colors">GÖNDER</button>
@@ -493,11 +512,20 @@
         </div>
     </div>
 
+    <!-- YENİ: KULLANICI BİLDİRİM GÖRÜNTÜLEME MODALI -->
+    <div id="notif-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-md w-full shadow-2xl relative">
+            <button onclick="closeNotifModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
+            <h2 class="font-bebas text-2xl tracking-[2px] text-accent2 mb-4 border-b border-border pb-2 flex items-center gap-2">🔔 BİLDİRİMLER</h2>
+            <div id="notif-content" class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1"></div>
+        </div>
+    </div>
+
 <script>
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
 }
-let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
+let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, MALZEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
@@ -506,12 +534,20 @@ let adminSettings = JSON.parse(localStorage.getItem('adminSettings')) || { hidde
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
 
+// PRES MALZEME TAKİP DOSYASININ ID'Sİ (Veya Tam Linki)
+const MALZEME_DOC_ID = '1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c'; 
+
+// Akıllı ID Çıkarıcı: Eğer yanlışlıkla tüm link yapıştırılırsa sistemi çökertmemesi için sadece ID'yi filtreler.
+const extMalzemeId = MALZEME_DOC_ID.includes('/d/') ? MALZEME_DOC_ID.match(/\/d\/([a-zA-Z0-9-_]+)/)[1] : MALZEME_DOC_ID;
+
 const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
 const pURL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(URL);
 const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
 const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const pDENEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(DENEME_URL);
+const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Pres Malzeme Takip Listesi');
+const pMALZEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(MALZEME_URL);
 const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
 const pUSERS_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(USERS_URL);
 
@@ -587,7 +623,7 @@ function swT(t,el){
 
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
     if(!RAW.length)return;
-    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='kayitlar')rKayitlar(); if(t==='plan')rPlan(); if(t==='admin')rAdmin();
+    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='malzeme')rMalzeme(); if(t==='kayitlar')rKayitlar(); if(t==='plan')rPlan(); if(t==='admin')rAdmin();
 }
 
 // Tema Değiştirme
@@ -601,9 +637,25 @@ function toggleTheme() {
 }
 
 // Arama
-function fT(id,q){
-    const f=q.toLowerCase(),r=$(id).getElementsByTagName('tr'); 
-    for(let i=0;i<r.length;i++) r[i].style.display=r[i].innerText.toLowerCase().includes(f)?'':'none';
+const searchTimeouts = {};
+function fT(id, q) {
+    clearTimeout(searchTimeouts[id]);
+    searchTimeouts[id] = setTimeout(() => {
+        const f = q.toLocaleLowerCase('tr-TR');
+        const tb = $(id);
+        if (!tb) return;
+        
+        const prev = tb.style.display;
+        tb.style.display = 'none'; // Reflow (donma) engellemek için tabloyu anlık gizle
+        
+        const r = tb.getElementsByTagName('tr'); 
+        for(let i=0; i<r.length; i++) {
+            const target = r[i].textContent.toLocaleLowerCase('tr-TR').includes(f) ? '' : 'none';
+            if (r[i].style.display !== target) r[i].style.display = target; // Gereksiz DOM yazımını önle
+        }
+        
+        tb.style.display = prev; // Tabloyu tek seferde yeniden çizdir
+    }, 250);
 }
 
 function chD(x){const i=DATES.indexOf(sD); if(DATES[i+x]){sD=DATES[i+x]; rG();}}
@@ -632,9 +684,9 @@ function rG(){
     
     $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
     $('tb-gun').innerHTML=dd.map((r,i)=>trD([
-        i+1, `<b class="emp-link" onclick="openModal('${r.calisan}')">${r.calisan}</b>`, r.vardiya||'-',
-        r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
-        r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
+        i+1, `<b class="emp-link" onclick="openModal('${escapeHTML(r.calisan).replace(/'/g,"\\'")}')"> ${escapeHTML(r.calisan)}</b>`, escapeHTML(r.vardiya)||'-',
+        escapeHTML(r.pres1)||'-', escapeHTML(r.fason1)||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
+        escapeHTML(r.pres2)||'-', escapeHTML(r.fason2)||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
         n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
     ])).join('');
 }
@@ -709,14 +761,24 @@ function rKayitlar() {
         return;
     }
     $('th-kayit').innerHTML = `<tr>${DENEME_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
-    $('tb-kayit').innerHTML = DENEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx})">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
+    $('tb-kayit').innerHTML = DENEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'deneme')">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
+}
+
+function rMalzeme() {
+    if(!MALZEME_RAW.h.length) {
+        $('th-malzeme').innerHTML = '';
+        $('tb-malzeme').innerHTML = '<tr><td class="p-4 text-text3">Veri bulunamadı veya sayfa boş.</td></tr>';
+        return;
+    }
+    $('th-malzeme').innerHTML = `<tr>${MALZEME_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
+    $('tb-malzeme').innerHTML = MALZEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'malzeme')">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
 }
 
 function rPlan() {
     const frame = $('plan-frame');
-    if(frame && !frame.src) {
+    if(frame && !frame.getAttribute('src')) {
         // rm=minimal parametresi Google E-Tabloların üst menülerini gizler, daha profesyonel görünür.
-        frame.src = "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?embedded=true&rm=minimal";
+        frame.setAttribute('src', "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?embedded=true&rm=minimal");
     }
 }
 
@@ -818,10 +880,11 @@ function openModal(emp) {
 }
 function closeModal() { const el = $('emp-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300); }
 
-// GENEL KAYIT DETAY MODALI (Üretim Takip Denemeleri İçin)
-function openGenericModal(idx) {
-    const row = DENEME_RAW.r[idx];
-    const headers = DENEME_RAW.h;
+// GENEL KAYIT DETAY MODALI (Üretim Takip Denemeleri & Malzeme Takip İçin)
+function openGenericModal(idx, type = 'deneme') {
+    const rawData = type === 'malzeme' ? MALZEME_RAW : DENEME_RAW;
+    const row = rawData.r[idx];
+    const headers = rawData.h;
     let html = '';
     headers.forEach((h, i) => {
         html += `<div class="bg-white border border-gray-200 rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between shadow-sm hover:shadow-md transition-shadow"><span class="text-[11px] font-mono text-gray-500 mb-1 sm:mb-0 uppercase w-1/3">${h}</span><span class="font-bold text-sm text-gray-800 break-words whitespace-normal w-2/3 sm:text-right">${row[i] || '-'}</span></div>`;
@@ -959,20 +1022,46 @@ function applyRoleRestrictions() {
 }
 
 function checkNotifs() {
-    const el = $('hdr-notif'); const txt = $('hdr-notif-text');
+    const btn = $('btn-notif');
+    if(!LOGGED_IN_USER || !btn) return;
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let count = 0;
+    if(an['GLOBAL']) count++;
+    if(an[LOGGED_IN_USER.name]) count++;
+    
+    if(count > 0) {
+        $('notif-badge').innerText = count;
+        btn.classList.remove('hidden'); btn.classList.add('flex');
+        btn.classList.add('animate-pulse'); // Yeni bildirim geldiğinde titreşsin
+    } else {
+        btn.classList.add('hidden'); btn.classList.remove('flex');
+    }
+}
+
+function openNotifModal() {
     if(!LOGGED_IN_USER) return;
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
-    let msg = an[LOGGED_IN_USER.name];
-    if(msg) {
-        txt.innerText = msg;
-        el.dataset.msg = msg;
-        el.classList.remove('hidden'); el.classList.add('flex');
-        
-        // Yöneticiler girdiği anda kendi gönderme ekranına kullanıcının seçili olmasını sağlar
-        if($('admin-n-user') && LOGGED_IN_USER.role === 'admin') { $('admin-n-user').value = LOGGED_IN_USER.name; $('admin-n-msg').value = msg; }
+    let msgs = [];
+    if (an['GLOBAL']) msgs.push({ title: 'GENEL DUYURU', text: an['GLOBAL'], bg: 'bg-accent/10 border-accent/30', col: 'text-accent' });
+    if (an[LOGGED_IN_USER.name]) msgs.push({ title: 'KİŞİSEL MESAJ (' + LOGGED_IN_USER.name + ')', text: an[LOGGED_IN_USER.name], bg: 'bg-accent2/10 border-accent2/30', col: 'text-accent2' });
+
+    let html = '';
+    if(msgs.length === 0) {
+        html = '<div class="text-text3 text-sm font-mono text-center py-4">Yeni bildiriminiz yok.</div>';
     } else {
-        el.classList.add('hidden'); el.classList.remove('flex');
+        msgs.forEach(m => {
+            html += `<div class="${m.bg} border rounded p-4 flex flex-col gap-2 shadow-sm"><span class="text-[11px] font-bold tracking-wider ${m.col} uppercase flex items-center gap-1">▪ ${m.title}</span><p class="text-sm text-text leading-relaxed whitespace-pre-wrap">${m.text}</p></div>`;
+        });
     }
+    $('notif-content').innerHTML = html;
+    $('btn-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle ve titremeyi durdur
+    
+    const el = $('notif-modal'); el.classList.remove('hidden'); el.classList.add('flex');
+    setTimeout(()=>el.classList.remove('opacity-0'),10);
+}
+function closeNotifModal() {
+    const el = $('notif-modal'); el.classList.add('opacity-0');
+    setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
 }
 
 async function fetchUsers() {
@@ -1100,22 +1189,27 @@ function rAdmin() {
     const allTabs = [
         {id: 'gunluk', name: 'GÜNLÜK RAPOR'}, {id: 'haftalik', name: 'HAFTALIK RAPOR'}, {id: 'aylik', name: 'AYLIK RAPOR'},
         {id: 'genel', name: 'GENEL ÖZET'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
-        {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
+        {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'malzeme', name: 'PRES MALZEME TAKİP'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
         {id: 'form', name: 'VERİ GİRİŞ FORMU'}
     ];
     $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
     
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
-        const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
+        const hasNotif = an[u] ? `<span class="px-1.5 py-0.5 bg-accent3/20 text-accent3 rounded text-[9px] ml-2 cursor-help" title="${an[u]}">🔔 BİLDİRİM</span>` : '';
+        const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border border-border">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
         const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold">YÖNETİCİ</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px]">ÜYE</span>';
-        return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3 font-bold text-text">${u}</td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
+        return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3"><div class="flex items-center gap-2"><span class="font-bold text-text">${u}</span>${hasNotif}</div></td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
     }).join('');
     
-    $('admin-n-user').innerHTML = '<option value="">Seçiniz...</option>' + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+    const globalNotif = an['GLOBAL'] ? ' (Aktif Mesaj Var)' : '';
+    $('admin-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER${globalNotif}</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+    loadUserNotif($('admin-n-user').value);
 }
 
-function saveUserObj(e) {
+async function saveUserObj(e) {
     e.preventDefault();
     const name = $('admin-u-name').value.trim();
     if(!name) return;
@@ -1123,10 +1217,28 @@ function saveUserObj(e) {
     const role = $('admin-u-role').value;
     const photo = $('admin-u-photo').value.trim();
     
+    // Yeni Eklenen: Google Sheets'e Kayıt Gönderme
+    const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
+    try {
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    } catch(err) { console.error('Kullanıcı Google Sheets\'e kaydedilirken hata oluştu:', err); }
+
     USER_DATA[name] = { pass, role, photo };
     let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
-    lu[name] = { pass, role, photo };
+    lu[name] = { pass, role, photo, deleted: false };
     localStorage.setItem('localUsers', JSON.stringify(lu));
+    
+    if (LOGGED_IN_USER && LOGGED_IN_USER.name === name) {
+        LOGGED_IN_USER.role = role;
+        sessionStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
+        if (photo) {
+            $('user-avatar').src = photo;
+            $('user-avatar').classList.remove('hidden');
+        } else {
+            $('user-avatar').classList.add('hidden');
+        }
+        applyRoleRestrictions();
+    }
     
     rAdmin(); $('admin-u-form').reset(); toast('Kullanıcı bilgileri kaydedildi.', 'ok');
 }
@@ -1137,6 +1249,8 @@ function editUser(name) {
     $('admin-u-pass').value = u.pass || '';
     $('admin-u-role').value = u.role || 'user';
     $('admin-u-photo').value = u.photo || '';
+    $('admin-u-form').scrollIntoView({behavior: 'smooth', block: 'center'});
+    $('admin-u-name').focus();
 }
 
 function deleteUser(name) {
@@ -1150,6 +1264,12 @@ function deleteUser(name) {
     }
 }
 
+function loadUserNotif(user) {
+    if(!user) { $('admin-n-msg').value = ''; return; }
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    $('admin-n-msg').value = an[user] || '';
+}
+
 function sendNotif(e) {
     e.preventDefault();
     const user = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
@@ -1157,15 +1277,16 @@ function sendNotif(e) {
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
     an[user] = msg;
     localStorage.setItem('appNotifs', JSON.stringify(an));
-    toast(user + ' kullanıcısına bildirim gönderildi.', 'ok'); checkNotifs();
+    toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
+    checkNotifs(); rAdmin();
 }
 
 function clearNotif() {
-    const user = $('admin-n-user').value; if(!user) return toast('Önce bir kullanıcı seçin.', 'warn');
+    const user = $('admin-n-user').value; if(!user) return toast('Önce bir hedef seçin.', 'warn');
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
     delete an[user]; localStorage.setItem('appNotifs', JSON.stringify(an));
     $('admin-n-msg').value = '';
-    toast('Kullanıcının mevcut bildirimi silindi.', 'ok'); checkNotifs();
+    toast('Mevcut bildirim silindi.', 'ok'); checkNotifs(); rAdmin();
 }
 
 function saveAdminSettings() {
@@ -1249,7 +1370,8 @@ function parseKalip(t){
 }
 
 function parseGeneric(t){
-    if(!t) return {h:[], r:[]};
+    if(!t || t.includes('<html')) return {h:[], r:[]};
+    if(t.includes('Markdown Content:')) t = t.split('Markdown Content:')[1];
     const l=t.split('\n').map(x=>x.trim()).filter(x=>x);
     if(l.length < 1) return {h:[], r:[]};
     const pL = line => {
@@ -1289,11 +1411,13 @@ function fetchCSV(isBg = false) {
     Promise.all([
         fetch(URL,{cache:'no-store'}).catch(()=>fetch(pURL)).then(r=>{if(!r.ok)throw 'Hata';return r.text();}),
         fetch(KALIP_URL,{cache:'no-store'}).catch(()=>fetch(pKALIP_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
-        fetch(DENEME_URL,{cache:'no-store'}).catch(()=>fetch(pDENEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
-    ]).then(([t, k_text, d_text]) => {
+        fetch(DENEME_URL,{cache:'no-store'}).catch(()=>fetch(pDENEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
+        fetch(MALZEME_URL,{cache:'no-store'}).catch(()=>fetch(pMALZEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
+    ]).then(([t, k_text, d_text, m_text]) => {
         RAW=parse(t);
         KALIP_RAW=parseKalip(k_text);
         DENEME_RAW=parseGeneric(d_text);
+        MALZEME_RAW=parseGeneric(m_text);
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
