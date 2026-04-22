@@ -605,8 +605,20 @@ const searchTimeouts = {};
 function fT(id, q) {
     clearTimeout(searchTimeouts[id]);
     searchTimeouts[id] = setTimeout(() => {
-        const f=q.toLowerCase(), r=$(id).getElementsByTagName('tr'); 
-        for(let i=0; i<r.length; i++) r[i].style.display = r[i].textContent.toLowerCase().includes(f) ? '' : 'none';
+        const f = q.toLocaleLowerCase('tr-TR');
+        const tb = $(id);
+        if (!tb) return;
+        
+        const prev = tb.style.display;
+        tb.style.display = 'none'; // Reflow (donma) engellemek için tabloyu anlık gizle
+        
+        const r = tb.getElementsByTagName('tr'); 
+        for(let i=0; i<r.length; i++) {
+            const target = r[i].textContent.toLocaleLowerCase('tr-TR').includes(f) ? '' : 'none';
+            if (r[i].style.display !== target) r[i].style.display = target; // Gereksiz DOM yazımını önle
+        }
+        
+        tb.style.display = prev; // Tabloyu tek seferde yeniden çizdir
     }, 250);
 }
 
