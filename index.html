@@ -601,9 +601,13 @@ function toggleTheme() {
 }
 
 // Arama
-function fT(id,q){
-    const f=q.toLowerCase(),r=$(id).getElementsByTagName('tr'); 
-    for(let i=0;i<r.length;i++) r[i].style.display=r[i].innerText.toLowerCase().includes(f)?'':'none';
+const searchTimeouts = {};
+function fT(id, q) {
+    clearTimeout(searchTimeouts[id]);
+    searchTimeouts[id] = setTimeout(() => {
+        const f=q.toLowerCase(), r=$(id).getElementsByTagName('tr'); 
+        for(let i=0; i<r.length; i++) r[i].style.display = r[i].textContent.toLowerCase().includes(f) ? '' : 'none';
+    }, 250);
 }
 
 function chD(x){const i=DATES.indexOf(sD); if(DATES[i+x]){sD=DATES[i+x]; rG();}}
