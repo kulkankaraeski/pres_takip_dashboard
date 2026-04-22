@@ -128,7 +128,7 @@
             </div>
             
             <!-- YENİ: BİLDİRİM KUTUSU (Varsayılan olarak gizli) -->
-            <div id="hdr-notif" class="hidden flex-col justify-center px-4 py-1.5 rounded bg-accent2/10 border border-accent2/30 cursor-pointer transition-transform hover:scale-105 max-w-[160px]" onclick="alert('BİLDİRİM MESAJI:\n\n' + this.dataset.msg)">
+            <div id="hdr-notif" class="hidden flex-col justify-center px-4 py-1.5 rounded bg-accent2/10 border border-accent2/30 cursor-pointer transition-transform hover:scale-105 max-w-[160px]" onclick="openNotifModal()">
                 <span class="text-[9px] tracking-wider text-accent2 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
                 <span id="hdr-notif-text" class="text-[10px] font-mono text-text2 truncate leading-tight"></span>
             </div>
@@ -1023,18 +1023,28 @@ function applyRoleRestrictions() {
 
 function checkNotifs() {
     const btn = $('btn-notif');
-    if(!LOGGED_IN_USER || !btn) return;
+    const pnl = $('hdr-notif');
+    if(!LOGGED_IN_USER) return;
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
     let count = 0;
-    if(an['GLOBAL']) count++;
-    if(an[LOGGED_IN_USER.name]) count++;
+    let lastMsg = '';
+    
+    if(an['GLOBAL']) { count++; lastMsg = an['GLOBAL']; }
+    if(an[LOGGED_IN_USER.name]) { count++; lastMsg = an[LOGGED_IN_USER.name]; }
     
     if(count > 0) {
-        $('notif-badge').innerText = count;
-        btn.classList.remove('hidden'); btn.classList.add('flex');
-        btn.classList.add('animate-pulse'); // Yeni bildirim geldiğinde titreşsin
+        if(btn) {
+            $('notif-badge').innerText = count;
+            btn.classList.remove('hidden'); btn.classList.add('flex');
+            btn.classList.add('animate-pulse');
+        }
+        if(pnl) {
+            $('hdr-notif-text').innerText = lastMsg;
+            pnl.classList.remove('hidden'); pnl.classList.add('flex');
+        }
     } else {
-        btn.classList.add('hidden'); btn.classList.remove('flex');
+        if(btn) { btn.classList.add('hidden'); btn.classList.remove('flex'); }
+        if(pnl) { pnl.classList.add('hidden'); pnl.classList.remove('flex'); }
     }
 }
 
