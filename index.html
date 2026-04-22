@@ -94,12 +94,6 @@
             <div class="text-[10px] md:text-xs font-mono tracking-[8px] text-text3 mt-2 uppercase">
                 Porselen
             </div>
-            
-            <!-- YENİ: BİLDİRİM KUTUSU (Varsayılan olarak gizli) -->
-            <div id="hdr-notif" class="hidden flex-col justify-center px-4 py-1.5 rounded bg-accent2/10 border border-accent2/30 cursor-pointer transition-transform hover:scale-105 max-w-[160px]" onclick="alert('BİLDİRİM MESAJI:\n\n' + this.dataset.msg)">
-                <span class="text-[9px] tracking-wider text-accent2 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
-                <span id="hdr-notif-text" class="text-[10px] font-mono text-text2 truncate leading-tight"></span>
-            </div>
         </div>
 
         <!-- Yükleme Animasyonu -->
@@ -131,6 +125,12 @@
                 <span class="text-[9px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
                 <span id="hdr-best-name" class="text-base md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
                 <span id="hdr-best-det" class="text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
+            </div>
+            
+            <!-- YENİ: BİLDİRİM KUTUSU (Varsayılan olarak gizli) -->
+            <div id="hdr-notif" class="hidden flex-col justify-center px-4 py-1.5 rounded bg-accent2/10 border border-accent2/30 cursor-pointer transition-transform hover:scale-105 max-w-[160px]" onclick="alert('BİLDİRİM MESAJI:\n\n' + this.dataset.msg)">
+                <span class="text-[9px] tracking-wider text-accent2 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
+                <span id="hdr-notif-text" class="text-[10px] font-mono text-text2 truncate leading-tight"></span>
             </div>
         </div>
 
