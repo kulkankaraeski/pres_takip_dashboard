@@ -541,15 +541,10 @@ const MALZEME_DOC_ID = '1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c';
 const extMalzemeId = MALZEME_DOC_ID.includes('/d/') ? MALZEME_DOC_ID.match(/\/d\/([a-zA-Z0-9-_]+)/)[1] : MALZEME_DOC_ID;
 
 const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
-const pURL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(URL);
 const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
-const pKALIP_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(KALIP_URL);
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
-const pDENEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(DENEME_URL);
 const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Pres Malzeme Takip Listesi');
-const pMALZEME_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(MALZEME_URL);
 const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
-const pUSERS_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(USERS_URL);
 
 // FORM İÇİN SABİT TANIMLAR (Kendinize Göre Değiştirebilirsiniz)
 const SABIT_CALISANLAR = ["Yusuf Yalçıntaş", "Ahmet Yılmaz", "Mehmet Demir"];
@@ -562,6 +557,22 @@ function pb(p){const c=p>=120?'bg-accent/20 text-accent':p>=90?'bg-accent4/20 te
 function isoW(d){const[D,M,Y]=d.split('.').map(Number);const dt=new Date(Y,M-1,D);dt.setDate(dt.getDate()+4-(dt.getDay()||7));return `${dt.getFullYear()}-W${String(Math.ceil((((dt-new Date(dt.getFullYear(),0,1))/86400000)+1)/7)).padStart(2,'0')}`;}
 function calc(arr){return{u:arr.reduce((s,r)=>s+r.tU,0),b:arr.reduce((s,r)=>s+r.tB,0),p:arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0,d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
 const cR=(v,a=1)=>`rgba(${getComputedStyle(document.documentElement).getPropertyValue('--c-'+v).trim()},${a})`;
+
+// YENİ: Gelişmiş Fetch (CORS ve HTML Yönlendirme Korumalı)
+async function getCSV(url) {
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    try {
+        let r = await fetch(url, {cache: 'no-store'});
+        let t = await r.text();
+        if(t.match(/<html/i) || t.match(/<!DOCTYPE/i)) throw new Error('HTML Redirect');
+        return t;
+    } catch(e) {
+        let r = await fetch(proxyUrl, {cache: 'no-store'});
+        let t = await r.text();
+        if(t.match(/<html/i) || t.match(/<!DOCTYPE/i)) throw new Error('Proxy HTML Redirect');
+        return t;
+    }
+}
 
 function escapeHTML(str) {
     if (str === null || str === undefined) return '';
@@ -1033,28 +1044,33 @@ function applyRoleRestrictions() {
 
 function checkNotifs() {
     const btn = $('btn-notif');
+    const badge = $('notif-badge');
     const pnl = $('hdr-notif');
+    const pnlTitle = $('hdr-notif-title');
+    const pnlText = $('hdr-notif-text');
     if(!LOGGED_IN_USER) return;
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
     let count = 0;
-    let lastMsg = '';
+    let lastMsg = 'Bildirim Yok';
     
-    if(an['GLOBAL']) { count++; lastMsg = an['GLOBAL']; }
-    if(an[LOGGED_IN_USER.name]) { count++; lastMsg = an[LOGGED_IN_USER.name]; }
+    const getMsg = (val) => typeof val === 'object' && val !== null ? val.msg : val;
+    if(an['GLOBAL']) { count++; lastMsg = getMsg(an['GLOBAL']); }
+    if(an[LOGGED_IN_USER.name]) { count++; lastMsg = getMsg(an[LOGGED_IN_USER.name]); }
     
     if(count > 0) {
-        if(btn) {
-            $('notif-badge').innerText = count;
-            btn.classList.remove('hidden'); btn.classList.add('flex');
-            btn.classList.add('animate-pulse');
-        }
-        if(pnl) {
-            $('hdr-notif-text').innerText = lastMsg;
-            pnl.classList.remove('hidden'); pnl.classList.add('flex');
-        }
+        // Aktif/Yeni Bildirim Var Modu
+        if(btn) { btn.classList.add('animate-pulse', 'bg-accent2/10', 'text-accent2', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]'); btn.classList.remove('bg-bg3', 'text-text3', 'border-border'); }
+        if(badge) { badge.innerText = count; badge.classList.remove('hidden'); badge.classList.add('flex'); }
+        if(pnl) { pnl.classList.add('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.remove('bg-bg3', 'border-border'); }
+        if(pnlTitle) { pnlTitle.classList.add('text-accent2'); pnlTitle.classList.remove('text-text3'); }
+        if(pnlText) { pnlText.classList.add('text-text'); pnlText.classList.remove('text-text2'); pnlText.innerText = lastMsg; }
     } else {
-        if(btn) { btn.classList.add('hidden'); btn.classList.remove('flex'); }
-        if(pnl) { pnl.classList.add('hidden'); pnl.classList.remove('flex'); }
+        // Pasif/Boş Mod
+        if(btn) { btn.classList.remove('animate-pulse', 'bg-accent2/10', 'text-accent2', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]'); btn.classList.add('bg-bg3', 'text-text3', 'border-border'); }
+        if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+        if(pnl) { pnl.classList.remove('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.add('bg-bg3', 'border-border'); }
+        if(pnlTitle) { pnlTitle.classList.remove('text-accent2'); pnlTitle.classList.add('text-text3'); }
+        if(pnlText) { pnlText.classList.remove('text-text'); pnlText.classList.add('text-text2'); pnlText.innerText = lastMsg; }
     }
 }
 
@@ -1062,19 +1078,23 @@ function openNotifModal() {
     if(!LOGGED_IN_USER) return;
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
     let msgs = [];
-    if (an['GLOBAL']) msgs.push({ title: 'GENEL DUYURU', text: an['GLOBAL'], bg: 'bg-accent/10 border-accent/30', col: 'text-accent' });
-    if (an[LOGGED_IN_USER.name]) msgs.push({ title: 'KİŞİSEL MESAJ (' + LOGGED_IN_USER.name + ')', text: an[LOGGED_IN_USER.name], bg: 'bg-accent2/10 border-accent2/30', col: 'text-accent2' });
+    
+    const getObj = (val) => typeof val === 'object' && val !== null ? val : { msg: val, time: '' };
+    if (an['GLOBAL']) { let d = getObj(an['GLOBAL']); msgs.push({ title: 'GENEL DUYURU', text: d.msg, time: d.time, bg: 'bg-accent/10 border-accent/30', col: 'text-accent' }); }
+    if (an[LOGGED_IN_USER.name]) { let d = getObj(an[LOGGED_IN_USER.name]); msgs.push({ title: 'KİŞİSEL MESAJ (' + LOGGED_IN_USER.name + ')', text: d.msg, time: d.time, bg: 'bg-accent2/10 border-accent2/30', col: 'text-accent2' }); }
 
     let html = '';
     if(msgs.length === 0) {
         html = '<div class="text-text3 text-sm font-mono text-center py-4">Yeni bildiriminiz yok.</div>';
     } else {
         msgs.forEach(m => {
-            html += `<div class="${m.bg} border rounded p-4 flex flex-col gap-2 shadow-sm"><span class="text-[11px] font-bold tracking-wider ${m.col} uppercase flex items-center gap-1">▪ ${m.title}</span><p class="text-sm text-text leading-relaxed whitespace-pre-wrap">${escapeHTML(m.text)}</p></div>`;
+            let timeHtml = m.time ? `<span class="text-[9px] font-mono text-text3 opacity-70">${m.time}</span>` : '';
+            html += `<div class="${m.bg} border rounded p-4 flex flex-col gap-2 shadow-sm"><div class="flex justify-between items-start"><span class="text-[11px] font-bold tracking-wider ${m.col} uppercase flex items-center gap-1">▪ ${m.title}</span>${timeHtml}</div><p class="text-sm text-text leading-relaxed whitespace-pre-wrap">${escapeHTML(m.text)}</p></div>`;
         });
     }
     $('notif-content').innerHTML = html;
-    $('btn-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle ve titremeyi durdur
+    if($('btn-notif')) $('btn-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle
+    if($('hdr-notif')) $('hdr-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle
     
     const el = $('notif-modal'); el.classList.remove('hidden'); el.classList.add('flex');
     setTimeout(()=>el.classList.remove('opacity-0'),10);
@@ -1086,9 +1106,7 @@ function closeNotifModal() {
 
 async function fetchUsers() {
     try {
-        let res = await fetch(USERS_URL, {cache:'no-store'}).catch(() => fetch(pUSERS_URL));
-        if (!res || !res.ok) throw new Error('Bağlantı Hatası');
-        let text = await res.text();
+        let text = await getCSV(USERS_URL);
         
         const lines = text.split('\n').map(x=>x.trim()).filter(x=>x);
         if (lines.length > 1) {
@@ -1218,7 +1236,8 @@ function rAdmin() {
     
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
-        const hasNotif = an[u] ? `<span class="px-1.5 py-0.5 bg-accent3/20 text-accent3 rounded text-[9px] ml-2 cursor-help" title="${an[u]}">🔔 BİLDİRİM</span>` : '';
+        const notifVal = an[u]; const notifMsg = typeof notifVal === 'object' && notifVal !== null ? notifVal.msg : notifVal;
+        const hasNotif = notifMsg ? `<span class="px-1.5 py-0.5 bg-accent3/20 text-accent3 rounded text-[9px] ml-2 cursor-help" title="${escapeHTML(notifMsg)}">🔔 BİLDİRİM</span>` : '';
         const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border border-border">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
         const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold">YÖNETİCİ</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px]">ÜYE</span>';
         return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3"><div class="flex items-center gap-2"><span class="font-bold text-text">${u}</span>${hasNotif}</div></td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
@@ -1287,7 +1306,8 @@ function deleteUser(name) {
 function loadUserNotif(user) {
     if(!user) { $('admin-n-msg').value = ''; return; }
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
-    $('admin-n-msg').value = an[user] || '';
+    let val = an[user];
+    $('admin-n-msg').value = (typeof val === 'object' && val !== null) ? val.msg : (val || '');
 }
 
 function sendNotif(e) {
@@ -1295,7 +1315,11 @@ function sendNotif(e) {
     const user = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
     if(!user || !msg) return;
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
-    an[user] = msg;
+    
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+    an[user] = { msg: msg, time: timeStr };
+    
     localStorage.setItem('appNotifs', JSON.stringify(an));
     toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
     checkNotifs(); rAdmin();
@@ -1429,10 +1453,10 @@ function fetchCSV(isBg = false) {
     const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
     ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
     Promise.all([
-        fetch(URL,{cache:'no-store'}).catch(()=>fetch(pURL)).then(r=>{if(!r.ok)throw 'Hata';return r.text();}),
-        fetch(KALIP_URL,{cache:'no-store'}).catch(()=>fetch(pKALIP_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
-        fetch(DENEME_URL,{cache:'no-store'}).catch(()=>fetch(pDENEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>''),
-        fetch(MALZEME_URL,{cache:'no-store'}).catch(()=>fetch(pMALZEME_URL)).then(r=>{if(!r.ok)return '';return r.text();}).catch(()=>'')
+        getCSV(URL),
+        getCSV(KALIP_URL).catch(()=>''),
+        getCSV(DENEME_URL).catch(()=>''),
+        getCSV(MALZEME_URL).catch(()=>'')
     ]).then(([t, k_text, d_text, m_text]) => {
         RAW=parse(t);
         KALIP_RAW=parseKalip(k_text);
