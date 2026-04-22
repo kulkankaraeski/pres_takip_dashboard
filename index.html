@@ -979,7 +979,7 @@ async function submitForm(e){
         await fetch(SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors', // Opaque response göndererek CORS hatalarını baypas eder.
-            headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
         });
         
@@ -1230,7 +1230,7 @@ async function saveUserObj(e) {
     // Yeni Eklenen: Google Sheets'e Kayıt Gönderme
     const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
     try {
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
     } catch(err) { console.error('Kullanıcı Google Sheets\'e kaydedilirken hata oluştu:', err); }
 
     USER_DATA[name] = { pass, role, photo };

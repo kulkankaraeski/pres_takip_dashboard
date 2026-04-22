@@ -24,6 +24,9 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+    // Sadece GET isteklerini işle (POST veri aktarımlarında Service Worker çakışmasını önler)
+    if (event.request.method !== 'GET') return;
+
     // Canlı Google Sheets verilerini bozmamak için Google isteklerini önbelleğe almıyoruz.
     if (event.request.url.includes('google') || event.request.url.includes('script.google.com')) {
         event.respondWith(fetch(event.request).catch(() => new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')));
