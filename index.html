@@ -1598,18 +1598,19 @@ function fetchCSV(isBg = false) {
         swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
     }).catch(e=>{
         console.error('Veri İşleme Hatası:', e);
-        $('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';
+        $('src-status').innerText='● BAĞLANTI HATASI'; $('src-status').style.color='#e86d3a';
+        $('src-info').innerText='Veri okunamadı. İzinleri kontrol edin.';
         if(!isBg) {
-            if(e instanceof ReferenceError) toast('Sistem Hatası: Kod eksikliği tespit edildi.', 'err');
-            else toast('Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
+            toast(e.message || 'Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
         }
     }).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false; if(!isBg) hideLoader();});
 }
 
 // OTOMATİK GÜNCELLEME VE OTURUM KONTROLÜ
 const savedUser = sessionStorage.getItem('loggedUser');
-if(savedUser) {
-    LOGGED_IN_USER = JSON.parse(savedUser);
+if(savedUser && savedUser !== "undefined") {
+    LOGGED_IN_USER = safeJSON(savedUser, null);
+    if (LOGGED_IN_USER) {
     $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
     $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
     applyRoleRestrictions();
@@ -1621,6 +1622,9 @@ if(savedUser) {
         checkNotifs();
         fetchCSV();
     });
+    } else {
+        showLogin();
+    }
 } else {
     showLogin();
 }
