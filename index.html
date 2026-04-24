@@ -1245,7 +1245,7 @@ async function fetchUsers() {
             }
             
             // Uygulama içinden eklenen veya düzenlenen kullanıcıları yerel bellekten yükle (Senkronize et)
-            let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+            let lu = safeJSON(localStorage.getItem('localUsers'), {});
             Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
             
             if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
@@ -1339,7 +1339,7 @@ function rAdmin() {
     ];
     $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
     
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
@@ -1370,7 +1370,7 @@ async function saveUserObj(e) {
     } catch(err) { console.error('Kullanıcı Google Sheets\'e kaydedilirken hata oluştu:', err); }
 
     USER_DATA[name] = { pass, role, photo };
-    let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+    let lu = safeJSON(localStorage.getItem('localUsers'), {});
     lu[name] = { pass, role, photo, deleted: false };
     localStorage.setItem('localUsers', JSON.stringify(lu));
     
@@ -1403,7 +1403,7 @@ function deleteUser(name) {
     if(name === 'Yusuf Yalçıntaş') return toast('Ana yönetici silinemez!', 'err');
     if(confirm(name + ' adlı kullanıcıyı sistemden silmek istediğinize emin misiniz?')) {
         delete USER_DATA[name];
-        let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+        let lu = safeJSON(localStorage.getItem('localUsers'), {});
         lu[name] = { deleted: true };
         localStorage.setItem('localUsers', JSON.stringify(lu));
         rAdmin(); toast('Kullanıcı silindi.', 'ok');
@@ -1412,7 +1412,7 @@ function deleteUser(name) {
 
 function loadUserNotif(user) {
     if(!user) { $('admin-n-msg').value = ''; return; }
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     let val = an[user];
     $('admin-n-msg').value = (typeof val === 'object' && val !== null) ? val.msg : (val || '');
 }
@@ -1421,7 +1421,7 @@ function sendNotif(e) {
     e.preventDefault();
     const user = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
     if(!user || !msg) return;
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     
     const now = new Date();
     const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
@@ -1434,7 +1434,7 @@ function sendNotif(e) {
 
 function clearNotif() {
     const user = $('admin-n-user').value; if(!user) return toast('Önce bir hedef seçin.', 'warn');
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     delete an[user]; localStorage.setItem('appNotifs', JSON.stringify(an));
     $('admin-n-msg').value = '';
     toast('Mevcut bildirim silindi.', 'ok'); checkNotifs(); rAdmin();
