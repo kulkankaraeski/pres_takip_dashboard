@@ -929,11 +929,11 @@ function popF(){
     const calisanSelect = $('f-calisan');
     const vC = calisanSelect.value, vP1 = $('f-pres1').value, vP2 = $('f-pres2').value, vF1 = $('f-fason1').value, vF2 = $('f-fason2').value;
 
-    if (LOGGED_IN_USER.role === 'admin') {
+    if (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') {
         const emps=[...new Set([...Object.keys(USER_DATA), ...SABIT_CALISANLAR, ...RAW.map(r=>r.calisan)])].filter(x=>x).sort();
         calisanSelect.innerHTML='<option value="">Seçiniz...</option>'+emps.map(e=>`<option value="${e}">${e}</option>`).join('');
         calisanSelect.disabled = false;
-    } else {
+    } else if (LOGGED_IN_USER) {
         calisanSelect.innerHTML = `<option value="${LOGGED_IN_USER.name}" selected>${LOGGED_IN_USER.name}</option>`;
         calisanSelect.disabled = true;
     }
