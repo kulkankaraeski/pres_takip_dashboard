@@ -1613,12 +1613,12 @@ if(savedUser && savedUser !== "undefined") {
     if (LOGGED_IN_USER) {
     $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
     $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
-    applyRoleRestrictions();
     fetchUsers().then(() => {
         if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
             $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
             $('user-avatar').classList.remove('hidden');
         }
+        applyRoleRestrictions();
         checkNotifs();
         fetchCSV();
     });
