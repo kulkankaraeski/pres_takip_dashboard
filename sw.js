@@ -2,8 +2,8 @@ const CACHE_NAME = 'pres-takip-v1';
 const STATIC_ASSETS = [
     './',
     './index.html',
-    './style.css',
-    './app.js'
+    './manifest.json',
+    './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -24,10 +24,12 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+    // Sadece GET isteklerini işle (POST veri aktarımlarında Service Worker çakışmasını önler)
+    if (event.request.method !== 'GET') return;
+
     // Canlı Google Sheets verilerini bozmamak için Google isteklerini önbelleğe almıyoruz.
-    if (event.request.url.includes('google') || event.request.url.includes('script.google.com')) {
-        event.respondWith(fetch(event.request).catch(() => new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')));
-        return;
+    if (event.request.url.includes('google') || event.request.url.includes('script.google.com') || event.request.url.includes('allorigins')) {
+        return; // event.respondWith ÇAĞRILMAZ, tarayıcı isteği normal şekilde yapar ve CORS hataları index.html'de yakalanır.
     }
     
     // Diğer statik dosyalar için "Ağ Öncelikli (Network First)" stratejisi.
