@@ -585,6 +585,14 @@ function safeAttr(str) {
     return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
+    function safeJSON(str, fallback) {
+        if (!str || str === 'undefined') return fallback;
+        try {
+            const parsed = JSON.parse(str);
+            return parsed !== null ? parsed : fallback;
+        } catch (e) { return fallback; }
+    }
+
 // TOAST BİLDİRİM
 function toast(msg, type='ok') {
     const t = document.createElement('div');
@@ -1290,6 +1298,8 @@ function showLogin() {
             $('login-error').innerText = 'Kullanıcı listesi çekilemedi.';
         }
     });
+        
+        fetchCSV(true); // Arka planda verileri gizlice çek (Giriş yapıldığında ekran hazır olsun)
 }
 
 function login(e) {
@@ -1320,6 +1330,14 @@ function login(e) {
         applyRoleRestrictions();
         checkNotifs();
         fetchCSV(); // Giriş başarılı, verileri çek
+        
+        // Eğer arka plandaki çekim henüz bitmediyse yükleme ekranıyla birlikte çek, bittiyse direkt göster
+        if (RAW.length === 0) {
+            fetchCSV();
+        } else {
+            const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
+            swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
+        }
     } else {
         errorEl.innerText = 'Kullanıcı adı veya şifre hatalı.';
     }
