@@ -1034,6 +1034,16 @@ function checkNotifs() {
 
 function openNotifModal() {
     if(!LOGGED_IN_USER) return;
+    
+    if(LOGGED_IN_USER.role === 'admin') {
+        $('btn-show-send-notif').classList.remove('hidden');
+    } else {
+        $('btn-show-send-notif').classList.add('hidden');
+    }
+    $('notif-send-form').classList.add('hidden'); $('notif-send-form').classList.remove('flex');
+    $('notif-content').classList.remove('hidden');
+    $('btn-show-send-notif').innerText = 'YENİ MESAJ';
+
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
     let msgs = [];
     if (an['GLOBAL']) msgs.push({ title: 'GENEL DUYURU', text: an['GLOBAL'], bg: 'bg-accent/10 border-accent/30', col: 'text-accent' });
@@ -1056,6 +1066,34 @@ function openNotifModal() {
 function closeNotifModal() {
     const el = $('notif-modal'); el.classList.add('opacity-0');
     setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
+}
+
+function toggleNotifForm() {
+    const form = $('notif-send-form');
+    const content = $('notif-content');
+    const btn = $('btn-show-send-notif');
+    if(form.classList.contains('hidden')) {
+        form.classList.remove('hidden'); form.classList.add('flex');
+        content.classList.add('hidden');
+        btn.innerText = 'GERİ DÖN';
+        $('modal-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+    } else {
+        form.classList.add('hidden'); form.classList.remove('flex');
+        content.classList.remove('hidden');
+        btn.innerText = 'YENİ MESAJ';
+    }
+}
+
+function sendNotifFromModal(e) {
+    e.preventDefault();
+    const user = $('modal-n-user').value; const msg = $('modal-n-msg').value.trim();
+    if(!user || !msg) return;
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    an[user] = msg; localStorage.setItem('appNotifs', JSON.stringify(an));
+    const payload = { action: "sendNotif", user: user, message: msg };
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
+    toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
+    $('modal-n-msg').value = ''; toggleNotifForm(); checkNotifs();
 }
 
 async function fetchUsers() {
