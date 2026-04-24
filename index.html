@@ -1143,6 +1143,74 @@ function sendNotifFromModal(e) {
     $('modal-n-msg').value = ''; toggleNotifForm(); checkNotifs();
 }
 
+// KULLANICI PROFİL FOTOĞRAFI YÖNETİMİ
+function openProfileModal() {
+    if(!LOGGED_IN_USER) return;
+    const u = USER_DATA[LOGGED_IN_USER.name];
+    $('profile-photo-url').value = u.photo || '';
+    updateProfilePreview(u.photo || '');
+    const el = $('profile-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
+}
+
+function closeProfileModal() {
+    const el = $('profile-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
+}
+
+function updateProfilePreview(url) {
+    if(url) { $('profile-preview').src = url; $('profile-preview').classList.remove('hidden'); $('profile-initials').classList.add('hidden'); }
+    else { $('profile-preview').classList.add('hidden'); $('profile-initials').classList.remove('hidden'); $('profile-initials').innerText = LOGGED_IN_USER.name.slice(0,2).toUpperCase(); }
+}
+
+$('profile-photo-url').addEventListener('input', (e) => updateProfilePreview(e.target.value));
+
+function removeProfilePhoto() {
+    $('profile-photo-url').value = '';
+    updateProfilePreview('');
+}
+
+async function saveProfileFromModal(e) {
+    e.preventDefault();
+    const photo = $('profile-photo-url').value.trim();
+    const name = LOGGED_IN_USER.name;
+    const pass = USER_DATA[name].pass;
+    const role = USER_DATA[name].role;
+    const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+    USER_DATA[name].photo = photo;
+    let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+    if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
+    if (photo) { $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); } else { $('user-avatar').classList.add('hidden'); }
+    toast('Profil fotoğrafı güncellendi.', 'ok'); closeProfileModal(); if(cTab==='admin') rAdmin();
+}
+
+function toggleNotifForm() {
+    const form = $('notif-send-form');
+    const content = $('notif-content');
+    const btn = $('btn-show-send-notif');
+    if(form.classList.contains('hidden')) {
+        form.classList.remove('hidden'); form.classList.add('flex');
+        content.classList.add('hidden');
+        btn.innerText = 'GERİ DÖN';
+        $('modal-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+    } else {
+        form.classList.add('hidden'); form.classList.remove('flex');
+        content.classList.remove('hidden');
+        btn.innerText = 'YENİ MESAJ';
+    }
+}
+
+function sendNotifFromModal(e) {
+    e.preventDefault();
+    const user = $('modal-n-user').value; const msg = $('modal-n-msg').value.trim();
+    if(!user || !msg) return;
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    an[user] = msg; localStorage.setItem('appNotifs', JSON.stringify(an));
+    const payload = { action: "sendNotif", user: user, message: msg };
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
+    toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
+    $('modal-n-msg').value = ''; toggleNotifForm(); checkNotifs();
+}
+
 async function fetchUsers() {
     try {
         let text = await getCSV(USERS_URL);
