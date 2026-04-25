@@ -536,6 +536,10 @@ let LOGGED_IN_USER = null;
 let USER_DATA = {};
 let adminSettings = JSON.parse(localStorage.getItem('adminSettings')) || { hiddenTabs: [] };
 
+// URL Parametrelerini Yakala (PWA Kısayolları İçin)
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('tab')) cTab = urlParams.get('tab');
+
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
 
 // PRES MALZEME TAKİP DOSYASININ ID'Sİ (Veya Tam Linki)
@@ -587,6 +591,14 @@ function safeAttr(str) {
     if (str === null || str === undefined) return '';
     return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
+
+    function safeJSON(str, fallback) {
+        if (!str || str === 'undefined') return fallback;
+        try {
+            const parsed = JSON.parse(str);
+            return parsed !== null ? parsed : fallback;
+        } catch (e) { return fallback; }
+    }
 
 // TOAST BİLDİRİM
 function toast(msg, type='ok') {
@@ -958,11 +970,11 @@ function popF(){
     const calisanSelect = $('f-calisan');
     const vC = calisanSelect.value, vP1 = $('f-pres1').value, vP2 = $('f-pres2').value, vF1 = $('f-fason1').value, vF2 = $('f-fason2').value;
 
-    if (LOGGED_IN_USER.role === 'admin') {
+    if (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') {
         const emps=[...new Set([...Object.keys(USER_DATA), ...SABIT_CALISANLAR, ...RAW.map(r=>r.calisan)])].filter(x=>x).sort();
         calisanSelect.innerHTML='<option value="">Seçiniz...</option>'+emps.map(e=>`<option value="${e}">${e}</option>`).join('');
         calisanSelect.disabled = false;
-    } else {
+    } else if (LOGGED_IN_USER) {
         calisanSelect.innerHTML = `<option value="${LOGGED_IN_USER.name}" selected>${LOGGED_IN_USER.name}</option>`;
         calisanSelect.disabled = true;
     }
@@ -1163,6 +1175,16 @@ function checkNotifs() {
 
 function openNotifModal() {
     if(!LOGGED_IN_USER) return;
+    
+    if(LOGGED_IN_USER.role === 'admin') {
+        $('btn-show-send-notif').classList.remove('hidden');
+    } else {
+        $('btn-show-send-notif').classList.add('hidden');
+    }
+    $('notif-send-form').classList.add('hidden'); $('notif-send-form').classList.remove('flex');
+    $('notif-content').classList.remove('hidden');
+    $('btn-show-send-notif').innerText = 'YENİ MESAJ';
+
     let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
     let msgs = [];
     
@@ -1189,6 +1211,74 @@ function openNotifModal() {
 function closeNotifModal() {
     const el = $('notif-modal'); el.classList.add('opacity-0');
     setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
+}
+
+function toggleNotifForm() {
+    const form = $('notif-send-form');
+    const content = $('notif-content');
+    const btn = $('btn-show-send-notif');
+    if(form.classList.contains('hidden')) {
+        form.classList.remove('hidden'); form.classList.add('flex');
+        content.classList.add('hidden');
+        btn.innerText = 'GERİ DÖN';
+        $('modal-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+    } else {
+        form.classList.add('hidden'); form.classList.remove('flex');
+        content.classList.remove('hidden');
+        btn.innerText = 'YENİ MESAJ';
+    }
+}
+
+function sendNotifFromModal(e) {
+    e.preventDefault();
+    const user = $('modal-n-user').value; const msg = $('modal-n-msg').value.trim();
+    if(!user || !msg) return;
+    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    an[user] = msg; localStorage.setItem('appNotifs', JSON.stringify(an));
+    const payload = { action: "sendNotif", user: user, message: msg };
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
+    toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
+    $('modal-n-msg').value = ''; toggleNotifForm(); checkNotifs();
+}
+
+// KULLANICI PROFİL FOTOĞRAFI YÖNETİMİ
+function openProfileModal() {
+    if(!LOGGED_IN_USER) return;
+    const u = USER_DATA[LOGGED_IN_USER.name];
+    $('profile-photo-url').value = u.photo || '';
+    updateProfilePreview(u.photo || '');
+    const el = $('profile-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
+}
+
+function closeProfileModal() {
+    const el = $('profile-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
+}
+
+function updateProfilePreview(url) {
+    if(url) { $('profile-preview').src = url; $('profile-preview').classList.remove('hidden'); $('profile-initials').classList.add('hidden'); }
+    else { $('profile-preview').classList.add('hidden'); $('profile-initials').classList.remove('hidden'); $('profile-initials').innerText = LOGGED_IN_USER.name.slice(0,2).toUpperCase(); }
+}
+
+$('profile-photo-url').addEventListener('input', (e) => updateProfilePreview(e.target.value));
+
+function removeProfilePhoto() {
+    $('profile-photo-url').value = '';
+    updateProfilePreview('');
+}
+
+async function saveProfileFromModal(e) {
+    e.preventDefault();
+    const photo = $('profile-photo-url').value.trim();
+    const name = LOGGED_IN_USER.name;
+    const pass = USER_DATA[name].pass;
+    const role = USER_DATA[name].role;
+    const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+    USER_DATA[name].photo = photo;
+    let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+    if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
+    if (photo) { $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); } else { $('user-avatar').classList.add('hidden'); }
+    toast('Profil fotoğrafı güncellendi.', 'ok'); closeProfileModal(); if(cTab==='admin') rAdmin();
 }
 
 async function fetchUsers() {
@@ -1225,7 +1315,7 @@ async function fetchUsers() {
             }
             
             // Uygulama içinden eklenen veya düzenlenen kullanıcıları yerel bellekten yükle (Senkronize et)
-            let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+            let lu = safeJSON(localStorage.getItem('localUsers'), {});
             Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
             
             if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
@@ -1270,6 +1360,8 @@ function showLogin() {
             $('login-error').innerText = 'Kullanıcı listesi çekilemedi.';
         }
     });
+        
+        fetchCSV(true); // Arka planda verileri gizlice çek (Giriş yapıldığında ekran hazır olsun)
 }
 
 function login(e) {
@@ -1300,6 +1392,14 @@ function login(e) {
         applyRoleRestrictions();
         checkNotifs();
         fetchCSV(); // Giriş başarılı, verileri çek
+        
+        // Eğer arka plandaki çekim henüz bitmediyse yükleme ekranıyla birlikte çek, bittiyse direkt göster
+        if (RAW.length === 0) {
+            fetchCSV();
+        } else {
+            const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
+            swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
+        }
     } else {
         errorEl.innerText = 'Kullanıcı adı veya şifre hatalı.';
     }
@@ -1319,7 +1419,7 @@ function rAdmin() {
     ];
     $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
     
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
@@ -1350,7 +1450,7 @@ async function saveUserObj(e) {
     } catch(err) { console.error('Kullanıcı Google Sheets\'e kaydedilirken hata oluştu:', err); }
 
     USER_DATA[name] = { pass, role, photo };
-    let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+    let lu = safeJSON(localStorage.getItem('localUsers'), {});
     lu[name] = { pass, role, photo, deleted: false };
     localStorage.setItem('localUsers', JSON.stringify(lu));
     
@@ -1383,7 +1483,7 @@ function deleteUser(name) {
     if(name === 'Yusuf Yalçıntaş') return toast('Ana yönetici silinemez!', 'err');
     if(confirm(name + ' adlı kullanıcıyı sistemden silmek istediğinize emin misiniz?')) {
         delete USER_DATA[name];
-        let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+        let lu = safeJSON(localStorage.getItem('localUsers'), {});
         lu[name] = { deleted: true };
         localStorage.setItem('localUsers', JSON.stringify(lu));
         rAdmin(); toast('Kullanıcı silindi.', 'ok');
@@ -1392,7 +1492,7 @@ function deleteUser(name) {
 
 function loadUserNotif(user) {
     if(!user) { $('admin-n-msg').value = ''; return; }
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     let val = an[user];
     $('admin-n-msg').value = (typeof val === 'object' && val !== null) ? val.msg : (val || '');
 }
@@ -1401,7 +1501,7 @@ function sendNotif(e) {
     e.preventDefault();
     const user = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
     if(!user || !msg) return;
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     
     const now = new Date();
     const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
@@ -1414,7 +1514,7 @@ function sendNotif(e) {
 
 function clearNotif() {
     const user = $('admin-n-user').value; if(!user) return toast('Önce bir hedef seçin.', 'warn');
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     delete an[user]; localStorage.setItem('appNotifs', JSON.stringify(an));
     $('admin-n-msg').value = '';
     toast('Mevcut bildirim silindi.', 'ok'); checkNotifs(); rAdmin();
@@ -1578,29 +1678,33 @@ function fetchCSV(isBg = false) {
         swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
     }).catch(e=>{
         console.error('Veri İşleme Hatası:', e);
-        $('src-status').innerText='● HATA'; $('src-status').style.color='#e86d3a';
+        $('src-status').innerText='● BAĞLANTI HATASI'; $('src-status').style.color='#e86d3a';
+        $('src-info').innerText='Veri okunamadı. İzinleri kontrol edin.';
         if(!isBg) {
-            if(e instanceof ReferenceError) toast('Sistem Hatası: Kod eksikliği tespit edildi.', 'err');
-            else toast('Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
+            toast(e.message || 'Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
         }
     }).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false; if(!isBg) hideLoader();});
 }
 
 // OTOMATİK GÜNCELLEME VE OTURUM KONTROLÜ
 const savedUser = sessionStorage.getItem('loggedUser');
-if(savedUser) {
-    LOGGED_IN_USER = JSON.parse(savedUser);
+if(savedUser && savedUser !== "undefined") {
+    LOGGED_IN_USER = safeJSON(savedUser, null);
+    if (LOGGED_IN_USER) {
     $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
     $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
-    applyRoleRestrictions();
     fetchUsers().then(() => {
         if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
             $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
             $('user-avatar').classList.remove('hidden');
         }
+        applyRoleRestrictions();
         checkNotifs();
         fetchCSV();
     });
+    } else {
+        showLogin();
+    }
 } else {
     showLogin();
 }
@@ -1644,6 +1748,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
         };
     }
 });
+
+// Çevrimdışı/Çevrimiçi Durum Bildirimi
+window.addEventListener('online', () => { toast('İnternet bağlantısı yeniden sağlandı.', 'ok'); fetchCSV(); });
+window.addEventListener('offline', () => toast('İnternet bağlantısı kesildi. Çevrimdışı moddasınız.', 'warn'));
 </script>
 </body>
 </html>
