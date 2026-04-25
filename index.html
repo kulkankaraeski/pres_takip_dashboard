@@ -284,7 +284,7 @@
 
         <div class="panel hidden" id="panel-form">
             <div class="bg-bg2 border border-border rounded p-6 max-w-4xl mx-auto shadow-lg">
-                <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">YENİ ÜRETİM KAYDI GİRİŞİ</h2>
+                <h2 id="form-title" class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">YENİ ÜRETİM KAYDI GİRİŞİ</h2>
                 <form id="uretim-formu" onsubmit="submitForm(event)" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
@@ -337,7 +337,10 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end border-t border-border pt-4"><button type="submit" class="px-6 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg">💾 KAYDET VE GÖNDER</button></div>
+                    <div class="flex justify-end border-t border-border pt-4 gap-3">
+                        <button type="button" id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-4 py-2.5 bg-bg3 hover:bg-border text-text2 font-bold font-mono rounded transition-all">İPTAL</button>
+                        <button type="submit" id="btn-submit-form" class="px-6 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg">💾 KAYDET VE GÖNDER</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -704,12 +707,14 @@ function rG(){
     const ps=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,12);
     mc('c3','bar',{labels:ps.map(x=>x[0]),datasets:[{label:'Üretim (Adet)',data:ps.map(x=>x[1]),backgroundColor:cR('accent',0.75)}]});
     
-    $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
+    const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
+    $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf', ...(isAdmin ? ['İşlem'] : [])]);
     $('tb-gun').innerHTML=dd.map((r,i)=>trD([
         i+1, `<b class="emp-link" onclick="openModal('${safeAttr(r.calisan)}')"> ${escapeHTML(r.calisan)}</b>`, escapeHTML(r.vardiya)||'-',
         escapeHTML(r.pres1)||'-', escapeHTML(r.fason1)||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
         escapeHTML(r.pres2)||'-', escapeHTML(r.fason2)||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
-        n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
+        n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP),
+        ...(isAdmin ? [`<div class="flex gap-2 items-center"><button onclick="editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:underline font-bold text-[14px]" title="Düzenle">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:underline font-bold text-[14px]" title="Sil">🗑</button></div>`] : [])
     ])).join('');
 }
 
@@ -860,12 +865,14 @@ function openRecsModal(title, data) {
     const cCard = (l, v1, v2, v3) => `<div class="bg-bg border border-border rounded p-3 flex flex-col"><span class="text-xs font-mono text-text3 mb-1">${l}</span><span class="font-bold text-lg text-text">${v1}</span><div class="flex justify-between mt-1"><span class="text-[10px] text-accent">${v2}</span><span class="text-[10px] text-accent2">${v3}</span></div></div>`;
     $('recs-stats').innerHTML = cCard('TOPLAM ÜRETİM', n(s.u)+' Adet', s.c+' Kayıt', n(s.b)+' Hedef') + cCard('ORTALAMA PERF.', s.p.toFixed(1)+'%', '', '') + cCard('TOPLAM DURUŞ', n(s.d)+' Dk', '', '') + cCard('ÇALIŞAN', new Set(data.map(r=>r.calisan)).size+' Kişi', '', '');
     
-    $('t-recs').innerHTML = `<thead>${thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf'])}</thead><tbody id="recs-body" class="text-xs">` + 
+    const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
+    $('t-recs').innerHTML = `<thead>${thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf', ...(isAdmin ? ['İşlem'] : [])])}</thead><tbody id="recs-body" class="text-xs">` + 
         data.map(r => trD([
             r.tarih, `<a class="emp-link font-bold" onclick="closeRecsModal(); setTimeout(()=>openModal('${safeAttr(r.calisan)}'), 300);">${escapeHTML(r.calisan)}</a>`, r.vardiya||'-', 
             r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
             r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
-            n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
+            n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP),
+            ...(isAdmin ? [`<div class="flex gap-2"><button onclick="closeRecsModal(); editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:underline text-[14px]">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:underline text-[14px]">🗑</button></div>`] : [])
         ])).join('') + `</tbody>`;
     
     const el = $('recs-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
@@ -886,7 +893,8 @@ function openModal(emp) {
         </div>`;
     $('mdl-stats').innerHTML = cCard(`GÜNLÜK (${sD})`, calc(data.filter(r => r.tarih === sD))) + cCard('HAFTALIK', calc(data.filter(r => isoW(r.tarih) === sW))) + cCard(`AYLIK (${sM})`, calc(data.filter(r => r.tarih.endsWith(sM)))) + cCard('TÜM ZAMANLAR', calc(data));
     
-    $('mdl-th').innerHTML = th(['Tarih','Vardiya','Presler','Hedef','Üretim','Performans','Duruş']);
+    const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
+    $('mdl-th').innerHTML = th(['Tarih','Vardiya','Presler','Hedef','Üretim','Performans','Duruş', ...(isAdmin ? ['İşlem'] : [])]);
     const monthData = data.filter(r => r.tarih.endsWith(sM));
     $('mdl-history').innerHTML = monthData.map(r => { const topD = r.durus1 + r.durus2; return `
         <tr class="border-b border-border/50 hover:bg-bg2">
@@ -897,6 +905,7 @@ function openModal(emp) {
             <td class="p-3 font-mono font-bold text-accent">${n(r.tU)}</td>
             <td class="p-3">${pb(r.tP)}</td>
             <td class="p-3 font-mono">${topD > 0 ? `<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${n(topD)} dk</span>` : '-'}</td>
+            ${isAdmin ? `<td class="p-3 flex gap-2"><button onclick="closeModal(); editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:text-accent/80 text-[14px]" title="Düzenle">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:text-accent2/80 text-[14px]" title="Sil">🗑</button></td>` : ''}
         </tr>`;}).join('');
     const el = $('emp-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
 }
@@ -911,10 +920,30 @@ function openGenericModal(idx, type = 'deneme') {
     headers.forEach((h, i) => {
         html += `<div class="bg-white border border-gray-200 rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between shadow-sm hover:shadow-md transition-shadow"><span class="text-[11px] font-mono text-gray-500 mb-1 sm:mb-0 uppercase w-1/3">${h}</span><span class="font-bold text-sm text-gray-800 break-words whitespace-normal w-2/3 sm:text-right">${row[i] || '-'}</span></div>`;
     });
-    $('gen-mdl-content').innerHTML = html;
+    
+    const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
+    let actionHtml = '';
+    if(isAdmin) {
+        const sheetName = type === 'malzeme' ? 'Pres Malzeme Takip Listesi' : 'Üretim Takip Denemeleri';
+        actionHtml = `<div class="mt-4 pt-4 border-t border-gray-300 flex gap-2 justify-end"><button onclick="deleteGenericRecord(${idx}, '${sheetName}')" class="px-4 py-2 bg-red-500 text-white rounded shadow text-xs font-bold hover:bg-red-600 transition-colors">🗑 BU KAYDI SİL</button></div>`;
+    }
+    
+    $('gen-mdl-content').innerHTML = html + actionHtml;
     const el = $('generic-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
 }
 function closeGenericModal() { const el = $('generic-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300); }
+
+async function deleteGenericRecord(index, sheetName) {
+    if(!confirm(`Bu kaydı (${sheetName}) SİLMEK istediğinize emin misiniz?`)) return;
+    const payload = { action: "deleteRecord", sheet: sheetName, rowIndex: index + 2 };
+    try {
+        toast('Siliniyor...', 'warn');
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        toast('Silme komutu gönderildi.', 'ok');
+        closeGenericModal();
+        setTimeout(() => fetchCSV(), 1000);
+    } catch(err) { toast('İşlem başarısız', 'err'); }
+}
 
 // EKRAN GÖRÜNTÜSÜ ŞEKLİNDE PDF İNDİR (Güncellendi)
 function exportToPDF() {
@@ -956,11 +985,59 @@ function popF(){
     if(!$('f-tarih').value) $('f-tarih').value=new Date().toISOString().split('T')[0];
 }
 
+let editModeRecord = null;
+function editProductionRecord(tarih, calisan) {
+    const rec = RAW.find(r => r.tarih === tarih && r.calisan === calisan);
+    if(!rec) return;
+    editModeRecord = rec;
+    
+    swT('form', document.querySelector(`.nav-tab[onclick*="'form'"]`));
+    popF(); // Seçenekleri doldur
+    
+    $('f-tarih').value = rec.tarih.split('.').reverse().join('-');
+    $('f-calisan').value = rec.calisan;
+    $('f-vardiya').value = rec.vardiya;
+    $('f-pres1').value = rec.pres1 || '';
+    $('f-fason1').value = rec.fason1 || '';
+    $('f-uretim1').value = rec.uretim1 || '';
+    $('f-durus1').value = rec.durus1 || 0;
+    $('f-pres2').value = rec.pres2 || '';
+    $('f-fason2').value = rec.fason2 || '';
+    $('f-uretim2').value = rec.uretim2 || '';
+    $('f-durus2').value = rec.durus2 || 0;
+    
+    $('form-title').innerHTML = '✎ ÜRETİM KAYDI DÜZENLEME';
+    $('btn-submit-form').innerHTML = '💾 DEĞİŞİKLİKLERİ KAYDET';
+    $('btn-cancel-edit').classList.remove('hidden');
+}
+
+function cancelEdit() {
+    editModeRecord = null;
+    $('uretim-formu').reset();
+    popF();
+    $('form-title').innerHTML = 'YENİ ÜRETİM KAYDI GİRİŞİ';
+    $('btn-submit-form').innerHTML = '💾 KAYDET VE GÖNDER';
+    $('btn-cancel-edit').classList.add('hidden');
+}
+
+async function deleteProductionRecord(tarih, calisan) {
+    if(!confirm(`${tarih} tarihli ${calisan} kaydını SİLMEK istediğinize emin misiniz?`)) return;
+    const payload = { action: "deleteRecord", Tarih: tarih, Çalışan: calisan };
+    try {
+        toast('Siliniyor...', 'warn');
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        toast('Silme isteği gönderildi.', 'ok');
+        setTimeout(() => fetchCSV(), 1000);
+    } catch(err) { toast('İşlem başarısız', 'err'); }
+}
+
 function checkDuplicate(){
     const trh=$('f-tarih').value.split('-').reverse().join('.');
     const cal=$('f-calisan').value;
     const warn=$('dup-warn'), txt=$('dup-warn-text');
+    if(!warn) return;
     if(!trh||!cal) { warn.classList.add('hidden'); return; }
+    if(editModeRecord && editModeRecord.tarih === trh && editModeRecord.calisan === cal) { warn.classList.add('hidden'); return; }
     const exists=RAW.some(r=>r.tarih===trh&&r.calisan===cal);
     if(exists){ txt.innerText=`${cal} için ${trh} tarihinde kayıt zaten mevcut! Gönderirseniz hata alırsınız.`; warn.classList.remove('hidden'); }
     else warn.classList.add('hidden');
@@ -969,15 +1046,16 @@ function checkDuplicate(){
 async function submitForm(e){
     e.preventDefault();
     const trh=$('f-tarih').value.split('-').reverse().join('.'); const cal=$('f-calisan').value;
-    if(RAW.some(r=>r.tarih===trh && r.calisan===cal)){
+    
+    if(RAW.some(r=>r.tarih===trh && r.calisan===cal) && (!editModeRecord || (editModeRecord.tarih !== trh || editModeRecord.calisan !== cal))){
         toast(`${cal} için ${trh} tarihinde kayıt zaten mevcut!`, 'err'); return;
     }
 
-    if(!confirm('Bu veriyi kaydetmek ve göndermek istediğinize emin misiniz?')) return;
+    if(!confirm(editModeRecord ? 'Değişiklikleri kaydetmek istediğinize emin misiniz?' : 'Bu veriyi kaydetmek ve göndermek istediğinize emin misiniz?')) return;
 
-    const btn = e.target.querySelector('button[type="submit"]');
+    const btn = $('btn-submit-form');
     const origTxt = btn.innerHTML;
-    btn.innerHTML = '⏳ KAYDEDİLİYOR...'; 
+    btn.innerHTML = '⏳ İŞLENİYOR...'; 
     btn.disabled = true;
 
     // DİKKAT: Sol taraftaki anahtar isimleri (Tarih, Çalışan vb.) Google Sheets'teki 
@@ -996,6 +1074,14 @@ async function submitForm(e){
         "Duruş Süresi 2 (dk)": $('f-durus2').value || 0
         // Performans vb. gibi hücreleriniz Google Sheets'te formüllü ise buraya eklemenize gerek yok.
     };
+    
+    if (editModeRecord) {
+        payload.action = "editRecord";
+        payload.oldTarih = editModeRecord.tarih;
+        payload.oldCalisan = editModeRecord.calisan;
+    } else {
+        payload.action = "addRecord";
+    }
 
     try {
         await fetch(SCRIPT_URL, {
@@ -1005,12 +1091,12 @@ async function submitForm(e){
             body: JSON.stringify(payload)
         });
         
-        toast('BAŞARIYLA KAYDEDİLDİ!', 'ok'); 
-        e.target.reset(); // Formu sıfırla
-        popF(); // Veri formunu başlangıç haline getir
+        toast('BAŞARIYLA İŞLENDİ!', 'ok'); 
+        if (editModeRecord) cancelEdit();
+        else { e.target.reset(); popF(); }
         setTimeout(() => fetchCSV(), 1000); // 1 saniye sonra verileri yenile
     } catch(err) {
-        alert('❌ GÖNDERİM HATASI: İnternet bağlantınızı kontrol edin.');
+        alert('❌ İŞLEM HATASI: İnternet bağlantınızı kontrol edin.');
     } finally {
         btn.innerHTML = origTxt; btn.disabled = false;
     }
@@ -1114,7 +1200,7 @@ async function fetchUsers() {
             const headers = lines[0].split(',').map(x=>x.replace(/"/g,'').trim().toLowerCase());
             let nameIdx = headers.findIndex(h => h.includes('çalışan') || h.includes('ad'));
             let passIdx = headers.findIndex(h => h.includes('şifre') || h.includes('sifre'));
-            let roleIdx = headers.findIndex(h => h === 'rol' || h === 'yetki');
+            let roleIdx = headers.findIndex(h => h.includes('rol') || h.includes('yetki'));
             let photoIdx = headers.findIndex(h => h.includes('fotoğraf') || h.includes('fotograf') || h.includes('resim'));
             
             if (nameIdx === -1) nameIdx = 0;
@@ -1130,8 +1216,8 @@ async function fetchUsers() {
                 let role = 'user';
                 if (roleIdx !== -1 && cols[roleIdx]) {
                     let r = cols[roleIdx].toLowerCase().trim();
-                    if (r === 'yönetici' || r === 'admin') role = 'admin';
-                    else if (r === 'üye' || r === 'user') role = 'user';
+                    if (r.includes('yönetici') || r.includes('admin')) role = 'admin';
+                    else if (r.includes('üye') || r.includes('user')) role = 'user';
                 }
                 let photo = (photoIdx !== -1 && cols[photoIdx]) ? cols[photoIdx] : '';
                 
