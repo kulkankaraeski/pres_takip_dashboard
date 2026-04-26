@@ -71,9 +71,10 @@
             }
             .panel:not(.active) { display: none !important; opacity: 0 !important; }
             .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
-            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #notif-modal, #user-info { display: none !important; }
+            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #generic-form-modal, #notif-modal, #user-info { display: none !important; }
             .overflow-auto { max-height: none !important; overflow: visible !important; }
             canvas { max-height: 250px !important; }
+            .admin-only-btn { display: none !important; }
         }
     </style>
 </head>
@@ -351,7 +352,10 @@
 
         <div class="panel hidden" id="panel-kaliphane">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">KALIPHANE LOKASYONLARI</span><input type="text" onkeyup="fT('tb-kalip',this.value)" placeholder="Kalıp Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="p-4 border-b border-border flex justify-between items-center">
+                    <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">KALIPHANE LOKASYONLARI</span><button onclick="openGenericFormModal('kalip')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
+                    <input type="text" onkeyup="fT('tb-kalip',this.value)" placeholder="Kalıp Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
+                </div>
                 <div class="overflow-auto max-h-[70vh]">
                     <table class="w-full text-left border-collapse" id="t-kalip">
                         <thead id="th-kalip"></thead>
@@ -363,7 +367,10 @@
 
         <div class="panel hidden" id="panel-malzeme">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">PRES MALZEME TAKİP LİSTESİ</span><input type="text" onkeyup="fT('tb-malzeme',this.value)" placeholder="Malzeme Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="p-4 border-b border-border flex justify-between items-center">
+                    <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">PRES MALZEME TAKİP LİSTESİ</span><button onclick="openGenericFormModal('malzeme')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
+                    <input type="text" onkeyup="fT('tb-malzeme',this.value)" placeholder="Malzeme Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
+                </div>
                 <div class="overflow-auto max-h-[70vh]">
                     <table class="w-full text-left border-collapse" id="t-malzeme">
                         <thead id="th-malzeme"></thead>
@@ -375,7 +382,10 @@
 
         <div class="panel hidden" id="panel-kayitlar">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM TAKİP DENEMELERİ</span><input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Kayıt Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="p-4 border-b border-border flex justify-between items-center">
+                    <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM TAKİP DENEMELERİ</span><button onclick="openGenericFormModal('deneme')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
+                    <input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Kayıt Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
+                </div>
                 <div class="overflow-auto max-h-[70vh]">
                     <table class="w-full text-left border-collapse" id="t-kayit">
                         <thead id="th-kayit"></thead>
@@ -458,6 +468,17 @@
         </div>
 
     </main>
+    </div>
+
+    <div id="generic-form-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-lg w-full shadow-2xl relative">
+            <button onclick="closeGenericFormModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
+            <h2 id="gen-form-title" class="font-bebas text-2xl tracking-[2px] text-accent mb-4 border-b border-border pb-2">KAYIT EKLE/DÜZENLE</h2>
+            <form id="generic-data-form" onsubmit="saveGenericForm(event)" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <div id="gen-form-fields" class="flex flex-col gap-3"></div>
+                <div class="flex gap-2 pt-4 border-t border-border mt-4"><button type="submit" class="flex-1 px-4 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all shadow-lg">💾 KAYDET</button></div>
+            </form>
+        </div>
     </div>
 
     <div id="generic-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
@@ -819,7 +840,7 @@ function rF(){
 
 function rKaliphane() {
     $('th-kalip').innerHTML = th(['Fason / Kalıp Adı', 'Lokasyon']);
-    $('tb-kalip').innerHTML = KALIP_RAW.map(x => tr([`<b>${x.f}</b>`, `<span class="text-accent2 font-mono">${x.l}</span>`])).join('');
+    $('tb-kalip').innerHTML = KALIP_RAW.map((x, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'kalip')"><td class="p-2 whitespace-nowrap"><b>${x.f}</b></td><td class="p-2 whitespace-nowrap"><span class="text-accent2 font-mono">${x.l}</span></td></tr>`).join('');
 }
 
 function rKayitlar() {
@@ -1154,6 +1175,11 @@ function applyRoleRestrictions() {
     const adminBtn = $('nav-admin');
     if(adminBtn) adminBtn.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
     
+    document.querySelectorAll('.admin-only-btn').forEach(btn => {
+        btn.classList.toggle('hidden', !(LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin'));
+        btn.classList.toggle('flex', !!(LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin'));
+    });
+
     if (LOGGED_IN_USER && LOGGED_IN_USER.role !== 'admin') {
         adminSettings.hiddenTabs.forEach(tab => {
             const navEl = document.querySelector(`.nav-tab[onclick*="'${tab}'"]`);
