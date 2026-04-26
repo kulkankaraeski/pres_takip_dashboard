@@ -529,12 +529,22 @@
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
 }
+
+function safeJSON(str, fallback) {
+    if (!str || str === 'undefined') return fallback;
+    try {
+        const parsed = JSON.parse(str);
+        return parsed !== null ? parsed : fallback;
+    } catch (e) { return fallback; }
+}
+
 let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, MALZEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
 let USER_DATA = {};
-let adminSettings = JSON.parse(localStorage.getItem('adminSettings')) || { hiddenTabs: [] };
+let adminSettings = safeJSON(localStorage.getItem('adminSettings'), { hiddenTabs: [] });
+if (!adminSettings || !Array.isArray(adminSettings.hiddenTabs)) adminSettings = { hiddenTabs: [] };
 
 // URL Parametrelerini Yakala (PWA Kısayolları İçin)
 const urlParams = new URLSearchParams(window.location.search);
@@ -546,7 +556,8 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq
 const MALZEME_DOC_ID = '1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c'; 
 
 // Akıllı ID Çıkarıcı: Eğer yanlışlıkla tüm link yapıştırılırsa sistemi çökertmemesi için sadece ID'yi filtreler.
-const extMalzemeId = MALZEME_DOC_ID.includes('/d/') ? MALZEME_DOC_ID.match(/\/d\/([a-zA-Z0-9-_]+)/)[1] : MALZEME_DOC_ID;
+const matchMalz = MALZEME_DOC_ID.match(/\/d\/([a-zA-Z0-9-_]+)/);
+const extMalzemeId = matchMalz ? matchMalz[1] : MALZEME_DOC_ID;
 
 const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
 const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
@@ -591,14 +602,6 @@ function safeAttr(str) {
     if (str === null || str === undefined) return '';
     return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
-
-    function safeJSON(str, fallback) {
-        if (!str || str === 'undefined') return fallback;
-        try {
-            const parsed = JSON.parse(str);
-            return parsed !== null ? parsed : fallback;
-        } catch (e) { return fallback; }
-    }
 
 // TOAST BİLDİRİM
 function toast(msg, type='ok') {
@@ -1148,7 +1151,7 @@ function checkNotifs() {
     const pnlTitle = $('hdr-notif-title');
     const pnlText = $('hdr-notif-text');
     if(!LOGGED_IN_USER) return;
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     let count = 0;
     let lastMsg = 'Bildirim Yok';
     
@@ -1185,7 +1188,7 @@ function openNotifModal() {
     $('notif-content').classList.remove('hidden');
     $('btn-show-send-notif').innerText = 'YENİ MESAJ';
 
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     let msgs = [];
     
     const getObj = (val) => typeof val === 'object' && val !== null ? val : { msg: val, time: '' };
@@ -1233,7 +1236,7 @@ function sendNotifFromModal(e) {
     e.preventDefault();
     const user = $('modal-n-user').value; const msg = $('modal-n-msg').value.trim();
     if(!user || !msg) return;
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
+    let an = safeJSON(localStorage.getItem('appNotifs'), {});
     an[user] = msg; localStorage.setItem('appNotifs', JSON.stringify(an));
     const payload = { action: "sendNotif", user: user, message: msg };
     fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
@@ -1341,7 +1344,8 @@ function togglePassword() {
 }
 
 function showLogin() {
-    document.querySelector('.main-content').classList.add('blurred');
+    const mc = document.querySelector('.main-content');
+    if(mc) mc.classList.add('blurred');
     if($('app-header')) { $('app-header').classList.add('hidden'); $('app-header').classList.remove('flex'); }
     if($('app-main')) { $('app-main').classList.add('hidden'); $('app-main').classList.remove('flex'); }
     
@@ -1382,8 +1386,9 @@ function login(e) {
         errorEl.innerText = '';
         const el = $('login-modal'); el.classList.add('opacity-0');
         setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
-        // FIX #1: document.querySelector ile düzeltildi
-        document.querySelector('.main-content').classList.remove('blurred');
+        
+        const mc = document.querySelector('.main-content');
+        if(mc) mc.classList.remove('blurred');
         
         $('app-header').classList.remove('hidden'); $('app-header').classList.add('flex');
         $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
