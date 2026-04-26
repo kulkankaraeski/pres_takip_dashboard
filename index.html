@@ -71,7 +71,7 @@
             }
             .panel:not(.active) { display: none !important; opacity: 0 !important; }
             .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
-        #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #notif-modal, #user-info { display: none !important; }
+            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #notif-modal, #user-info { display: none !important; }
             .overflow-auto { max-height: none !important; overflow: visible !important; }
             canvas { max-height: 250px !important; }
         }
@@ -103,7 +103,6 @@
         </div>
     </div>
 
-    <header class="flex flex-col xl:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 md:p-4 rounded-lg shadow-lg relative overflow-hidden">
     <header id="app-header" class="hidden flex-col xl:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 md:p-4 rounded-lg shadow-lg relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
         
@@ -161,7 +160,6 @@
         </div>
     </header>
 
-    <div class="main-content flex-1 flex flex-col min-h-0 overflow-x-hidden">
     <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-x-hidden">
     <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2 p-1.5 md:p-2 rounded-lg border border-border shrink-0 shadow-sm" id="main-nav">
         <!-- Raporlar Dropdown -->
@@ -1365,8 +1363,8 @@ function showLogin() {
             $('login-error').innerText = 'Kullanıcı listesi çekilemedi.';
         }
     });
-        
-        fetchCSV(true); // Arka planda verileri gizlice çek (Giriş yapıldığında ekran hazır olsun)
+    
+    fetchCSV(true); // Arka planda verileri gizlice çek (Giriş yapıldığında ekran hazır olsun)
 }
 
 function login(e) {
@@ -1386,7 +1384,6 @@ function login(e) {
         setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
         // FIX #1: document.querySelector ile düzeltildi
         document.querySelector('.main-content').classList.remove('blurred');
-        $('user-name').innerText = `👤 ${user}`;
         
         $('app-header').classList.remove('hidden'); $('app-header').classList.add('flex');
         $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
@@ -1401,7 +1398,6 @@ function login(e) {
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         applyRoleRestrictions();
         checkNotifs();
-        fetchCSV(); // Giriş başarılı, verileri çek
         
         // Eğer arka plandaki çekim henüz bitmediyse yükleme ekranıyla birlikte çek, bittiyse direkt göster
         if (RAW.length === 0) {
@@ -1703,22 +1699,21 @@ const savedUser = sessionStorage.getItem('loggedUser');
 if(savedUser && savedUser !== "undefined") {
     LOGGED_IN_USER = safeJSON(savedUser, null);
     if (LOGGED_IN_USER) {
-    $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
-    $('app-header').classList.remove('hidden'); $('app-header').classList.add('flex');
-    $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
-    
-    const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
-    $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
-    $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
-    fetchUsers().then(() => {
-        if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
-            $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
-            $('user-avatar').classList.remove('hidden');
-        }
-        applyRoleRestrictions();
-        checkNotifs();
-        fetchCSV();
-    });
+        $('app-header').classList.remove('hidden'); $('app-header').classList.add('flex');
+        $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
+        
+        const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
+        $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
+        $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
+        fetchUsers().then(() => {
+            if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
+                $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
+                $('user-avatar').classList.remove('hidden');
+            }
+            applyRoleRestrictions();
+            checkNotifs();
+            fetchCSV();
+        });
     } else {
         showLogin();
     }
@@ -1726,7 +1721,6 @@ if(savedUser && savedUser !== "undefined") {
     showLogin();
 }
 
-setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled) fetchCSV(true); }, 60000);
 setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled) fetchCSV(true); }, 15000);
 
 // SERVICE WORKER (PWA) KAYDI
