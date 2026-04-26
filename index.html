@@ -611,7 +611,7 @@ function safeJSON(str, fallback) {
     } catch (e) { return fallback; }
 }
 
-let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, MALZEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
+let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, MALZEME_RAW={h:[], r:[]}, MESAJ_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
@@ -637,6 +637,7 @@ const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Pres Malzeme Takip Listesi');
 const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
+const MESAJ_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Mesajlar');
 
 // FORM İÇİN SABİT TANIMLAR (Kendinize Göre Değiştirebilirsiniz)
 const SABIT_CALISANLAR = ["Yusuf Yalçıntaş", "Ahmet Yılmaz", "Mehmet Demir"];
@@ -1230,60 +1231,74 @@ function checkNotifs() {
     const pnlTitle = $('hdr-notif-title');
     const pnlText = $('hdr-notif-text');
     if(!LOGGED_IN_USER) return;
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
-    let count = 0;
-    let lastMsg = 'Bildirim Yok';
     
-    const getMsg = (val) => typeof val === 'object' && val !== null ? val.msg : val;
-    if(an['GLOBAL']) { count++; lastMsg = getMsg(an['GLOBAL']); }
-    if(an[LOGGED_IN_USER.name]) { count++; lastMsg = getMsg(an[LOGGED_IN_USER.name]); }
+    // Kullanıcıya ait veya Herkese gönderilmiş mesajları bul
+    const myMsgs = MESAJ_RAW.r ? MESAJ_RAW.r.filter(row => row[2] === LOGGED_IN_USER.name || row[2] === 'GLOBAL') : [];
+    const lastCount = parseInt(localStorage.getItem('lastMsgCount_' + LOGGED_IN_USER.name) || '0');
+    const unread = myMsgs.length - lastCount;
     
-    if(count > 0) {
+    let lastMsgText = myMsgs.length > 0 ? myMsgs[myMsgs.length-1][3] : 'Mesaj Yok';
+    if(lastMsgText.length > 15) lastMsgText = lastMsgText.substring(0, 15) + '...';
+
+    if(unread > 0) {
         // Aktif/Yeni Bildirim Var Modu
-        if(badge) { badge.innerText = count; badge.classList.remove('hidden'); badge.classList.add('flex'); }
+        if(badge) { badge.innerText = unread; badge.classList.remove('hidden'); badge.classList.add('flex'); }
         if(pnl) { pnl.classList.add('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.remove('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.add('text-accent2'); pnlTitle.classList.remove('text-text3'); }
-        if(pnlText) { pnlText.classList.add('text-text'); pnlText.classList.remove('text-text2'); pnlText.innerText = lastMsg; }
+        if(pnlText) { pnlText.classList.add('text-text', 'font-bold'); pnlText.classList.remove('text-text2'); pnlText.innerText = lastMsgText; }
     } else {
         // Pasif/Boş Mod
         if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
         if(pnl) { pnl.classList.remove('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.add('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.remove('text-accent2'); pnlTitle.classList.add('text-text3'); }
-        if(pnlText) { pnlText.classList.remove('text-text'); pnlText.classList.add('text-text2'); pnlText.innerText = lastMsg; }
+        if(pnlText) { pnlText.classList.remove('text-text', 'font-bold'); pnlText.classList.add('text-text2'); pnlText.innerText = 'Mesaj Kutusu'; }
     }
 }
 
 function openNotifModal() {
     if(!LOGGED_IN_USER) return;
     
-    if(LOGGED_IN_USER.role === 'admin') {
-        $('btn-show-send-notif').classList.remove('hidden');
-    } else {
-        $('btn-show-send-notif').classList.add('hidden');
-    }
+    // Artık herkes mesaj gönderebileceği için butonu her zaman göster
+    $('btn-show-send-notif').classList.remove('hidden');
+    
     $('notif-send-form').classList.add('hidden'); $('notif-send-form').classList.remove('flex');
     $('notif-content').classList.remove('hidden');
     $('btn-show-send-notif').innerText = 'YENİ MESAJ';
 
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
-    let msgs = [];
+    // İlgili mesajları filtrele (Bana gelenler, Herkese gidenler veya Benim gönderdiklerim)
+    const myMsgs = MESAJ_RAW.r ? MESAJ_RAW.r.filter(row => row[1] === LOGGED_IN_USER.name || row[2] === LOGGED_IN_USER.name || row[2] === 'GLOBAL') : [];
     
-    const getObj = (val) => typeof val === 'object' && val !== null ? val : { msg: val, time: '' };
-    if (an['GLOBAL']) { let d = getObj(an['GLOBAL']); msgs.push({ title: 'GENEL DUYURU', text: d.msg, time: d.time, bg: 'bg-accent/10 border-accent/30', col: 'text-accent' }); }
-    if (an[LOGGED_IN_USER.name]) { let d = getObj(an[LOGGED_IN_USER.name]); msgs.push({ title: 'KİŞİSEL MESAJ (' + LOGGED_IN_USER.name + ')', text: d.msg, time: d.time, bg: 'bg-accent2/10 border-accent2/30', col: 'text-accent2' }); }
+    // Okundu işaretle
+    const incoming = MESAJ_RAW.r ? MESAJ_RAW.r.filter(row => row[2] === LOGGED_IN_USER.name || row[2] === 'GLOBAL') : [];
+    localStorage.setItem('lastMsgCount_' + LOGGED_IN_USER.name, incoming.length.toString());
+    checkNotifs();
 
     let html = '';
     if(msgs.length === 0) {
-        html = '<div class="text-text3 text-sm font-mono text-center py-4">Yeni bildiriminiz yok.</div>';
+        html = '<div class="text-text3 text-sm font-mono text-center py-8">Mesaj kutunuz boş. Yeni mesaj başlatabilirsiniz.</div>';
     } else {
-        msgs.forEach(m => {
-            let timeHtml = m.time ? `<span class="text-[9px] font-mono text-text3 opacity-70">${m.time}</span>` : '';
-            html += `<div class="${m.bg} border rounded p-4 flex flex-col gap-2 shadow-sm"><div class="flex justify-between items-start"><span class="text-[11px] font-bold tracking-wider ${m.col} uppercase flex items-center gap-1">▪ ${m.title}</span>${timeHtml}</div><p class="text-sm text-text leading-relaxed whitespace-pre-wrap">${escapeHTML(m.text)}</p></div>`;
+        myMsgs.forEach(row => {
+            const isMe = row[1] === LOGGED_IN_USER.name;
+            const isGlobal = row[2] === 'GLOBAL';
+            
+            const align = isMe ? 'items-end' : 'items-start';
+            const bg = isMe ? 'bg-accent/20 border border-accent/30 text-text rounded-tr-none' : (isGlobal ? 'bg-accent3/20 border border-accent3/30 text-text rounded-tl-none' : 'bg-bg3 border border-border text-text rounded-tl-none');
+            const sender = isMe ? 'SİZ' : (row[1] || 'SİSTEM');
+            const target = isGlobal ? '(HERKESE)' : (isMe ? `(Kime: ${row[2]})` : '');
+            
+            html += `
+            <div class="flex flex-col ${align} w-full mb-3">
+                <div class="text-[9px] font-mono text-text3 mb-1 px-1">${sender} <span class="text-accent ml-1">${target}</span> <span class="opacity-50 ml-2">${row[0] || ''}</span></div>
+                <div class="${bg} rounded-lg p-3 max-w-[85%] shadow-sm relative">
+                    <p class="text-xs leading-relaxed whitespace-pre-wrap">${escapeHTML(row[3] || '')}</p>
+                </div>
+            </div>`;
         });
     }
     $('notif-content').innerHTML = html;
-    if($('btn-notif')) $('btn-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle
-    if($('hdr-notif')) $('hdr-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle
+    
+    // Sohbetin en altına kaydır
+    setTimeout(() => { const el = $('notif-content'); if(el) el.scrollTop = el.scrollHeight; }, 50);
     
     const el = $('notif-modal'); el.classList.remove('hidden'); el.classList.add('flex');
     setTimeout(()=>el.classList.remove('opacity-0'),10);
@@ -1301,24 +1316,39 @@ function toggleNotifForm() {
         form.classList.remove('hidden'); form.classList.add('flex');
         content.classList.add('hidden');
         btn.innerText = 'GERİ DÖN';
-        $('modal-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+        
+        // Kişi listesini oluştur (Kendini hariç tut)
+        const otherUsers = Object.keys(USER_DATA).filter(u => u !== LOGGED_IN_USER.name).sort();
+        $('modal-n-user').innerHTML = `<option value="">Kime Göndereceksiniz?</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + otherUsers.map(u => `<option value="${u}">${u}</option>`).join('');
     } else {
         form.classList.add('hidden'); form.classList.remove('flex');
         content.classList.remove('hidden');
         btn.innerText = 'YENİ MESAJ';
+        // Geri dönüldüğünde en alta tekrar odaklansın
+        setTimeout(() => { const el = $('notif-content'); if(el) el.scrollTop = el.scrollHeight; }, 50);
     }
 }
 
 function sendNotifFromModal(e) {
     e.preventDefault();
-    const user = $('modal-n-user').value; const msg = $('modal-n-msg').value.trim();
-    if(!user || !msg) return;
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
-    an[user] = msg; localStorage.setItem('appNotifs', JSON.stringify(an));
-    const payload = { action: "sendNotif", user: user, message: msg };
+    const targetUser = $('modal-n-user').value; const msg = $('modal-n-msg').value.trim();
+    if(!targetUser || !msg) return;
+    
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+    
+    const payload = { action: "sendMessage", Tarih: timeStr, Kimden: LOGGED_IN_USER.name, Kime: targetUser, Mesaj: msg };
+    
+    // UI'ı anında güncelle (Optimistic Update)
+    if(!MESAJ_RAW.r) MESAJ_RAW.r = [];
+    MESAJ_RAW.r.push([timeStr, LOGGED_IN_USER.name, targetUser, msg]);
+    
     fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
-    toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
-    $('modal-n-msg').value = ''; toggleNotifForm(); checkNotifs();
+    
+    toast('Mesaj Gönderildi 📤', 'ok'); 
+    $('modal-n-msg').value = ''; 
+    toggleNotifForm(); 
+    openNotifModal(); // Modal'ı yeniden çiz (mesajı görmek için)
 }
 
 // KULLANICI PROFİL FOTOĞRAFI YÖNETİMİ
@@ -1514,20 +1544,19 @@ function rAdmin() {
     ];
     $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
     
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
-    
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
-        const notifVal = an[u]; const notifMsg = typeof notifVal === 'object' && notifVal !== null ? notifVal.msg : notifVal;
-        const hasNotif = notifMsg ? `<span class="px-1.5 py-0.5 bg-accent3/20 text-accent3 rounded text-[9px] ml-2 cursor-help" title="${escapeHTML(notifMsg)}">🔔 BİLDİRİM</span>` : '';
+        
+        // Son gönderdiği mesajı göster
+        const notifMsg = MESAJ_RAW.r ? MESAJ_RAW.r.slice().reverse().find(r => r[1] === u && (r[2] === LOGGED_IN_USER.name || r[2] === 'GLOBAL')) : null;
+        const hasNotif = notifMsg ? `<span class="px-1.5 py-0.5 bg-accent/20 text-accent rounded text-[9px] ml-2 cursor-help border border-accent/50" title="Son Mesajı: ${escapeHTML(notifMsg[3])}">💬 MESAJ</span>` : '';
+        
         const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border border-border">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
         const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px] cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
         return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3"><div class="flex items-center gap-2"><span class="font-bold text-text">${u}</span>${hasNotif}</div></td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
     }).join('');
     
-    const globalNotif = an['GLOBAL'] ? ' (Aktif Mesaj Var)' : '';
-    $('admin-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER${globalNotif}</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
-    loadUserNotif($('admin-n-user').value);
+    $('admin-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
 }
 
 async function saveUserObj(e) {
@@ -1587,34 +1616,27 @@ function deleteUser(name) {
     }
 }
 
-function loadUserNotif(user) {
-    if(!user) { $('admin-n-msg').value = ''; return; }
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
-    let val = an[user];
-    $('admin-n-msg').value = (typeof val === 'object' && val !== null) ? val.msg : (val || '');
-}
+// Admin paneli yükleme iptal edildi (Artık okuma sohbet ekranından yapılıyor)
+function loadUserNotif(user) { $('admin-n-msg').value = ''; }
 
 function sendNotif(e) {
     e.preventDefault();
-    const user = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
-    if(!user || !msg) return;
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
+    const targetUser = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
+    if(!targetUser || !msg) return;
     
     const now = new Date();
     const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
-    an[user] = { msg: msg, time: timeStr };
     
-    localStorage.setItem('appNotifs', JSON.stringify(an));
-    toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
-    checkNotifs(); rAdmin();
+    const payload = { action: "sendMessage", Tarih: timeStr, Kimden: LOGGED_IN_USER.name, Kime: targetUser, Mesaj: msg };
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
+    
+    toast(targetUser === 'GLOBAL' ? 'Herkese mesaj gönderildi.' : targetUser + ' kullanıcısına mesaj gönderildi.', 'ok'); 
+    $('admin-n-msg').value = '';
+    setTimeout(() => fetchCSV(), 1000); // 1 saniye sonra verileri yenile
 }
 
 function clearNotif() {
-    const user = $('admin-n-user').value; if(!user) return toast('Önce bir hedef seçin.', 'warn');
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
-    delete an[user]; localStorage.setItem('appNotifs', JSON.stringify(an));
-    $('admin-n-msg').value = '';
-    toast('Mevcut bildirim silindi.', 'ok'); checkNotifs(); rAdmin();
+    toast('Geçmiş mesajlar Google E-Tablolar (Mesajlar sekmesi) üzerinden silinmelidir.', 'warn');
 }
 
 function saveAdminSettings() {
@@ -1740,12 +1762,14 @@ function fetchCSV(isBg = false) {
         getCSV(URL),
         getCSV(KALIP_URL).catch(()=>''),
         getCSV(DENEME_URL).catch(()=>''),
-        getCSV(MALZEME_URL).catch(()=>'')
-    ]).then(([t, k_text, d_text, m_text]) => {
+        getCSV(MALZEME_URL).catch(()=>''),
+        getCSV(MESAJ_URL).catch(()=>'')
+    ]).then(([t, k_text, d_text, m_text, msg_text]) => {
         RAW=parse(t);
         KALIP_RAW=parseKalip(k_text);
         DENEME_RAW=parseGeneric(d_text);
         MALZEME_RAW=parseGeneric(m_text);
+        MESAJ_RAW=parseGeneric(msg_text);
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
