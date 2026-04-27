@@ -1229,6 +1229,7 @@ function applyRoleRestrictions() {
 }
 
 let currentChatPartner = null;
+const ORIGINAL_TITLE = 'Pres Üretim Takip Dashboard';
 
 function checkNotifs() {
     const badge = $('notif-badge');
@@ -1262,17 +1263,53 @@ function checkNotifs() {
     }
 
     if(totalUnreadMsgs > 0) {
+        if (document.hidden) {
+            document.title = `(${totalUnreadMsgs}) Yeni Mesaj!`;
+            drawFaviconBadge(true);
+        }
+
         if(badge) { badge.innerText = totalUnreadMsgs; badge.classList.remove('hidden'); badge.classList.add('flex'); }
         if(pnl) { pnl.classList.add('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.remove('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.add('text-accent2'); pnlTitle.classList.remove('text-text3'); }
         if(pnlText) { pnlText.classList.add('text-text', 'font-bold'); pnlText.classList.remove('text-text2'); pnlText.innerText = unreadChats + ' Kişiden Yeni'; }
     } else {
+        document.title = ORIGINAL_TITLE;
+        drawFaviconBadge(false);
+
         if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
         if(pnl) { pnl.classList.remove('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.add('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.remove('text-accent2'); pnlTitle.classList.add('text-text3'); }
         if(pnlText) { pnlText.classList.remove('text-text', 'font-bold'); pnlText.classList.add('text-text2'); pnlText.innerText = 'Mesaj Kutusu'; }
     }
 }
+
+function drawFaviconBadge(showBadge) {
+    let link = document.getElementById('dynamic-favicon');
+    if (!link) return;
+    if (!showBadge) { link.href = 'icon-512.png'; return; }
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.src = 'icon-512.png';
+    img.onload = () => {
+        ctx.drawImage(img, 0, 0, 64, 64);
+        ctx.beginPath();
+        // Sağ üst köşeye kırmızı daire çiz
+        ctx.arc(52, 12, 12, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ef4444';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+        link.href = canvas.toDataURL('image/png');
+    };
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) { document.title = ORIGINAL_TITLE; drawFaviconBadge(false); }
+});
 
 function openNotifModal() {
     if(!LOGGED_IN_USER) return;
@@ -1530,6 +1567,10 @@ function clearCurrentChat() {
     
     toast('Sohbet geçmişi gizlendi.', 'ok'); renderChatHistory(); renderChatList();
 }
+
+// Geriye dönük uyumluluk (eski butonlar/fonksiyon referansları için yönlendirme)
+function toggleNotifForm() { showNewChatSelector(); }
+function sendNotifFromModal(e) { if(e) e.preventDefault(); sendChatMessage(); }
 
 // KULLANICI PROFİL FOTOĞRAFI YÖNETİMİ
 function openProfileModal() {
