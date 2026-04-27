@@ -611,8 +611,15 @@
                     <div id="profile-initials" class="w-24 h-24 rounded-full bg-bg3 border-2 border-border flex items-center justify-center font-bold text-text3 text-3xl shadow-inner"></div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-mono text-text3 mb-1 uppercase">Fotoğraf URL Linki</label>
-                    <input type="url" id="profile-photo-url" placeholder="https://..." class="w-full bg-bg border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors">
+                    <label class="block text-[10px] font-mono text-text3 mb-1 uppercase">Fotoğraf Yükle veya URL Gir</label>
+                    <div class="flex gap-2 mb-2">
+                        <button type="button" onclick="document.getElementById('profile-photo-file').click()" class="flex-1 px-3 py-2 bg-bg3 hover:bg-border text-text2 font-bold rounded font-mono text-[10px] border border-border flex items-center justify-center gap-2 transition-colors">
+                            📷 KAmera / Galeri
+                        </button>
+                        <!-- Kamera desteği için capture="environment" (varsa arka kamera, mobilde çıkar) -->
+                        <input type="file" id="profile-photo-file" accept="image/*" class="hidden" onchange="handleProfilePhotoUpload(event)">
+                    </div>
+                    <input type="text" id="profile-photo-url" placeholder="https://... veya yüklenen fotoğraf" class="w-full bg-bg border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors">
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 px-4 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all">KAYDET</button>
@@ -1414,6 +1421,37 @@ function updateProfilePreview(url) {
 
 const photoInput = $('profile-photo-url');
 if (photoInput) photoInput.addEventListener('input', (e) => updateProfilePreview(e.target.value));
+
+function handleProfilePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_SIZE = 200; // Sheets hücre limitine takılmaması için yeniden boyutlandır
+            let width = img.width; let height = img.height;
+            
+            if (width > height) {
+                if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+            } else {
+                if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+            }
+            
+            canvas.width = width; canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Base64'e dönüştür (JEPG %70 Kalite)
+            $('profile-photo-url').value = dataUrl;
+            updateProfilePreview(dataUrl);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
 
 function removeProfilePhoto() {
     $('profile-photo-url').value = '';
