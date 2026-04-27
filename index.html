@@ -549,8 +549,11 @@
             
             <div class="flex items-center justify-between border-b border-border pb-2 mb-4 pr-8 shrink-0">
                 <h2 class="font-bebas text-2xl tracking-[2px] text-accent2 flex items-center gap-2 m-0">🔔 BİLDİRİMLER</h2>
-                
-                <button id="btn-show-send-notif" onclick="toggleNotifForm()" class="hidden px-3 py-1.5 bg-accent2/20 hover:bg-accent2 text-accent2 hover:text-white rounded font-mono text-[10px] font-bold transition-colors shadow-sm">YENİ MESAJ</button>
+                <div class="flex gap-2">
+                    <!-- Yöneticilere gösterilecek E-Tablo kısayolu -->
+                    <a href="https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/edit?usp=sharing" target="_blank" id="btn-notif-sheet" class="hidden px-3 py-1.5 bg-accent/20 hover:bg-accent text-accent hover:text-white rounded font-mono text-[10px] font-bold transition-colors shadow-sm" title="Mesajlar E-Tablosunu Aç">E-TABLO</a>
+                    <button id="btn-show-send-notif" onclick="toggleNotifForm()" class="hidden px-3 py-1.5 bg-accent2/20 hover:bg-accent2 text-accent2 hover:text-white rounded font-mono text-[10px] font-bold transition-colors shadow-sm">YENİ MESAJ</button>
+                </div>
             </div>
             
             <div id="notif-content" class="flex flex-col gap-3 overflow-y-auto pr-1"></div>
