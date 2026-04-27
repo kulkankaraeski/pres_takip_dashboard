@@ -2,7 +2,7 @@
   "name": "Pres Üretim Takip Dashboard",
   "short_name": "Üretim Takip",
   "description": "Pres üretim, personel performansı ve fason takip sistemi.",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121410",
   "theme_color": "#121410",
@@ -10,25 +10,21 @@
   "icons": [
     {
       "src": "icon-512.png",
-      "sizes": "192x192 512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "Yeni Kayıt Gir",
       "short_name": "Kayıt",
-      "url": "index.html?tab=form"
+      "url": "./index.html?tab=form"
     },
     {
       "name": "Günlük Rapor",
       "short_name": "Rapor",
-      "url": "index.html?tab=gunluk"
+      "url": "./index.html?tab=gunluk"
     }
   ]
 }
