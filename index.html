@@ -75,6 +75,12 @@
             .overflow-auto { max-height: none !important; overflow: visible !important; }
             canvas { max-height: 250px !important; }
         }
+        
+        /* Toast (Bildirim) Stilleri */
+        .toast-el { position: fixed; bottom: 24px; right: 24px; z-index: 9999; padding: 10px 18px; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 12px; color: #fff; transition: opacity 0.3s, transform 0.3s; pointer-events: none; max-width: 320px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .toast-ok { background: rgba(16, 185, 129, 0.95); border: 1px solid #10b981; }
+        .toast-err { background: rgba(239, 68, 68, 0.95); border: 1px solid #ef4444; }
+        .toast-warn { background: rgba(245, 158, 11, 0.95); border: 1px solid #f59e0b; }
     </style>
 </head>
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
@@ -138,8 +144,8 @@
         <div class="flex flex-wrap xl:flex-nowrap items-center justify-center gap-2 shrink-0 w-full xl:w-auto">
             <div id="user-info" class="hidden items-center gap-2 font-mono text-xs bg-bg3 border border-border rounded-lg p-1.5 md:pr-3 shadow-sm">
                 <!-- YENİ: KULLANICI AVATARI -->
-                <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border">
-                <span id="user-name" class="text-text2 ml-1"></span>
+                <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border cursor-pointer hover:opacity-80 transition-opacity" onclick="openProfileModal()">
+                <span id="user-name" class="text-text2 ml-1 cursor-pointer hover:text-accent transition-colors" onclick="openProfileModal()"></span>
                 <button onclick="logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors ml-2">ÇIKIŞ</button>
             </div>
             
@@ -289,11 +295,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Tarih</label>
-                            <input type="date" id="f-tarih" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors">
+                            <input type="date" id="f-tarih" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors" onchange="checkDuplicate()">
                         </div>
                         <div>
                             <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Çalışan</label>
-                            <select id="f-calisan" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer">
+                            <select id="f-calisan" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer" onchange="checkDuplicate()">
                                 <option value="">Seçiniz...</option>
                             </select>
                         </div>
@@ -335,6 +341,10 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div id="dup-warn" class="hidden p-3 bg-accent3/20 border border-accent3 rounded text-accent3 text-xs font-mono">
+                        ⚠ <span id="dup-warn-text"></span>
                     </div>
 
                     <div class="flex justify-end border-t border-border pt-4"><button type="submit" class="px-6 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg">💾 KAYDET VE GÖNDER</button></div>
@@ -517,8 +527,32 @@
     <div id="notif-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
         <div class="bg-bg2 border border-border rounded-lg p-6 max-w-md w-full shadow-2xl relative">
             <button onclick="closeNotifModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
-            <h2 class="font-bebas text-2xl tracking-[2px] text-accent2 mb-4 border-b border-border pb-2 flex items-center gap-2">🔔 BİLDİRİMLER</h2>
+            <div class="flex justify-between items-center mb-4 border-b border-border pb-2 pr-6">
+                <h2 class="font-bebas text-2xl tracking-[2px] text-accent2 flex items-center gap-2 m-0">🔔 BİLDİRİMLER</h2>
+                <button id="btn-show-send-notif" onclick="toggleNotifForm()" class="hidden px-3 py-1.5 bg-bg3 hover:bg-border text-text2 border border-border rounded font-mono text-[10px] transition-colors">YENİ MESAJ</button>
+            </div>
             <div id="notif-content" class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1"></div>
+            <form id="notif-send-form" class="hidden flex-col gap-3 mt-2" onsubmit="sendNotifFromModal(event)">
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kime</label><select id="modal-n-user" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></select></div>
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Mesaj</label><textarea id="modal-n-msg" rows="3" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent resize-none"></textarea></div>
+                <button type="submit" class="w-full px-3 py-2 bg-accent2 hover:bg-red-500 text-white rounded font-mono text-[10px] font-bold transition-colors mt-2">GÖNDER</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- YENİ: PROFİL MODALI -->
+    <div id="profile-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-sm w-full shadow-2xl relative">
+            <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
+            <h2 class="font-bebas text-2xl tracking-[2px] text-accent mb-4 border-b border-border pb-2">PROFİL DÜZENLE</h2>
+            <form onsubmit="saveProfileFromModal(event)" class="flex flex-col gap-4">
+                <div class="flex justify-center mb-2">
+                    <img id="profile-preview" src="" class="w-20 h-20 rounded-full object-cover border-2 border-border hidden">
+                    <div id="profile-initials" class="w-20 h-20 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-2xl hidden"></div>
+                </div>
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Fotoğraf URL</label><input type="url" id="profile-photo-url" placeholder="https://..." class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                <div class="flex gap-2 mt-2"><button type="submit" class="flex-1 px-4 py-2 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded text-xs transition-all">KAYDET</button><button type="button" onclick="removeProfilePhoto()" class="px-4 py-2 bg-bg hover:bg-border text-text2 rounded font-mono text-xs transition-colors border border-border">FOTOĞRAFI SİL</button></div>
+            </form>
         </div>
     </div>
 
@@ -1056,7 +1090,6 @@ function applyRoleRestrictions() {
 }
 
 function checkNotifs() {
-    const btn = $('btn-notif');
     const badge = $('notif-badge');
     const pnl = $('hdr-notif');
     const pnlTitle = $('hdr-notif-title');
@@ -1072,14 +1105,12 @@ function checkNotifs() {
     
     if(count > 0) {
         // Aktif/Yeni Bildirim Var Modu
-        if(btn) { btn.classList.add('animate-pulse', 'bg-accent2/10', 'text-accent2', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]'); btn.classList.remove('bg-bg3', 'text-text3', 'border-border'); }
         if(badge) { badge.innerText = count; badge.classList.remove('hidden'); badge.classList.add('flex'); }
         if(pnl) { pnl.classList.add('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.remove('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.add('text-accent2'); pnlTitle.classList.remove('text-text3'); }
         if(pnlText) { pnlText.classList.add('text-text'); pnlText.classList.remove('text-text2'); pnlText.innerText = lastMsg; }
     } else {
         // Pasif/Boş Mod
-        if(btn) { btn.classList.remove('animate-pulse', 'bg-accent2/10', 'text-accent2', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]'); btn.classList.add('bg-bg3', 'text-text3', 'border-border'); }
         if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
         if(pnl) { pnl.classList.remove('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.add('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.remove('text-accent2'); pnlTitle.classList.add('text-text3'); }
@@ -1116,7 +1147,6 @@ function openNotifModal() {
         });
     }
     $('notif-content').innerHTML = html;
-    if($('btn-notif')) $('btn-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle
     if($('hdr-notif')) $('hdr-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle
     
     const el = $('notif-modal'); el.classList.remove('hidden'); el.classList.add('flex');
@@ -1173,7 +1203,8 @@ function updateProfilePreview(url) {
     else { $('profile-preview').classList.add('hidden'); $('profile-initials').classList.remove('hidden'); $('profile-initials').innerText = LOGGED_IN_USER.name.slice(0,2).toUpperCase(); }
 }
 
-$('profile-photo-url').addEventListener('input', (e) => updateProfilePreview(e.target.value));
+const photoInput = $('profile-photo-url');
+if (photoInput) photoInput.addEventListener('input', (e) => updateProfilePreview(e.target.value));
 
 function removeProfilePhoto() {
     $('profile-photo-url').value = '';
