@@ -601,7 +601,6 @@
     </div>
 
     <!-- YENİ: PROFİL FOTOĞRAFI DÜZENLEME MODALI -->
->>>>>>> 7524d3ed358673a6a42cc623292680a56b8b397f
     <div id="profile-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
         <div class="bg-bg2 border border-border rounded-lg p-6 max-w-sm w-full shadow-2xl relative">
             <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
@@ -1940,9 +1939,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
 // Çevrimdışı/Çevrimiçi Durum Bildirimi
 window.addEventListener('online', () => { toast('İnternet bağlantısı yeniden sağlandı.', 'ok'); fetchCSV(); });
 window.addEventListener('offline', () => toast('İnternet bağlantısı kesildi. Çevrimdışı moddasınız.', 'warn'));
-</script>
-</body>
-</html>
 
 function openGenericFormModal(type) {
     const el = $('generic-form-modal');
@@ -2006,3 +2002,6 @@ async function saveGenericForm(e) {
         setTimeout(() => fetchCSV(), 1000);
     } catch(err) { toast('İşlem başarısız', 'err'); }
 }
+</script>
+</body>
+</html>
