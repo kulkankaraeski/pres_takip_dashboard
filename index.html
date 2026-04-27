@@ -71,9 +71,10 @@
             }
             .panel:not(.active) { display: none !important; opacity: 0 !important; }
             .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
-        #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #notif-modal, #user-info { display: none !important; }
+            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #generic-form-modal, #notif-modal, #user-info { display: none !important; }
             .overflow-auto { max-height: none !important; overflow: visible !important; }
             canvas { max-height: 250px !important; }
+            .admin-only-btn { display: none !important; }
         }
         
         /* Toast (Bildirim) Stilleri */
@@ -109,7 +110,7 @@
         </div>
     </div>
 
-    <header class="flex flex-col xl:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 md:p-4 rounded-lg shadow-lg relative overflow-hidden">
+    <header id="app-header" class="hidden flex-col xl:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 md:p-4 rounded-lg shadow-lg relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
         
         <div class="flex flex-col items-center xl:items-start bg-bg3 border border-border rounded-lg p-3 shadow-sm shrink-0 w-full xl:w-auto">
@@ -121,52 +122,50 @@
             </div>
         </div>
         
-        <div class="flex flex-row flex-wrap xl:flex-nowrap items-center justify-center gap-2 md:gap-3 font-mono text-xs md:text-sm text-text2 flex-1 w-full xl:w-auto">
-            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam Üretim</span><span id="hdr-total" class="text-lg font-bold text-text">-</span></div>
-            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-lg font-bold text-accent4">-</span></div>
-            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-lg font-bold text-text">-</span></div>
+        <div class="grid grid-cols-3 sm:flex sm:flex-row flex-wrap xl:flex-nowrap items-center justify-center gap-1.5 md:gap-3 font-mono text-xs md:text-sm text-text2 flex-1 w-full xl:w-auto">
+            <div class="flex flex-col items-center justify-center bg-bg3 border border-border rounded-lg px-1 md:px-3 py-1.5 md:py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[8px] md:text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam</span><span id="hdr-total" class="text-base md:text-lg font-bold text-text">-</span></div>
+            <div class="flex flex-col items-center justify-center bg-bg3 border border-border rounded-lg px-1 md:px-3 py-1.5 md:py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[8px] md:text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-base md:text-lg font-bold text-accent4">-</span></div>
+            <div class="flex flex-col items-center justify-center bg-bg3 border border-border rounded-lg px-1 md:px-3 py-1.5 md:py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[8px] md:text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-base md:text-lg font-bold text-text">-</span></div>
             
-            <!-- FIX #3: onclick eklendi — cursor-pointer'ın arkasında handler yoktu -->
-            <div id="hdr-best" class="hidden flex-col items-center justify-center px-4 py-1.5 ayin-elemani-kutu rounded-lg bg-bg3 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 xl:flex-none xl:min-w-[160px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
-                <span class="text-[9px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
-                <span id="hdr-best-name" class="text-base md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
-                <span id="hdr-best-det" class="text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
+            <div id="hdr-best" class="hidden col-span-3 sm:col-span-1 flex-col items-center justify-center px-4 py-1.5 ayin-elemani-kutu rounded-lg bg-bg3 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 xl:flex-none xl:min-w-[160px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
+                <span class="text-[8px] md:text-[9px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
+                <span id="hdr-best-name" class="text-sm md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
+                <span id="hdr-best-det" class="text-[8px] md:text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
             </div>
             
-            <!-- YENİ: BİLDİRİM KUTUSU -->
-            <div id="hdr-notif" class="flex flex-col justify-center px-4 py-1.5 rounded bg-bg3 border border-border cursor-pointer transition-transform hover:scale-105 flex-1 xl:flex-none xl:w-[160px] relative" onclick="openNotifModal()">
-                <span id="hdr-notif-title" class="text-[9px] tracking-wider text-text3 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
-                <span id="hdr-notif-text" class="text-[10px] font-mono text-text2 truncate leading-tight">Bildirim Yok</span>
+            <div id="hdr-notif" class="col-span-3 sm:col-span-1 flex flex-col justify-center px-4 py-1.5 rounded bg-bg3 border border-border cursor-pointer transition-transform hover:scale-105 flex-1 xl:flex-none xl:w-[160px] relative" onclick="openNotifModal()">
+                <span id="hdr-notif-title" class="text-[8px] md:text-[9px] tracking-wider text-text3 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
+                <span id="hdr-notif-text" class="text-[9px] md:text-[10px] font-mono text-text2 truncate leading-tight">Bildirim Yok</span>
                 <span id="notif-badge" class="absolute -top-1.5 -right-1.5 bg-accent2 text-white rounded-full w-4 h-4 hidden items-center justify-center text-[8px] font-bold shadow-sm">1</span>
             </div>
         </div>
 
-        <div class="flex flex-wrap xl:flex-nowrap items-center justify-center gap-2 shrink-0 w-full xl:w-auto">
-            <div id="user-info" class="hidden items-center gap-2 font-mono text-xs bg-bg3 border border-border rounded-lg p-1.5 md:pr-3 shadow-sm">
-                <!-- YENİ: KULLANICI AVATARI -->
-                <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border cursor-pointer hover:opacity-80 transition-opacity" onclick="openProfileModal()">
-                <span id="user-name" class="text-text2 ml-1 cursor-pointer hover:text-accent transition-colors" onclick="openProfileModal()"></span>
-                <button onclick="logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors ml-2">ÇIKIŞ</button>
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap xl:flex-nowrap items-stretch justify-center gap-1.5 md:gap-2 shrink-0 w-full xl:w-auto mt-2 xl:mt-0">
+            <div id="user-info" class="col-span-2 hidden items-center justify-between gap-2 font-mono text-xs bg-bg3 border border-border rounded-lg p-1.5 md:pr-3 shadow-sm cursor-pointer hover:bg-border transition-colors group" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
+                <div class="flex items-center">
+                    <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border group-hover:opacity-80 transition-opacity">
+                    <span id="user-name" class="text-text2 ml-1 group-hover:text-text transition-colors"></span>
+                </div>
+                <button onclick="event.stopPropagation(); logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors ml-2 shrink-0">ÇIKIŞ</button>
             </div>
             
-            <!-- YENİ: UYGULAMA İNDİRME BUTONU -->
-            <button id="btn-install" class="hidden px-3 py-2 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-lg font-mono text-[10px] items-center gap-1.5 transition-all shadow-sm whitespace-nowrap animate-bounce">
+            <button id="btn-install" class="hidden col-span-2 sm:col-span-1 px-2 py-2 md:px-3 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-lg font-mono text-[10px] justify-center items-center gap-1.5 transition-all shadow-sm whitespace-nowrap animate-bounce">
                 📲 İNDİR
             </button>
 
-            <button onclick="toggleTheme()" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="toggleTheme()" class="px-2 py-2 md:px-3 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex justify-center items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
                 🌓 TEMA
             </button>
-            <button onclick="exportToPDF()" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="exportToPDF()" class="px-2 py-2 md:px-3 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex justify-center items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
                 📥 PDF
             </button>
-            <button onclick="fetchCSV()" id="btn-refresh" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-accent border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="fetchCSV()" id="btn-refresh" class="col-span-2 sm:col-span-1 px-2 py-2 md:px-3 md:py-2.5 bg-bg3 hover:bg-border text-accent border border-border rounded-lg font-mono text-[10px] flex justify-center items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
                 ↻ GÜNCELLE
             </button>
         </div>
     </header>
 
-    <div class="main-content flex-1 flex flex-col min-h-0 overflow-x-hidden">
+    <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-x-hidden">
     <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2 p-1.5 md:p-2 rounded-lg border border-border shrink-0 shadow-sm" id="main-nav">
         <!-- Raporlar Dropdown -->
         <div class="relative flex-1 md:flex-none z-50" id="nav-dropdown-raporlar">
@@ -290,7 +289,7 @@
 
         <div class="panel hidden" id="panel-form">
             <div class="bg-bg2 border border-border rounded p-6 max-w-4xl mx-auto shadow-lg">
-                <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">YENİ ÜRETİM KAYDI GİRİŞİ</h2>
+                <h2 id="form-title" class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">YENİ ÜRETİM KAYDI GİRİŞİ</h2>
                 <form id="uretim-formu" onsubmit="submitForm(event)" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
@@ -342,19 +341,25 @@
                             </div>
                         </div>
                     </div>
-
-                    <div id="dup-warn" class="hidden p-3 bg-accent3/20 border border-accent3 rounded text-accent3 text-xs font-mono">
-                        ⚠ <span id="dup-warn-text"></span>
+                    
+                    <div id="dup-warn" class="hidden bg-accent2/10 border border-accent2 text-accent2 p-3 rounded text-xs font-mono">
+                        <span id="dup-warn-text"></span>
                     </div>
 
-                    <div class="flex justify-end border-t border-border pt-4"><button type="submit" class="px-6 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg">💾 KAYDET VE GÖNDER</button></div>
+                    <div class="flex justify-end border-t border-border pt-4 gap-3">
+                        <button type="button" id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-4 py-2.5 bg-bg3 hover:bg-border text-text2 font-bold font-mono rounded transition-all">İPTAL</button>
+                        <button type="submit" id="btn-submit-form" class="px-6 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg">💾 KAYDET VE GÖNDER</button>
+                    </div>
                 </form>
             </div>
         </div>
 
         <div class="panel hidden" id="panel-kaliphane">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">KALIPHANE LOKASYONLARI</span><input type="text" onkeyup="fT('tb-kalip',this.value)" placeholder="Kalıp Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="p-4 border-b border-border flex justify-between items-center">
+                    <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">KALIPHANE LOKASYONLARI</span><button onclick="openGenericFormModal('kalip')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
+                    <input type="text" onkeyup="fT('tb-kalip',this.value)" placeholder="Kalıp Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
+                </div>
                 <div class="overflow-auto max-h-[70vh]">
                     <table class="w-full text-left border-collapse" id="t-kalip">
                         <thead id="th-kalip"></thead>
@@ -366,7 +371,10 @@
 
         <div class="panel hidden" id="panel-malzeme">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">PRES MALZEME TAKİP LİSTESİ</span><input type="text" onkeyup="fT('tb-malzeme',this.value)" placeholder="Malzeme Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="p-4 border-b border-border flex justify-between items-center">
+                    <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">PRES MALZEME TAKİP LİSTESİ</span><button onclick="openGenericFormModal('malzeme')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
+                    <input type="text" onkeyup="fT('tb-malzeme',this.value)" placeholder="Malzeme Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
+                </div>
                 <div class="overflow-auto max-h-[70vh]">
                     <table class="w-full text-left border-collapse" id="t-malzeme">
                         <thead id="th-malzeme"></thead>
@@ -378,7 +386,10 @@
 
         <div class="panel hidden" id="panel-kayitlar">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM TAKİP DENEMELERİ</span><input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Kayıt Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="p-4 border-b border-border flex justify-between items-center">
+                    <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM TAKİP DENEMELERİ</span><button onclick="openGenericFormModal('deneme')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
+                    <input type="text" onkeyup="fT('tb-kayit',this.value)" placeholder="Kayıt Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
+                </div>
                 <div class="overflow-auto max-h-[70vh]">
                     <table class="w-full text-left border-collapse" id="t-kayit">
                         <thead id="th-kayit"></thead>
@@ -463,10 +474,21 @@
     </main>
     </div>
 
+    <div id="generic-form-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-lg w-full shadow-2xl relative">
+            <button onclick="closeGenericFormModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
+            <h2 id="gen-form-title" class="font-bebas text-2xl tracking-[2px] text-accent mb-4 border-b border-border pb-2">KAYIT EKLE/DÜZENLE</h2>
+            <form id="generic-data-form" onsubmit="saveGenericForm(event)" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <div id="gen-form-fields" class="flex flex-col gap-3"></div>
+                <div class="flex gap-2 pt-4 border-t border-border mt-4"><button type="submit" class="flex-1 px-4 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all shadow-lg">💾 KAYDET</button></div>
+            </form>
+        </div>
+    </div>
+
     <div id="generic-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-gray-50 border border-gray-300 rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
-            <button onclick="closeGenericModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-3xl font-bold z-10 transition-colors">&times;</button>
-            <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-gray-800 mb-6 border-b border-gray-300 pb-2">KAYIT DETAYI</h2>
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
+            <button onclick="closeGenericModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-3xl font-bold z-10 transition-colors">&times;</button>
+            <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-text mb-6 border-b border-border pb-2">KAYIT DETAYI</h2>
             <div id="gen-mdl-content" class="flex flex-col gap-2"></div>
         </div>
     </div>
@@ -525,8 +547,10 @@
 
     <!-- YENİ: KULLANICI BİLDİRİM GÖRÜNTÜLEME MODALI -->
     <div id="notif-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-md w-full shadow-2xl relative">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-md w-full shadow-2xl relative flex flex-col max-h-[90vh]">
+            
             <button onclick="closeNotifModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
+<<<<<<< HEAD
             <div class="flex justify-between items-center mb-4 border-b border-border pb-2 pr-6">
                 <h2 class="font-bebas text-2xl tracking-[2px] text-accent2 flex items-center gap-2 m-0">🔔 BİLDİRİMLER</h2>
                 <button id="btn-show-send-notif" onclick="toggleNotifForm()" class="hidden px-3 py-1.5 bg-bg3 hover:bg-border text-text2 border border-border rounded font-mono text-[10px] transition-colors">YENİ MESAJ</button>
@@ -541,17 +565,56 @@
     </div>
 
     <!-- YENİ: PROFİL MODALI -->
+=======
+            
+            <div class="flex items-center justify-between border-b border-border pb-2 mb-4 pr-8 shrink-0">
+                <h2 class="font-bebas text-2xl tracking-[2px] text-accent2 flex items-center gap-2 m-0">🔔 BİLDİRİMLER</h2>
+                
+                <button id="btn-show-send-notif" onclick="toggleNotifForm()" class="hidden px-3 py-1.5 bg-accent2/20 hover:bg-accent2 text-accent2 hover:text-white rounded font-mono text-[10px] font-bold transition-colors shadow-sm">YENİ MESAJ</button>
+            </div>
+            
+            <div id="notif-content" class="flex flex-col gap-3 overflow-y-auto pr-1"></div>
+            
+            <form id="notif-send-form" onsubmit="sendNotifFromModal(event)" class="hidden flex-col gap-4 mt-2 pt-2">
+                <div>
+                    <label class="block text-[10px] text-text3 mb-1 uppercase tracking-wider">Kime Gönderilecek?</label>
+                    <select id="modal-n-user" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors cursor-pointer">
+                        <option value="">Seçiniz...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] text-text3 mb-1 uppercase tracking-wider">Mesajınız</label>
+                    <textarea id="modal-n-msg" rows="4" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors resize-none placeholder-text3/50" placeholder="İletmek istediğiniz mesajı buraya yazın..."></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 px-4 py-2.5 bg-accent2 hover:bg-red-500 text-white rounded font-mono text-xs font-bold transition-transform transform hover:scale-105 shadow-md flex items-center justify-center gap-2">
+                        <span>📤 GÖNDER</span>
+                    </button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+
+    <!-- YENİ: PROFİL FOTOĞRAFI DÜZENLEME MODALI -->
+>>>>>>> 7524d3ed358673a6a42cc623292680a56b8b397f
     <div id="profile-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
         <div class="bg-bg2 border border-border rounded-lg p-6 max-w-sm w-full shadow-2xl relative">
             <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
             <h2 class="font-bebas text-2xl tracking-[2px] text-accent mb-4 border-b border-border pb-2">PROFİL DÜZENLE</h2>
-            <form onsubmit="saveProfileFromModal(event)" class="flex flex-col gap-4">
-                <div class="flex justify-center mb-2">
-                    <img id="profile-preview" src="" class="w-20 h-20 rounded-full object-cover border-2 border-border hidden">
-                    <div id="profile-initials" class="w-20 h-20 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-2xl hidden"></div>
+            <form onsubmit="saveProfileFromModal(event)" class="space-y-4">
+                <div class="flex justify-center mb-4">
+                    <img id="profile-preview" src="" class="w-24 h-24 rounded-full object-cover border-2 border-accent hidden shadow-lg">
+                    <div id="profile-initials" class="w-24 h-24 rounded-full bg-bg3 border-2 border-border flex items-center justify-center font-bold text-text3 text-3xl shadow-inner"></div>
                 </div>
-                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Fotoğraf URL</label><input type="url" id="profile-photo-url" placeholder="https://..." class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-                <div class="flex gap-2 mt-2"><button type="submit" class="flex-1 px-4 py-2 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded text-xs transition-all">KAYDET</button><button type="button" onclick="removeProfilePhoto()" class="px-4 py-2 bg-bg hover:bg-border text-text2 rounded font-mono text-xs transition-colors border border-border">FOTOĞRAFI SİL</button></div>
+                <div>
+                    <label class="block text-[10px] font-mono text-text3 mb-1 uppercase">Fotoğraf URL Linki</label>
+                    <input type="url" id="profile-photo-url" placeholder="https://..." class="w-full bg-bg border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-1 px-4 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all">KAYDET</button>
+                    <button type="button" onclick="removeProfilePhoto()" class="px-4 py-2.5 bg-bg3 hover:bg-border text-text2 font-bold font-mono rounded transition-all border border-border">SİL</button>
+                </div>
             </form>
         </div>
     </div>
@@ -560,12 +623,22 @@
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
 }
-let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, MALZEME_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
+
+function safeJSON(str, fallback) {
+    if (!str || str === 'undefined') return fallback;
+    try {
+        const parsed = JSON.parse(str);
+        return parsed !== null ? parsed : fallback;
+    } catch (e) { return fallback; }
+}
+
+let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, MALZEME_RAW={h:[], r:[]}, MESAJ_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', cTab='gunluk';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
 let USER_DATA = {};
-let adminSettings = JSON.parse(localStorage.getItem('adminSettings')) || { hiddenTabs: [] };
+let adminSettings = safeJSON(localStorage.getItem('adminSettings'), { hiddenTabs: [] });
+if (!adminSettings || !Array.isArray(adminSettings.hiddenTabs)) adminSettings = { hiddenTabs: [] };
 
 // URL Parametrelerini Yakala (PWA Kısayolları İçin)
 const urlParams = new URLSearchParams(window.location.search);
@@ -577,13 +650,15 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq
 const MALZEME_DOC_ID = '1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c'; 
 
 // Akıllı ID Çıkarıcı: Eğer yanlışlıkla tüm link yapıştırılırsa sistemi çökertmemesi için sadece ID'yi filtreler.
-const extMalzemeId = MALZEME_DOC_ID.includes('/d/') ? MALZEME_DOC_ID.match(/\/d\/([a-zA-Z0-9-_]+)/)[1] : MALZEME_DOC_ID;
+const matchMalz = MALZEME_DOC_ID.match(/\/d\/([a-zA-Z0-9-_]+)/);
+const extMalzemeId = matchMalz ? matchMalz[1] : MALZEME_DOC_ID;
 
 const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
 const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Pres Malzeme Takip Listesi');
 const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
+const MESAJ_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Mesajlar');
 
 // FORM İÇİN SABİT TANIMLAR (Kendinize Göre Değiştirebilirsiniz)
 const SABIT_CALISANLAR = ["Yusuf Yalçıntaş", "Ahmet Yılmaz", "Mehmet Demir"];
@@ -622,14 +697,6 @@ function safeAttr(str) {
     if (str === null || str === undefined) return '';
     return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
-
-    function safeJSON(str, fallback) {
-        if (!str || str === 'undefined') return fallback;
-        try {
-            const parsed = JSON.parse(str);
-            return parsed !== null ? parsed : fallback;
-        } catch (e) { return fallback; }
-    }
 
 // TOAST BİLDİRİM
 function toast(msg, type='ok') {
@@ -750,12 +817,14 @@ function rG(){
     const ps=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,12);
     mc('c3','bar',{labels:ps.map(x=>x[0]),datasets:[{label:'Üretim (Adet)',data:ps.map(x=>x[1]),backgroundColor:cR('accent',0.75)}]});
     
-    $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf']);
+    const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
+    $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf', ...(isAdmin ? ['İşlem'] : [])]);
     $('tb-gun').innerHTML=dd.map((r,i)=>trD([
         i+1, `<b class="emp-link" onclick="openModal('${safeAttr(r.calisan)}')"> ${escapeHTML(r.calisan)}</b>`, escapeHTML(r.vardiya)||'-',
         escapeHTML(r.pres1)||'-', escapeHTML(r.fason1)||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
         escapeHTML(r.pres2)||'-', escapeHTML(r.fason2)||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
-        n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
+        n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP),
+        ...(isAdmin ? [`<div class="flex gap-2 items-center"><button onclick="editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:underline font-bold text-[14px]" title="Düzenle">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:underline font-bold text-[14px]" title="Sil">🗑</button></div>`] : [])
     ])).join('');
 }
 
@@ -790,12 +859,12 @@ function rH(){
     mc('h2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
     const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u).slice(0,10);
     // FIX #4: x.w.calisan her zaman undefined'dı (x.w zaten string). Düzeltildi.
-    mc('h3','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
+    mc('h3','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
 }
 
 function rC(){
     const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
-    mc('ca1','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
+    mc('ca1','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
     $('th-cal').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-cal').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
 }
@@ -819,7 +888,7 @@ function rF(){
 
 function rKaliphane() {
     $('th-kalip').innerHTML = th(['Fason / Kalıp Adı', 'Lokasyon']);
-    $('tb-kalip').innerHTML = KALIP_RAW.map(x => tr([`<b>${x.f}</b>`, `<span class="text-accent2 font-mono">${x.l}</span>`])).join('');
+    $('tb-kalip').innerHTML = KALIP_RAW.map((x, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'kalip')"><td class="p-2 whitespace-nowrap"><b>${x.f}</b></td><td class="p-2 whitespace-nowrap"><span class="text-accent2 font-mono">${x.l}</span></td></tr>`).join('');
 }
 
 function rKayitlar() {
@@ -906,12 +975,14 @@ function openRecsModal(title, data) {
     const cCard = (l, v1, v2, v3) => `<div class="bg-bg border border-border rounded p-3 flex flex-col"><span class="text-xs font-mono text-text3 mb-1">${l}</span><span class="font-bold text-lg text-text">${v1}</span><div class="flex justify-between mt-1"><span class="text-[10px] text-accent">${v2}</span><span class="text-[10px] text-accent2">${v3}</span></div></div>`;
     $('recs-stats').innerHTML = cCard('TOPLAM ÜRETİM', n(s.u)+' Adet', s.c+' Kayıt', n(s.b)+' Hedef') + cCard('ORTALAMA PERF.', s.p.toFixed(1)+'%', '', '') + cCard('TOPLAM DURUŞ', n(s.d)+' Dk', '', '') + cCard('ÇALIŞAN', new Set(data.map(r=>r.calisan)).size+' Kişi', '', '');
     
-    $('t-recs').innerHTML = `<thead>${thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf'])}</thead><tbody id="recs-body" class="text-xs">` + 
+    const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
+    $('t-recs').innerHTML = `<thead>${thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf', ...(isAdmin ? ['İşlem'] : [])])}</thead><tbody id="recs-body" class="text-xs">` + 
         data.map(r => trD([
             r.tarih, `<a class="emp-link font-bold" onclick="closeRecsModal(); setTimeout(()=>openModal('${safeAttr(r.calisan)}'), 300);">${escapeHTML(r.calisan)}</a>`, r.vardiya||'-', 
             r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
             r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
-            n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
+            n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP),
+            ...(isAdmin ? [`<div class="flex gap-2"><button onclick="closeRecsModal(); editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:underline text-[14px]">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:underline text-[14px]">🗑</button></div>`] : [])
         ])).join('') + `</tbody>`;
     
     const el = $('recs-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
@@ -932,7 +1003,8 @@ function openModal(emp) {
         </div>`;
     $('mdl-stats').innerHTML = cCard(`GÜNLÜK (${sD})`, calc(data.filter(r => r.tarih === sD))) + cCard('HAFTALIK', calc(data.filter(r => isoW(r.tarih) === sW))) + cCard(`AYLIK (${sM})`, calc(data.filter(r => r.tarih.endsWith(sM)))) + cCard('TÜM ZAMANLAR', calc(data));
     
-    $('mdl-th').innerHTML = th(['Tarih','Vardiya','Presler','Hedef','Üretim','Performans','Duruş']);
+    const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
+    $('mdl-th').innerHTML = th(['Tarih','Vardiya','Presler','Hedef','Üretim','Performans','Duruş', ...(isAdmin ? ['İşlem'] : [])]);
     const monthData = data.filter(r => r.tarih.endsWith(sM));
     $('mdl-history').innerHTML = monthData.map(r => { const topD = r.durus1 + r.durus2; return `
         <tr class="border-b border-border/50 hover:bg-bg2">
@@ -943,6 +1015,7 @@ function openModal(emp) {
             <td class="p-3 font-mono font-bold text-accent">${n(r.tU)}</td>
             <td class="p-3">${pb(r.tP)}</td>
             <td class="p-3 font-mono">${topD > 0 ? `<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${n(topD)} dk</span>` : '-'}</td>
+            ${isAdmin ? `<td class="p-3 flex gap-2"><button onclick="closeModal(); editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:text-accent/80 text-[14px]" title="Düzenle">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:text-accent2/80 text-[14px]" title="Sil">🗑</button></td>` : ''}
         </tr>`;}).join('');
     const el = $('emp-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
 }
@@ -955,12 +1028,32 @@ function openGenericModal(idx, type = 'deneme') {
     const headers = rawData.h;
     let html = '';
     headers.forEach((h, i) => {
-        html += `<div class="bg-white border border-gray-200 rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between shadow-sm hover:shadow-md transition-shadow"><span class="text-[11px] font-mono text-gray-500 mb-1 sm:mb-0 uppercase w-1/3">${h}</span><span class="font-bold text-sm text-gray-800 break-words whitespace-normal w-2/3 sm:text-right">${row[i] || '-'}</span></div>`;
+        html += `<div class="bg-bg3 border border-border rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between shadow-sm hover:shadow-md transition-shadow"><span class="text-[11px] font-mono text-text3 mb-1 sm:mb-0 uppercase w-1/3">${h}</span><span class="font-bold text-sm text-text break-words whitespace-normal w-2/3 sm:text-right">${row[i] || '-'}</span></div>`;
     });
-    $('gen-mdl-content').innerHTML = html;
+    
+    const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
+    let actionHtml = '';
+    if(isAdmin) {
+        const sheetName = type === 'malzeme' ? 'Pres Malzeme Takip Listesi' : 'Üretim Takip Denemeleri';
+        actionHtml = `<div class="mt-4 pt-4 border-t border-border flex gap-2 justify-end"><button onclick="deleteGenericRecord(${idx}, '${sheetName}')" class="px-4 py-2 bg-accent2 text-white rounded shadow text-xs font-bold hover:bg-accent2/80 transition-colors">🗑 BU KAYDI SİL</button></div>`;
+    }
+    
+    $('gen-mdl-content').innerHTML = html + actionHtml;
     const el = $('generic-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
 }
 function closeGenericModal() { const el = $('generic-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300); }
+
+async function deleteGenericRecord(index, sheetName) {
+    if(!confirm(`Bu kaydı (${sheetName}) SİLMEK istediğinize emin misiniz?`)) return;
+    const payload = { action: "deleteRecord", sheet: sheetName, rowIndex: index + 2 };
+    try {
+        toast('Siliniyor...', 'warn');
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        toast('Silme komutu gönderildi.', 'ok');
+        closeGenericModal();
+        setTimeout(() => fetchCSV(), 1000);
+    } catch(err) { toast('İşlem başarısız', 'err'); }
+}
 
 // EKRAN GÖRÜNTÜSÜ ŞEKLİNDE PDF İNDİR (Güncellendi)
 function exportToPDF() {
@@ -1002,11 +1095,60 @@ function popF(){
     if(!$('f-tarih').value) $('f-tarih').value=new Date().toISOString().split('T')[0];
 }
 
+let editModeRecord = null;
+function editProductionRecord(tarih, calisan) {
+    const rec = RAW.find(r => r.tarih === tarih && r.calisan === calisan);
+    if(!rec) return;
+    editModeRecord = rec;
+    
+    swT('form', document.querySelector(`.nav-tab[onclick*="'form'"]`));
+    popF(); // Seçenekleri doldur
+    
+    $('f-tarih').value = rec.tarih.split('.').reverse().join('-');
+    $('f-calisan').value = rec.calisan;
+    $('f-vardiya').value = rec.vardiya;
+    $('f-pres1').value = rec.pres1 || '';
+    $('f-fason1').value = rec.fason1 || '';
+    $('f-uretim1').value = rec.uretim1 || '';
+    $('f-durus1').value = rec.durus1 || 0;
+    $('f-pres2').value = rec.pres2 || '';
+    $('f-fason2').value = rec.fason2 || '';
+    $('f-uretim2').value = rec.uretim2 || '';
+    $('f-durus2').value = rec.durus2 || 0;
+    
+    $('form-title').innerHTML = '✎ ÜRETİM KAYDI DÜZENLEME';
+    $('btn-submit-form').innerHTML = '💾 DEĞİŞİKLİKLERİ KAYDET';
+    $('btn-cancel-edit').classList.remove('hidden');
+}
+
+function cancelEdit() {
+    editModeRecord = null;
+    $('uretim-formu').reset();
+    popF();
+    $('form-title').innerHTML = 'YENİ ÜRETİM KAYDI GİRİŞİ';
+    $('btn-submit-form').innerHTML = '💾 KAYDET VE GÖNDER';
+    $('btn-cancel-edit').classList.add('hidden');
+    if($('dup-warn')) $('dup-warn').classList.add('hidden');
+}
+
+async function deleteProductionRecord(tarih, calisan) {
+    if(!confirm(`${tarih} tarihli ${calisan} kaydını SİLMEK istediğinize emin misiniz?`)) return;
+    const payload = { action: "deleteRecord", Tarih: tarih, Çalışan: calisan };
+    try {
+        toast('Siliniyor...', 'warn');
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        toast('Silme isteği gönderildi.', 'ok');
+        setTimeout(() => fetchCSV(), 1000);
+    } catch(err) { toast('İşlem başarısız', 'err'); }
+}
+
 function checkDuplicate(){
     const trh=$('f-tarih').value.split('-').reverse().join('.');
     const cal=$('f-calisan').value;
     const warn=$('dup-warn'), txt=$('dup-warn-text');
+    if(!warn) return;
     if(!trh||!cal) { warn.classList.add('hidden'); return; }
+    if(editModeRecord && editModeRecord.tarih === trh && editModeRecord.calisan === cal) { warn.classList.add('hidden'); return; }
     const exists=RAW.some(r=>r.tarih===trh&&r.calisan===cal);
     if(exists){ txt.innerText=`${cal} için ${trh} tarihinde kayıt zaten mevcut! Gönderirseniz hata alırsınız.`; warn.classList.remove('hidden'); }
     else warn.classList.add('hidden');
@@ -1015,15 +1157,16 @@ function checkDuplicate(){
 async function submitForm(e){
     e.preventDefault();
     const trh=$('f-tarih').value.split('-').reverse().join('.'); const cal=$('f-calisan').value;
-    if(RAW.some(r=>r.tarih===trh && r.calisan===cal)){
+    
+    if(RAW.some(r=>r.tarih===trh && r.calisan===cal) && (!editModeRecord || (editModeRecord.tarih !== trh || editModeRecord.calisan !== cal))){
         toast(`${cal} için ${trh} tarihinde kayıt zaten mevcut!`, 'err'); return;
     }
 
-    if(!confirm('Bu veriyi kaydetmek ve göndermek istediğinize emin misiniz?')) return;
+    if(!confirm(editModeRecord ? 'Değişiklikleri kaydetmek istediğinize emin misiniz?' : 'Bu veriyi kaydetmek ve göndermek istediğinize emin misiniz?')) return;
 
-    const btn = e.target.querySelector('button[type="submit"]');
+    const btn = $('btn-submit-form');
     const origTxt = btn.innerHTML;
-    btn.innerHTML = '⏳ KAYDEDİLİYOR...'; 
+    btn.innerHTML = '⏳ İŞLENİYOR...'; 
     btn.disabled = true;
 
     // DİKKAT: Sol taraftaki anahtar isimleri (Tarih, Çalışan vb.) Google Sheets'teki 
@@ -1042,6 +1185,14 @@ async function submitForm(e){
         "Duruş Süresi 2 (dk)": $('f-durus2').value || 0
         // Performans vb. gibi hücreleriniz Google Sheets'te formüllü ise buraya eklemenize gerek yok.
     };
+    
+    if (editModeRecord) {
+        payload.action = "editRecord";
+        payload.oldTarih = editModeRecord.tarih;
+        payload.oldCalisan = editModeRecord.calisan;
+    } else {
+        payload.action = "addRecord";
+    }
 
     try {
         await fetch(SCRIPT_URL, {
@@ -1051,12 +1202,13 @@ async function submitForm(e){
             body: JSON.stringify(payload)
         });
         
-        toast('BAŞARIYLA KAYDEDİLDİ!', 'ok'); 
-        e.target.reset(); // Formu sıfırla
-        popF(); // Veri formunu başlangıç haline getir
+        toast('BAŞARIYLA İŞLENDİ!', 'ok'); 
+        if (editModeRecord) cancelEdit();
+        else { e.target.reset(); popF(); }
+        if($('dup-warn')) $('dup-warn').classList.add('hidden');
         setTimeout(() => fetchCSV(), 1000); // 1 saniye sonra verileri yenile
     } catch(err) {
-        alert('❌ GÖNDERİM HATASI: İnternet bağlantınızı kontrol edin.');
+        alert('❌ İŞLEM HATASI: İnternet bağlantınızı kontrol edin.');
     } finally {
         btn.innerHTML = origTxt; btn.disabled = false;
     }
@@ -1071,6 +1223,11 @@ function applyRoleRestrictions() {
     const adminBtn = $('nav-admin');
     if(adminBtn) adminBtn.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
     
+    document.querySelectorAll('.admin-only-btn').forEach(btn => {
+        btn.classList.toggle('hidden', !(LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin'));
+        btn.classList.toggle('flex', !!(LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin'));
+    });
+
     if (LOGGED_IN_USER && LOGGED_IN_USER.role !== 'admin') {
         adminSettings.hiddenTabs.forEach(tab => {
             const navEl = document.querySelector(`.nav-tab[onclick*="'${tab}'"]`);
@@ -1095,59 +1252,76 @@ function checkNotifs() {
     const pnlTitle = $('hdr-notif-title');
     const pnlText = $('hdr-notif-text');
     if(!LOGGED_IN_USER) return;
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
-    let count = 0;
-    let lastMsg = 'Bildirim Yok';
     
-    const getMsg = (val) => typeof val === 'object' && val !== null ? val.msg : val;
-    if(an['GLOBAL']) { count++; lastMsg = getMsg(an['GLOBAL']); }
-    if(an[LOGGED_IN_USER.name]) { count++; lastMsg = getMsg(an[LOGGED_IN_USER.name]); }
+    // Kullanıcıya ait veya Herkese gönderilmiş mesajları bul
+    const myMsgs = MESAJ_RAW.r ? MESAJ_RAW.r.filter(row => row[2] === LOGGED_IN_USER.name || row[2] === 'GLOBAL') : [];
+    const lastCount = parseInt(localStorage.getItem('lastMsgCount_' + LOGGED_IN_USER.name) || '0');
+    const unread = myMsgs.length - lastCount;
     
-    if(count > 0) {
+    let lastMsgText = myMsgs.length > 0 ? myMsgs[myMsgs.length-1][3] : 'Mesaj Yok';
+    if(lastMsgText.length > 15) lastMsgText = lastMsgText.substring(0, 15) + '...';
+
+    if(unread > 0) {
         // Aktif/Yeni Bildirim Var Modu
-        if(badge) { badge.innerText = count; badge.classList.remove('hidden'); badge.classList.add('flex'); }
+        if(badge) { badge.innerText = unread; badge.classList.remove('hidden'); badge.classList.add('flex'); }
         if(pnl) { pnl.classList.add('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.remove('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.add('text-accent2'); pnlTitle.classList.remove('text-text3'); }
-        if(pnlText) { pnlText.classList.add('text-text'); pnlText.classList.remove('text-text2'); pnlText.innerText = lastMsg; }
+        if(pnlText) { pnlText.classList.add('text-text', 'font-bold'); pnlText.classList.remove('text-text2'); pnlText.innerText = lastMsgText; }
     } else {
         // Pasif/Boş Mod
         if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
         if(pnl) { pnl.classList.remove('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.add('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.remove('text-accent2'); pnlTitle.classList.add('text-text3'); }
-        if(pnlText) { pnlText.classList.remove('text-text'); pnlText.classList.add('text-text2'); pnlText.innerText = lastMsg; }
+        if(pnlText) { pnlText.classList.remove('text-text', 'font-bold'); pnlText.classList.add('text-text2'); pnlText.innerText = 'Mesaj Kutusu'; }
     }
 }
 
 function openNotifModal() {
     if(!LOGGED_IN_USER) return;
     
-    if(LOGGED_IN_USER.role === 'admin') {
-        $('btn-show-send-notif').classList.remove('hidden');
-    } else {
-        $('btn-show-send-notif').classList.add('hidden');
-    }
+    // Artık herkes mesaj gönderebileceği için butonu her zaman göster
+    $('btn-show-send-notif').classList.remove('hidden');
+    
     $('notif-send-form').classList.add('hidden'); $('notif-send-form').classList.remove('flex');
     $('notif-content').classList.remove('hidden');
     $('btn-show-send-notif').innerText = 'YENİ MESAJ';
 
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
-    let msgs = [];
+    // İlgili mesajları filtrele (Bana gelenler, Herkese gidenler veya Benim gönderdiklerim)
+    const myMsgs = MESAJ_RAW.r ? MESAJ_RAW.r.filter(row => row[1] === LOGGED_IN_USER.name || row[2] === LOGGED_IN_USER.name || row[2] === 'GLOBAL') : [];
     
-    const getObj = (val) => typeof val === 'object' && val !== null ? val : { msg: val, time: '' };
-    if (an['GLOBAL']) { let d = getObj(an['GLOBAL']); msgs.push({ title: 'GENEL DUYURU', text: d.msg, time: d.time, bg: 'bg-accent/10 border-accent/30', col: 'text-accent' }); }
-    if (an[LOGGED_IN_USER.name]) { let d = getObj(an[LOGGED_IN_USER.name]); msgs.push({ title: 'KİŞİSEL MESAJ (' + LOGGED_IN_USER.name + ')', text: d.msg, time: d.time, bg: 'bg-accent2/10 border-accent2/30', col: 'text-accent2' }); }
+    // Okundu işaretle
+    const incoming = MESAJ_RAW.r ? MESAJ_RAW.r.filter(row => row[2] === LOGGED_IN_USER.name || row[2] === 'GLOBAL') : [];
+    localStorage.setItem('lastMsgCount_' + LOGGED_IN_USER.name, incoming.length.toString());
+    checkNotifs();
 
     let html = '';
-    if(msgs.length === 0) {
-        html = '<div class="text-text3 text-sm font-mono text-center py-4">Yeni bildiriminiz yok.</div>';
+    if(myMsgs.length === 0) {
+        html = '<div class="text-text3 text-sm font-mono text-center py-8">Mesaj kutunuz boş. Yeni mesaj başlatabilirsiniz.</div>';
     } else {
-        msgs.forEach(m => {
-            let timeHtml = m.time ? `<span class="text-[9px] font-mono text-text3 opacity-70">${m.time}</span>` : '';
-            html += `<div class="${m.bg} border rounded p-4 flex flex-col gap-2 shadow-sm"><div class="flex justify-between items-start"><span class="text-[11px] font-bold tracking-wider ${m.col} uppercase flex items-center gap-1">▪ ${m.title}</span>${timeHtml}</div><p class="text-sm text-text leading-relaxed whitespace-pre-wrap">${escapeHTML(m.text)}</p></div>`;
+        myMsgs.forEach(row => {
+            const isMe = row[1] === LOGGED_IN_USER.name;
+            const isGlobal = row[2] === 'GLOBAL';
+            
+            const align = isMe ? 'items-end' : 'items-start';
+            const bg = isMe ? 'bg-accent/20 border border-accent/30 text-text rounded-tr-none' : (isGlobal ? 'bg-accent3/20 border border-accent3/30 text-text rounded-tl-none' : 'bg-bg3 border border-border text-text rounded-tl-none');
+            const sender = isMe ? 'SİZ' : (row[1] || 'SİSTEM');
+            const target = isGlobal ? '(HERKESE)' : (isMe ? `(Kime: ${row[2]})` : '');
+            const replyTarget = isMe ? row[2] : row[1];
+            
+            html += `
+            <div class="flex flex-col ${align} w-full mb-3 cursor-pointer group" onclick="replyTo('${safeAttr(replyTarget)}')">
+                <div class="text-[9px] font-mono text-text3 mb-1 px-1 group-hover:text-accent transition-colors">${sender} <span class="text-accent ml-1">${target}</span> <span class="opacity-50 ml-2">${row[0] || ''}</span></div>
+                <div class="${bg} rounded-lg p-3 max-w-[85%] shadow-sm relative group-hover:shadow-md transition-all" title="Cevaplamak için tıklayın">
+                    <p class="text-xs leading-relaxed whitespace-pre-wrap">${escapeHTML(row[3] || '')}</p>
+                </div>
+            </div>`;
         });
     }
     $('notif-content').innerHTML = html;
     if($('hdr-notif')) $('hdr-notif').classList.remove('animate-pulse'); // Okundu olarak işaretle
+    
+    // Sohbetin en altına kaydır
+    setTimeout(() => { const el = $('notif-content'); if(el) el.scrollTop = el.scrollHeight; }, 50);
     
     const el = $('notif-modal'); el.classList.remove('hidden'); el.classList.add('flex');
     setTimeout(()=>el.classList.remove('opacity-0'),10);
@@ -1165,24 +1339,39 @@ function toggleNotifForm() {
         form.classList.remove('hidden'); form.classList.add('flex');
         content.classList.add('hidden');
         btn.innerText = 'GERİ DÖN';
-        $('modal-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+        
+        // Kişi listesini oluştur (Kendini hariç tut)
+        const otherUsers = Object.keys(USER_DATA).filter(u => u !== LOGGED_IN_USER.name).sort();
+        $('modal-n-user').innerHTML = `<option value="">Kime Göndereceksiniz?</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + otherUsers.map(u => `<option value="${u}">${u}</option>`).join('');
     } else {
         form.classList.add('hidden'); form.classList.remove('flex');
         content.classList.remove('hidden');
         btn.innerText = 'YENİ MESAJ';
+        // Geri dönüldüğünde en alta tekrar odaklansın
+        setTimeout(() => { const el = $('notif-content'); if(el) el.scrollTop = el.scrollHeight; }, 50);
     }
 }
 
 function sendNotifFromModal(e) {
     e.preventDefault();
-    const user = $('modal-n-user').value; const msg = $('modal-n-msg').value.trim();
-    if(!user || !msg) return;
-    let an = JSON.parse(localStorage.getItem('appNotifs')) || {};
-    an[user] = msg; localStorage.setItem('appNotifs', JSON.stringify(an));
-    const payload = { action: "sendNotif", user: user, message: msg };
+    const targetUser = $('modal-n-user').value; const msg = $('modal-n-msg').value.trim();
+    if(!targetUser || !msg) return;
+    
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+    
+    const payload = { action: "sendMessage", Tarih: timeStr, Kimden: LOGGED_IN_USER.name, Kime: targetUser, Mesaj: msg };
+    
+    // UI'ı anında güncelle (Optimistic Update)
+    if(!MESAJ_RAW.r) MESAJ_RAW.r = [];
+    MESAJ_RAW.r.push([timeStr, LOGGED_IN_USER.name, targetUser, msg]);
+    
     fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
-    toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
-    $('modal-n-msg').value = ''; toggleNotifForm(); checkNotifs();
+    
+    toast('Mesaj Gönderildi 📤', 'ok'); 
+    $('modal-n-msg').value = ''; 
+    toggleNotifForm(); 
+    openNotifModal(); // Modal'ı yeniden çiz (mesajı görmek için)
 }
 
 // KULLANICI PROFİL FOTOĞRAFI YÖNETİMİ
@@ -1235,7 +1424,7 @@ async function fetchUsers() {
             const headers = lines[0].split(',').map(x=>x.replace(/"/g,'').trim().toLowerCase());
             let nameIdx = headers.findIndex(h => h.includes('çalışan') || h.includes('ad'));
             let passIdx = headers.findIndex(h => h.includes('şifre') || h.includes('sifre'));
-            let roleIdx = headers.findIndex(h => h === 'rol' || h === 'yetki');
+            let roleIdx = headers.findIndex(h => h.includes('rol') || h.includes('yetki'));
             let photoIdx = headers.findIndex(h => h.includes('fotoğraf') || h.includes('fotograf') || h.includes('resim'));
             
             if (nameIdx === -1) nameIdx = 0;
@@ -1251,8 +1440,8 @@ async function fetchUsers() {
                 let role = 'user';
                 if (roleIdx !== -1 && cols[roleIdx]) {
                     let r = cols[roleIdx].toLowerCase().trim();
-                    if (r === 'yönetici' || r === 'admin') role = 'admin';
-                    else if (r === 'üye' || r === 'user') role = 'user';
+                    if (r.includes('yönetici') || r.includes('admin')) role = 'admin';
+                    else if (r.includes('üye') || r.includes('user')) role = 'user';
                 }
                 let photo = (photoIdx !== -1 && cols[photoIdx]) ? cols[photoIdx] : '';
                 
@@ -1264,9 +1453,16 @@ async function fetchUsers() {
             Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
             
             if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
+            
+            localStorage.setItem('cachedUsers', JSON.stringify(USER_DATA));
         }
     } catch(e) {
         console.error("Kullanıcı listesi çekilemedi", e);
+        // Offline durumunda önbellekten al
+        USER_DATA = safeJSON(localStorage.getItem('cachedUsers'), {});
+        let lu = safeJSON(localStorage.getItem('localUsers'), {});
+        Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
+        if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin";
     }
 }
 
@@ -1286,7 +1482,11 @@ function togglePassword() {
 }
 
 function showLogin() {
-    document.querySelector('.main-content').classList.add('blurred');
+    const mc = document.querySelector('.main-content');
+    if(mc) mc.classList.add('blurred');
+    if($('app-header')) { $('app-header').classList.add('hidden'); $('app-header').classList.remove('flex'); }
+    if($('app-main')) { $('app-main').classList.add('hidden'); $('app-main').classList.remove('flex'); }
+    
     const el = $('login-modal'); el.classList.remove('hidden'); el.classList.add('flex'); 
     setTimeout(()=>el.classList.remove('opacity-0'),10);
     
@@ -1305,8 +1505,8 @@ function showLogin() {
             $('login-error').innerText = 'Kullanıcı listesi çekilemedi.';
         }
     });
-        
-        fetchCSV(true); // Arka planda verileri gizlice çek (Giriş yapıldığında ekran hazır olsun)
+    
+    fetchCSV(true); // Arka planda verileri gizlice çek (Giriş yapıldığında ekran hazır olsun)
 }
 
 function login(e) {
@@ -1324,9 +1524,14 @@ function login(e) {
         errorEl.innerText = '';
         const el = $('login-modal'); el.classList.add('opacity-0');
         setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
-        // FIX #1: document.querySelector ile düzeltildi
-        document.querySelector('.main-content').classList.remove('blurred');
-        $('user-name').innerText = `👤 ${user}`;
+        
+        const mc = document.querySelector('.main-content');
+        if(mc) mc.classList.remove('blurred');
+        
+        $('app-header').classList.remove('hidden'); $('app-header').classList.add('flex');
+        $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
+        const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
+        $('user-name').innerHTML = `👤 ${user} ${roleBadge}`;
         
         if(USER_DATA[userKey].photo) {
             $('user-avatar').src = USER_DATA[userKey].photo;
@@ -1336,7 +1541,6 @@ function login(e) {
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         applyRoleRestrictions();
         checkNotifs();
-        fetchCSV(); // Giriş başarılı, verileri çek
         
         // Eğer arka plandaki çekim henüz bitmediyse yükleme ekranıyla birlikte çek, bittiyse direkt göster
         if (RAW.length === 0) {
@@ -1364,20 +1568,19 @@ function rAdmin() {
     ];
     $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
     
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
-    
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
-        const notifVal = an[u]; const notifMsg = typeof notifVal === 'object' && notifVal !== null ? notifVal.msg : notifVal;
-        const hasNotif = notifMsg ? `<span class="px-1.5 py-0.5 bg-accent3/20 text-accent3 rounded text-[9px] ml-2 cursor-help" title="${escapeHTML(notifMsg)}">🔔 BİLDİRİM</span>` : '';
+        
+        // Son gönderdiği mesajı göster
+        const notifMsg = MESAJ_RAW.r ? MESAJ_RAW.r.slice().reverse().find(r => r[1] === u && (r[2] === LOGGED_IN_USER.name || r[2] === 'GLOBAL')) : null;
+        const hasNotif = notifMsg ? `<span class="px-1.5 py-0.5 bg-accent/20 text-accent rounded text-[9px] ml-2 cursor-help border border-accent/50" title="Son Mesajı: ${escapeHTML(notifMsg[3])}">💬 MESAJ</span>` : '';
+        
         const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border border-border">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
-        const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold">YÖNETİCİ</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px]">ÜYE</span>';
+        const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px] cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
         return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3"><div class="flex items-center gap-2"><span class="font-bold text-text">${u}</span>${hasNotif}</div></td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
     }).join('');
     
-    const globalNotif = an['GLOBAL'] ? ' (Aktif Mesaj Var)' : '';
-    $('admin-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER${globalNotif}</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
-    loadUserNotif($('admin-n-user').value);
+    $('admin-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
 }
 
 async function saveUserObj(e) {
@@ -1402,6 +1605,8 @@ async function saveUserObj(e) {
     if (LOGGED_IN_USER && LOGGED_IN_USER.name === name) {
         LOGGED_IN_USER.role = role;
         sessionStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
+        const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
+        $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
         if (photo) {
             $('user-avatar').src = photo;
             $('user-avatar').classList.remove('hidden');
@@ -1435,34 +1640,27 @@ function deleteUser(name) {
     }
 }
 
-function loadUserNotif(user) {
-    if(!user) { $('admin-n-msg').value = ''; return; }
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
-    let val = an[user];
-    $('admin-n-msg').value = (typeof val === 'object' && val !== null) ? val.msg : (val || '');
-}
+// Admin paneli yükleme iptal edildi (Artık okuma sohbet ekranından yapılıyor)
+function loadUserNotif(user) { $('admin-n-msg').value = ''; }
 
 function sendNotif(e) {
     e.preventDefault();
-    const user = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
-    if(!user || !msg) return;
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
+    const targetUser = $('admin-n-user').value; const msg = $('admin-n-msg').value.trim();
+    if(!targetUser || !msg) return;
     
     const now = new Date();
     const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
-    an[user] = { msg: msg, time: timeStr };
     
-    localStorage.setItem('appNotifs', JSON.stringify(an));
-    toast(user === 'GLOBAL' ? 'Herkese bildirim gönderildi.' : user + ' kullanıcısına bildirim gönderildi.', 'ok'); 
-    checkNotifs(); rAdmin();
+    const payload = { action: "sendMessage", Tarih: timeStr, Kimden: LOGGED_IN_USER.name, Kime: targetUser, Mesaj: msg };
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
+    
+    toast(targetUser === 'GLOBAL' ? 'Herkese mesaj gönderildi.' : targetUser + ' kullanıcısına mesaj gönderildi.', 'ok'); 
+    $('admin-n-msg').value = '';
+    setTimeout(() => fetchCSV(), 1000); // 1 saniye sonra verileri yenile
 }
 
 function clearNotif() {
-    const user = $('admin-n-user').value; if(!user) return toast('Önce bir hedef seçin.', 'warn');
-    let an = safeJSON(localStorage.getItem('appNotifs'), {});
-    delete an[user]; localStorage.setItem('appNotifs', JSON.stringify(an));
-    $('admin-n-msg').value = '';
-    toast('Mevcut bildirim silindi.', 'ok'); checkNotifs(); rAdmin();
+    toast('Geçmiş mesajlar Google E-Tablolar (Mesajlar sekmesi) üzerinden silinmelidir.', 'warn');
 }
 
 function saveAdminSettings() {
@@ -1588,12 +1786,14 @@ function fetchCSV(isBg = false) {
         getCSV(URL),
         getCSV(KALIP_URL).catch(()=>''),
         getCSV(DENEME_URL).catch(()=>''),
-        getCSV(MALZEME_URL).catch(()=>'')
-    ]).then(([t, k_text, d_text, m_text]) => {
+        getCSV(MALZEME_URL).catch(()=>''),
+        getCSV(MESAJ_URL).catch(()=>'')
+    ]).then(([t, k_text, d_text, m_text, msg_text]) => {
         RAW=parse(t);
         KALIP_RAW=parseKalip(k_text);
         DENEME_RAW=parseGeneric(d_text);
         MALZEME_RAW=parseGeneric(m_text);
+        MESAJ_RAW=parseGeneric(msg_text);
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
@@ -1636,17 +1836,21 @@ const savedUser = sessionStorage.getItem('loggedUser');
 if(savedUser && savedUser !== "undefined") {
     LOGGED_IN_USER = safeJSON(savedUser, null);
     if (LOGGED_IN_USER) {
-    $('user-name').innerText = `👤 ${LOGGED_IN_USER.name}`;
-    $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
-    fetchUsers().then(() => {
-        if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
-            $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
-            $('user-avatar').classList.remove('hidden');
-        }
-        applyRoleRestrictions();
-        checkNotifs();
-        fetchCSV();
-    });
+        $('app-header').classList.remove('hidden'); $('app-header').classList.add('flex');
+        $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
+        
+        const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
+        $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
+        $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
+        fetchUsers().then(() => {
+            if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
+                $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
+                $('user-avatar').classList.remove('hidden');
+            }
+            applyRoleRestrictions();
+            checkNotifs();
+            fetchCSV();
+        });
     } else {
         showLogin();
     }
@@ -1654,7 +1858,7 @@ if(savedUser && savedUser !== "undefined") {
     showLogin();
 }
 
-setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled) fetchCSV(true); }, 60000);
+setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled) fetchCSV(true); }, 15000);
 
 // SERVICE WORKER (PWA) KAYDI
 if ('serviceWorker' in navigator) {
@@ -1700,3 +1904,15 @@ window.addEventListener('offline', () => toast('İnternet bağlantısı kesildi.
 </script>
 </body>
 </html>
+
+function replyTo(user) {
+    if(!user || user === 'SİSTEM' || user === 'GLOBAL') return;
+    if($('notif-send-form').classList.contains('hidden')) {
+        toggleNotifForm();
+    }
+    const userSelect = $('modal-n-user');
+    if(Array.from(userSelect.options).some(opt => opt.value === user)) {
+        userSelect.value = user;
+    }
+    $('modal-n-msg').focus();
+}
