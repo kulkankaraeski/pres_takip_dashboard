@@ -110,56 +110,76 @@
         </div>
     </div>
 
-    <header id="app-header" class="hidden flex-col xl:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 md:p-4 rounded-lg shadow-lg relative overflow-hidden">
+    <header id="app-header" class="hidden flex-col xl:flex-row gap-2 justify-between items-center bg-bg2 border border-border p-2 md:p-3 rounded-lg shadow-lg relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
         
-        <div class="flex flex-col items-center xl:items-start bg-bg3 border border-border rounded-lg p-3 shadow-sm shrink-0 w-full xl:w-auto">
-            <h1 class="font-bebas text-xl md:text-2xl tracking-[2px] text-accent leading-none">PRES ÜRETİM TAKİP</h1>
-            <div class="flex items-center gap-2 mt-2 text-[9px] md:text-[10px] font-mono text-text3">
-                <span id="src-status">● BAĞLANIYOR...</span>
-                <span class="w-1 h-1 bg-text3 rounded-full"></span>
-                <span id="src-info">Veri bekleniyor...</span>
+        <!-- BAŞLIK -->
+        <div class="flex flex-row items-center justify-between xl:justify-start bg-bg3 border border-border rounded-lg px-3 py-2 shadow-sm shrink-0 w-full xl:w-auto">
+            <div>
+                <h1 class="font-bebas text-base md:text-xl tracking-[2px] text-accent leading-none">PRES ÜRETİM TAKİP</h1>
+                <div class="flex items-center gap-2 mt-1 text-[9px] font-mono text-text3">
+                    <span id="src-status">● BAĞLANIYOR...</span>
+                    <span class="w-1 h-1 bg-text3 rounded-full"></span>
+                    <span id="src-info">Veri bekleniyor...</span>
+                </div>
+            </div>
+            <!-- Mobilde kullanıcı bilgisi başlığa taşındı -->
+            <div id="user-info" class="hidden items-center gap-1.5 font-mono text-xs bg-bg border border-border rounded-lg px-2 py-1 cursor-pointer hover:bg-border transition-colors group xl:hidden" onclick="openProfileModal()" title="Profil">
+                <img id="user-avatar" src="" alt="Avatar" class="w-5 h-5 rounded-full object-cover bg-bg3 hidden border border-border">
+                <span id="user-name" class="text-text2 text-[10px] group-hover:text-text transition-colors max-w-[100px] truncate"></span>
+                <button onclick="event.stopPropagation(); logout()" class="px-1.5 py-0.5 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[9px] transition-colors shrink-0">ÇIKIŞ</button>
             </div>
         </div>
         
-        <div class="grid grid-cols-3 sm:flex sm:flex-row flex-wrap xl:flex-nowrap items-center justify-center gap-1.5 md:gap-3 font-mono text-xs md:text-sm text-text2 flex-1 w-full xl:w-auto">
-            <div class="flex flex-col items-center justify-center bg-bg3 border border-border rounded-lg px-1 md:px-3 py-1.5 md:py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[8px] md:text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam</span><span id="hdr-total" class="text-base md:text-lg font-bold text-text">-</span></div>
-            <div class="flex flex-col items-center justify-center bg-bg3 border border-border rounded-lg px-1 md:px-3 py-1.5 md:py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[8px] md:text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-base md:text-lg font-bold text-accent4">-</span></div>
-            <div class="flex flex-col items-center justify-center bg-bg3 border border-border rounded-lg px-1 md:px-3 py-1.5 md:py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[8px] md:text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-base md:text-lg font-bold text-text">-</span></div>
-            
-            <div id="hdr-best" class="hidden col-span-3 sm:col-span-1 flex-col items-center justify-center px-4 py-1.5 ayin-elemani-kutu rounded-lg bg-bg3 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 xl:flex-none xl:min-w-[160px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
-                <span class="text-[8px] md:text-[9px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
-                <span id="hdr-best-name" class="text-sm md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
-                <span id="hdr-best-det" class="text-[8px] md:text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
+        <!-- KPI KARTLARI -->
+        <div class="grid grid-cols-3 xl:flex xl:flex-row items-center justify-center gap-1.5 font-mono text-xs text-text2 flex-1 w-full xl:w-auto">
+            <div class="flex flex-col items-center justify-center bg-bg3 border border-border rounded-lg px-2 py-1.5 shadow-sm">
+                <span class="text-[8px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam</span>
+                <span id="hdr-total" class="text-sm md:text-base font-bold text-text">-</span>
+            </div>
+            <div class="flex flex-col items-center justify-center bg-bg3 border border-border rounded-lg px-2 py-1.5 shadow-sm">
+                <span class="text-[8px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span>
+                <span id="hdr-perf" class="text-sm md:text-base font-bold text-accent4">-</span>
+            </div>
+            <div class="flex flex-col items-center justify-center bg-bg3 border border-border rounded-lg px-2 py-1.5 shadow-sm">
+                <span class="text-[8px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span>
+                <span id="hdr-workers" class="text-sm md:text-base font-bold text-text">-</span>
             </div>
             
-            <div id="hdr-notif" class="col-span-3 sm:col-span-1 flex flex-col justify-center px-4 py-1.5 rounded bg-bg3 border border-border cursor-pointer transition-transform hover:scale-105 flex-1 xl:flex-none xl:w-[160px] relative" onclick="openNotifModal()">
-                <span id="hdr-notif-title" class="text-[8px] md:text-[9px] tracking-wider text-text3 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
-                <span id="hdr-notif-text" class="text-[9px] md:text-[10px] font-mono text-text2 truncate leading-tight">Bildirim Yok</span>
+            <div id="hdr-best" class="hidden col-span-3 xl:col-span-1 flex-col items-center justify-center px-3 py-1.5 ayin-elemani-kutu rounded-lg bg-bg3 cursor-pointer transition-transform hover:scale-105 shadow-sm" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
+                <span class="text-[8px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
+                <span id="hdr-best-name" class="text-xs md:text-sm font-bebas tracking-[1px] ayin-elemani leading-tight text-center">YÜKLENİYOR...</span>
+                <span id="hdr-best-det" class="text-[8px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
+            </div>
+            
+            <div id="hdr-notif" class="col-span-3 xl:col-span-1 flex flex-col justify-center px-3 py-1.5 rounded bg-bg3 border border-border cursor-pointer transition-transform hover:scale-105 relative" onclick="openNotifModal()">
+                <span id="hdr-notif-title" class="text-[8px] tracking-wider text-text3 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
+                <span id="hdr-notif-text" class="text-[9px] font-mono text-text2 truncate leading-tight">Mesaj Kutusu</span>
                 <span id="notif-badge" class="absolute -top-1.5 -right-1.5 bg-accent2 text-white rounded-full w-4 h-4 hidden items-center justify-center text-[8px] font-bold shadow-sm">1</span>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:flex sm:flex-wrap xl:flex-nowrap items-stretch justify-center gap-1.5 md:gap-2 shrink-0 w-full xl:w-auto mt-2 xl:mt-0">
-            <div id="user-info" class="col-span-2 hidden items-center justify-between gap-2 font-mono text-xs bg-bg3 border border-border rounded-lg p-1.5 md:pr-3 shadow-sm cursor-pointer hover:bg-border transition-colors group" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
+        <!-- BUTONLAR -->
+        <div class="flex flex-row flex-wrap xl:flex-nowrap items-center justify-between xl:justify-end gap-1.5 shrink-0 w-full xl:w-auto">
+            <!-- Masaüstünde kullanıcı bilgisi burada -->
+            <div id="user-info-xl" class="hidden items-center gap-2 font-mono text-xs bg-bg3 border border-border rounded-lg p-1.5 pr-3 shadow-sm cursor-pointer hover:bg-border transition-colors group xl:flex" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
                 <div class="flex items-center">
-                    <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border group-hover:opacity-80 transition-opacity">
-                    <span id="user-name" class="text-text2 ml-1 group-hover:text-text transition-colors"></span>
+                    <img id="user-avatar-xl" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border group-hover:opacity-80 transition-opacity">
+                    <span id="user-name-xl" class="text-text2 ml-1 group-hover:text-text transition-colors text-[11px]"></span>
                 </div>
-                <button onclick="event.stopPropagation(); logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors ml-2 shrink-0">ÇIKIŞ</button>
+                <button onclick="event.stopPropagation(); logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors ml-1 shrink-0">ÇIKIŞ</button>
             </div>
             
-            <button id="btn-install" class="hidden col-span-2 sm:col-span-1 px-2 py-2 md:px-3 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-lg font-mono text-[10px] justify-center items-center gap-1.5 transition-all shadow-sm whitespace-nowrap animate-bounce">
+            <button id="btn-install" class="hidden px-2 py-1.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-lg font-mono text-[10px] justify-center items-center gap-1 transition-all shadow-sm animate-bounce">
                 📲 İNDİR
             </button>
-
-            <button onclick="toggleTheme()" class="px-2 py-2 md:px-3 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex justify-center items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="toggleTheme()" class="flex-1 xl:flex-none px-2 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex justify-center items-center gap-1 transition-colors shadow-sm">
                 🌓 TEMA
             </button>
-            <button onclick="exportToPDF()" class="px-2 py-2 md:px-3 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex justify-center items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="exportToPDF()" class="flex-1 xl:flex-none px-2 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex justify-center items-center gap-1 transition-colors shadow-sm">
                 📥 PDF
             </button>
-            <button onclick="fetchCSV()" id="btn-refresh" class="col-span-2 sm:col-span-1 px-2 py-2 md:px-3 md:py-2.5 bg-bg3 hover:bg-border text-accent border border-border rounded-lg font-mono text-[10px] flex justify-center items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="fetchCSV()" id="btn-refresh" class="flex-1 xl:flex-none px-2 py-1.5 bg-bg3 hover:bg-border text-accent border border-border rounded-lg font-mono text-[10px] flex justify-center items-center gap-1 transition-colors shadow-sm">
                 ↻ GÜNCELLE
             </button>
         </div>
@@ -315,7 +335,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-bg3 border border-border rounded p-4">
-                            <h3 class="font-bebas text-lg text-accent4 mb-3 border-b border-border/50 pb-1 tracking-wider">BÖLÜM 1 (KAFA 1)</h3>
+                            <h3 class="font-bebas text-lg text-accent4 mb-3 border-b border-border/50 pb-1 tracking-wider">1. KAFA</h3>
                             <div class="space-y-3">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres1" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div>
@@ -328,7 +348,7 @@
                             </div>
                         </div>
                         <div class="bg-bg3 border border-border rounded p-4 opacity-90 hover:opacity-100 transition-opacity">
-                            <h3 class="font-bebas text-lg text-accent2 mb-3 border-b border-border/50 pb-1 tracking-wider">BÖLÜM 2 (KAFA 2 - İsteğe Bağlı)</h3>
+                            <h3 class="font-bebas text-lg text-accent2 mb-3 border-b border-border/50 pb-1 tracking-wider">2. KAFA (İsteğe Bağlı)</h3>
                             <div class="space-y-3">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres2" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div>
@@ -1309,10 +1329,13 @@ function openNotifModal() {
             const replyTarget = isMe ? row[2] : row[1];
             
             html += `
-            <div class="flex flex-col ${align} w-full mb-3 cursor-pointer group" onclick="replyTo('${safeAttr(replyTarget)}')">
-                <div class="text-[9px] font-mono text-text3 mb-1 px-1 group-hover:text-accent transition-colors">${sender} <span class="text-accent ml-1">${target}</span> <span class="opacity-50 ml-2">${row[0] || ''}</span></div>
-                <div class="${bg} rounded-lg p-3 max-w-[85%] shadow-sm relative group-hover:shadow-md transition-all" title="Cevaplamak için tıklayın">
+            <div class="flex flex-col ${align} w-full mb-3">
+                <div class="text-[9px] font-mono text-text3 mb-1 px-1">${sender} <span class="text-accent ml-1">${target}</span> <span class="opacity-50 ml-2">${row[0] || ''}</span></div>
+                <div class="${bg} rounded-lg p-3 max-w-[85%] shadow-sm cursor-pointer hover:shadow-md hover:brightness-110 transition-all select-text"
+                     onclick="replyTo('${safeAttr(replyTarget)}')"
+                     title="${isMe ? '' : 'Cevaplamak için tıklayın'}">
                     <p class="text-xs leading-relaxed whitespace-pre-wrap">${escapeHTML(row[3] || '')}</p>
+                    ${!isMe ? `<span class="block text-[8px] text-right mt-1 opacity-50">↩ cevapla</span>` : ''}
                 </div>
             </div>`;
         });
@@ -1411,7 +1434,13 @@ async function saveProfileFromModal(e) {
     USER_DATA[name].photo = photo;
     let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
     if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
-    if (photo) { $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); } else { $('user-avatar').classList.add('hidden'); }
+    if (photo) { 
+        $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); 
+        if($('user-avatar-xl')) { $('user-avatar-xl').src = photo; $('user-avatar-xl').classList.remove('hidden'); }
+    } else { 
+        $('user-avatar').classList.add('hidden'); 
+        if($('user-avatar-xl')) $('user-avatar-xl').classList.add('hidden');
+    }
     toast('Profil fotoğrafı güncellendi.', 'ok'); closeProfileModal(); if(cTab==='admin') rAdmin();
 }
 
@@ -1607,11 +1636,14 @@ async function saveUserObj(e) {
         sessionStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
         const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
         $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
+        if($('user-name-xl')) $('user-name-xl').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
         if (photo) {
             $('user-avatar').src = photo;
             $('user-avatar').classList.remove('hidden');
+            if($('user-avatar-xl')) { $('user-avatar-xl').src = photo; $('user-avatar-xl').classList.remove('hidden'); }
         } else {
             $('user-avatar').classList.add('hidden');
+            if($('user-avatar-xl')) $('user-avatar-xl').classList.add('hidden');
         }
         applyRoleRestrictions();
     }
@@ -1841,11 +1873,14 @@ if(savedUser && savedUser !== "undefined") {
         
         const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
         $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
+        if($('user-name-xl')) $('user-name-xl').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
+        if($('user-info-xl')) { $('user-info-xl').classList.remove('hidden'); $('user-info-xl').classList.add('flex'); }
         fetchUsers().then(() => {
             if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
                 $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
                 $('user-avatar').classList.remove('hidden');
+                if($('user-avatar-xl')) { $('user-avatar-xl').src = USER_DATA[LOGGED_IN_USER.name].photo; $('user-avatar-xl').classList.remove('hidden'); }
             }
             applyRoleRestrictions();
             checkNotifs();
@@ -1906,13 +1941,23 @@ window.addEventListener('offline', () => toast('İnternet bağlantısı kesildi.
 </html>
 
 function replyTo(user) {
-    if(!user || user === 'SİSTEM' || user === 'GLOBAL') return;
-    if($('notif-send-form').classList.contains('hidden')) {
-        toggleNotifForm();
+    if (!user || user === 'SİSTEM' || user === 'GLOBAL') return;
+    const form = $('notif-send-form');
+    const content = $('notif-content');
+    const btn = $('btn-show-send-notif');
+    if (form.classList.contains('hidden')) {
+        form.classList.remove('hidden'); form.classList.add('flex');
+        content.classList.add('hidden');
+        if (btn) btn.innerText = 'GERİ DÖN';
+        const otherUsers = Object.keys(USER_DATA).filter(u => u !== LOGGED_IN_USER.name).sort();
+        $('modal-n-user').innerHTML = `<option value="">Kime Göndereceksiniz?</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + otherUsers.map(u => `<option value="${u}">${u}</option>`).join('');
+        if (Array.from($('modal-n-user').options).some(opt => opt.value === user)) {
+            $('modal-n-user').value = user;
+        }
+    } else {
+        if (Array.from($('modal-n-user').options).some(opt => opt.value === user)) {
+            $('modal-n-user').value = user;
+        }
     }
-    const userSelect = $('modal-n-user');
-    if(Array.from(userSelect.options).some(opt => opt.value === user)) {
-        userSelect.value = user;
-    }
-    $('modal-n-msg').focus();
+    setTimeout(() => $('modal-n-msg').focus(), 50);
 }
