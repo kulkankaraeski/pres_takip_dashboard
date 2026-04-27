@@ -1816,13 +1816,17 @@ if(savedUser && savedUser !== "undefined") {
         $('app-header').classList.remove('hidden'); $('app-header').classList.add('flex');
         $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
         
-        const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
-        $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
+        const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
+        $('user-name').innerHTML = roleBadge;
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         fetchUsers().then(() => {
             if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
                 $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
                 $('user-avatar').classList.remove('hidden');
+                if($('user-initials')) $('user-initials').classList.add('hidden');
+            } else {
+                $('user-avatar').classList.add('hidden');
+                if($('user-initials')) { $('user-initials').innerText = LOGGED_IN_USER.name.slice(0,2).toUpperCase(); $('user-initials').classList.remove('hidden'); }
             }
             applyRoleRestrictions();
             checkNotifs();
