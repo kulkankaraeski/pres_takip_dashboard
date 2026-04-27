@@ -1228,6 +1228,8 @@ function applyRoleRestrictions() {
     }
 }
 
+let currentChatPartner = null;
+
 function checkNotifs() {
     const badge = $('notif-badge');
     const pnl = $('hdr-notif');
@@ -1235,22 +1237,36 @@ function checkNotifs() {
     const pnlText = $('hdr-notif-text');
     if(!LOGGED_IN_USER) return;
     
-    // Kullanıcıya ait veya Herkese gönderilmiş mesajları bul
-    const myMsgs = MESAJ_RAW.r ? MESAJ_RAW.r.filter(row => row[2] === LOGGED_IN_USER.name || row[2] === 'GLOBAL') : [];
-    const lastCount = parseInt(localStorage.getItem('lastMsgCount_' + LOGGED_IN_USER.name) || '0');
-    const unread = myMsgs.length - lastCount;
+    const myName = LOGGED_IN_USER.name;
+    const readStates = safeJSON(localStorage.getItem('chatReadStates_' + myName), {});
     
-    let lastMsgText = myMsgs.length > 0 ? myMsgs[myMsgs.length-1][3] : 'Mesaj Yok';
-    if(lastMsgText.length > 15) lastMsgText = lastMsgText.substring(0, 15) + '...';
+    let unreadChats = 0;
+    let totalUnreadMsgs = 0;
 
-    if(unread > 0) {
-        // Aktif/Yeni Bildirim Var Modu
-        if(badge) { badge.innerText = unread; badge.classList.remove('hidden'); badge.classList.add('flex'); }
+    if (MESAJ_RAW.r) {
+        const chatGroups = {};
+        MESAJ_RAW.r.forEach((r, idx) => {
+            const from = r[1], to = r[2];
+            if(from === myName || to === myName || to === 'GLOBAL') {
+                const partner = (to === 'GLOBAL') ? 'GLOBAL' : (from === myName ? to : from);
+                if (!chatGroups[partner]) chatGroups[partner] = { unread: 0 };
+                
+                const lastReadIdx = readStates[partner] !== undefined ? readStates[partner] : -1;
+                if (idx > lastReadIdx && from !== myName) {
+                    chatGroups[partner].unread++;
+                    totalUnreadMsgs++;
+                }
+            }
+        });
+        Object.values(chatGroups).forEach(g => { if(g.unread > 0) unreadChats++; });
+    }
+
+    if(totalUnreadMsgs > 0) {
+        if(badge) { badge.innerText = totalUnreadMsgs; badge.classList.remove('hidden'); badge.classList.add('flex'); }
         if(pnl) { pnl.classList.add('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.remove('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.add('text-accent2'); pnlTitle.classList.remove('text-text3'); }
-        if(pnlText) { pnlText.classList.add('text-text', 'font-bold'); pnlText.classList.remove('text-text2'); pnlText.innerText = lastMsgText; }
+        if(pnlText) { pnlText.classList.add('text-text', 'font-bold'); pnlText.classList.remove('text-text2'); pnlText.innerText = unreadChats + ' Kişiden Yeni'; }
     } else {
-        // Pasif/Boş Mod
         if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
         if(pnl) { pnl.classList.remove('bg-accent2/10', 'border-accent2/50', 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', 'animate-pulse'); pnl.classList.add('bg-bg3', 'border-border'); }
         if(pnlTitle) { pnlTitle.classList.remove('text-accent2'); pnlTitle.classList.add('text-text3'); }
@@ -1261,97 +1277,258 @@ function checkNotifs() {
 function openNotifModal() {
     if(!LOGGED_IN_USER) return;
     
-    // Artık herkes mesaj gönderebileceği için butonu her zaman göster
-    $('btn-show-send-notif').classList.remove('hidden');
+    if(LOGGED_IN_USER.role === 'admin') { if($('btn-notif-sheet')) $('btn-notif-sheet').classList.remove('hidden'); }
     
-    $('notif-send-form').classList.add('hidden'); $('notif-send-form').classList.remove('flex');
-    $('notif-content').classList.remove('hidden');
-    $('btn-show-send-notif').innerText = 'YENİ MESAJ';
+    const myU = USER_DATA[LOGGED_IN_USER.name] || {};
+    if(myU.photo) { $('chat-my-avatar').src=myU.photo; $('chat-my-avatar').classList.remove('hidden'); $('chat-my-ini').classList.add('hidden'); }
+    else { $('chat-my-avatar').classList.add('hidden'); $('chat-my-ini').classList.remove('hidden'); $('chat-my-ini').innerText=LOGGED_IN_USER.name.slice(0,2).toUpperCase(); }
 
-    // İlgili mesajları filtrele (Bana gelenler, Herkese gidenler veya Benim gönderdiklerim)
-    const myMsgs = MESAJ_RAW.r ? MESAJ_RAW.r.filter(row => row[1] === LOGGED_IN_USER.name || row[2] === LOGGED_IN_USER.name || row[2] === 'GLOBAL') : [];
+    renderChatList();
     
-    // Okundu işaretle
-    const incoming = MESAJ_RAW.r ? MESAJ_RAW.r.filter(row => row[2] === LOGGED_IN_USER.name || row[2] === 'GLOBAL') : [];
-    localStorage.setItem('lastMsgCount_' + LOGGED_IN_USER.name, incoming.length.toString());
-    checkNotifs();
-
-    let html = '';
-    if(myMsgs.length === 0) {
-        html = '<div class="text-text3 text-sm font-mono text-center py-8">Mesaj kutunuz boş. Yeni mesaj başlatabilirsiniz.</div>';
-    } else {
-        myMsgs.forEach(row => {
-            const isMe = row[1] === LOGGED_IN_USER.name;
-            const isGlobal = row[2] === 'GLOBAL';
-            
-            const align = isMe ? 'items-end' : 'items-start';
-            const bg = isMe ? 'bg-accent/20 border border-accent/30 text-text rounded-tr-none' : (isGlobal ? 'bg-accent3/20 border border-accent3/30 text-text rounded-tl-none' : 'bg-bg3 border border-border text-text rounded-tl-none');
-            const sender = isMe ? 'SİZ' : (row[1] || 'SİSTEM');
-            const target = isGlobal ? '(HERKESE)' : (isMe ? `(Kime: ${row[2]})` : '');
-            
-            html += `
-            <div class="flex flex-col ${align} w-full mb-3">
-                <div class="text-[9px] font-mono text-text3 mb-1 px-1">${sender} <span class="text-accent ml-1">${target}</span> <span class="opacity-50 ml-2">${row[0] || ''}</span></div>
-                <div class="${bg} rounded-lg p-3 max-w-[85%] shadow-sm relative">
-                    <p class="text-xs leading-relaxed whitespace-pre-wrap">${escapeHTML(row[3] || '')}</p>
-                </div>
-            </div>`;
-        });
+    $('chat-list-view').classList.remove('hidden'); $('chat-list-view').classList.add('flex');
+    if (window.innerWidth < 768 && currentChatPartner) {
+        $('active-chat-view').classList.remove('hidden'); $('active-chat-view').classList.add('flex');
+    } else if(window.innerWidth >= 768 && !currentChatPartner) {
+        $('active-chat-view').classList.remove('hidden'); $('active-chat-view').classList.add('flex');
+        $('chat-empty-state').classList.remove('hidden'); $('chat-empty-state').classList.add('flex');
+        $('chat-active-container').classList.add('hidden'); $('chat-active-container').classList.remove('flex');
     }
-    $('notif-content').innerHTML = html;
     
-    // Sohbetin en altına kaydır
-    setTimeout(() => { const el = $('notif-content'); if(el) el.scrollTop = el.scrollHeight; }, 50);
+    hideNewChatSelector();
     
     const el = $('notif-modal'); el.classList.remove('hidden'); el.classList.add('flex');
     setTimeout(()=>el.classList.remove('opacity-0'),10);
 }
+
+function renderChatList() {
+    const myName = LOGGED_IN_USER.name;
+    const readStates = safeJSON(localStorage.getItem('chatReadStates_' + myName), {});
+    const chatGroups = {};
+
+    if (MESAJ_RAW.r) {
+        MESAJ_RAW.r.forEach((r, idx) => {
+            const date = r[0], from = r[1], to = r[2], msg = r[3];
+            if(from === myName || to === myName || to === 'GLOBAL') {
+                const partner = (to === 'GLOBAL') ? 'GLOBAL' : (from === myName ? to : from);
+                if (!chatGroups[partner]) chatGroups[partner] = { partner, lastMsg: '', lastDate: '', unread: 0, lastIdx: -1 };
+                chatGroups[partner].lastMsg = msg; chatGroups[partner].lastDate = date; chatGroups[partner].lastIdx = idx;
+                
+                const lastReadIdx = readStates[partner] !== undefined ? readStates[partner] : -1;
+                if (idx > lastReadIdx && from !== myName) { chatGroups[partner].unread++; }
+            }
+        });
+    }
+
+    const sortedChats = Object.values(chatGroups).sort((a,b) => b.lastIdx - a.lastIdx);
+    let html = '';
+    if(sortedChats.length === 0) {
+        html = '<div class="flex-1 flex flex-col items-center justify-center text-text3 p-8 text-center gap-4"><div class="text-5xl opacity-50 grayscale">💬</div><p class="font-mono text-xs">Sohbet kutunuz boş.<br>Sağ alt köşedeki butondan sohbet başlatın.</p></div>';
+    } else {
+        sortedChats.forEach(c => {
+            const uInfo = USER_DATA[c.partner] || {}; const isGlobal = c.partner === 'GLOBAL';
+            const avatarHtml = isGlobal ? `<div class="w-12 h-12 rounded-full bg-accent3/20 flex items-center justify-center font-bold text-accent3 text-xl shrink-0 border border-accent3/50 shadow-inner">🌟</div>` : 
+                               (uInfo.photo ? `<img src="${uInfo.photo}" class="w-12 h-12 rounded-full object-cover shrink-0 border border-border">` : `<div class="w-12 h-12 rounded-full bg-bg3 border border-border flex items-center justify-center font-bold text-text3 text-lg shrink-0">${c.partner.slice(0,2).toUpperCase()}</div>`);
+            
+            const nameColor = isGlobal ? 'text-accent3' : 'text-text';
+            const nameDisp = isGlobal ? '🌟 HERKESE (DUYURU)' : c.partner;
+            const unreadBadge = c.unread > 0 ? `<div class="bg-accent4 text-bg2 text-[10px] font-bold rounded-full h-5 px-1.5 min-w-[20px] flex items-center justify-center shadow-md">${c.unread}</div>` : '';
+            const timeSplit = c.lastDate ? c.lastDate.split(' ') : ['', ''];
+            const shortTime = timeSplit.length > 1 ? timeSplit[1] : c.lastDate;
+            const safeMsg = c.lastMsg.length > 30 ? c.lastMsg.substring(0, 30) + '...' : c.lastMsg;
+            const bgActive = currentChatPartner === c.partner ? 'bg-bg3 border-l-4 border-accent' : 'hover:bg-bg3 border-l-4 border-transparent';
+
+            html += `
+            <div class="chat-list-item flex items-center gap-3 p-3 cursor-pointer transition-colors border-b border-border/50 relative ${bgActive}" data-name="${c.partner}" onclick="openChat('${safeAttr(c.partner)}')">
+                ${avatarHtml}
+                <div class="flex-1 min-w-0 flex flex-col justify-center">
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="font-bold text-[13px] truncate ${nameColor}">${nameDisp}</span>
+                        <span class="text-[10px] text-text3 whitespace-nowrap ml-2 ${c.unread > 0 ? 'text-accent4 font-bold' : ''}">${shortTime}</span>
+                    </div>
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="text-[11px] text-text2 truncate ${c.unread > 0 ? 'font-semibold text-text' : ''}">${escapeHTML(safeMsg)}</span>
+                        ${unreadBadge}
+                    </div>
+                </div>
+            </div>`;
+        });
+    }
+    $('chat-list-content').innerHTML = html;
+}
+
+function filterChatList(v) {
+    const query = v.toLowerCase();
+    document.querySelectorAll('.chat-list-item').forEach(el => {
+        const name = el.getAttribute('data-name').toLowerCase();
+        el.style.display = name.includes(query) ? 'flex' : 'none';
+    });
+}
+
+function openChat(partner) {
+    currentChatPartner = partner;
+    const isGlobal = partner === 'GLOBAL'; const uInfo = USER_DATA[partner] || {};
+    
+    $('active-chat-name').innerText = isGlobal ? 'HERKESE (Duyuru)' : partner;
+    const img = $('active-chat-img'), ini = $('active-chat-ini'), av = $('active-chat-avatar');
+    if(isGlobal) {
+        img.classList.add('hidden'); ini.classList.remove('hidden'); ini.innerHTML = '🌟'; av.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl bg-accent3/20 text-accent3 shrink-0 shadow-inner border border-accent3/50';
+    } else if(uInfo.photo) {
+        img.src = uInfo.photo; img.classList.remove('hidden'); ini.classList.add('hidden'); av.className = 'w-10 h-10 rounded-full border border-border shrink-0 overflow-hidden shadow-inner';
+    } else {
+        img.classList.add('hidden'); ini.classList.remove('hidden'); ini.innerText = partner.slice(0,2).toUpperCase(); av.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-text3 text-sm bg-bg3 border border-border shrink-0 shadow-inner';
+    }
+
+    $('chat-empty-state').classList.add('hidden'); $('chat-empty-state').classList.remove('flex');
+    $('chat-active-container').classList.remove('hidden'); $('chat-active-container').classList.add('flex');
+    
+    if (window.innerWidth < 768) {
+        $('chat-list-view').classList.add('hidden'); $('chat-list-view').classList.remove('flex');
+        $('active-chat-view').classList.remove('hidden'); $('active-chat-view').classList.add('flex');
+    }
+    
+    renderChatHistory();
+    renderChatList(); // Listeyi renklendirmek için
+    
+    const myName = LOGGED_IN_USER.name;
+    const readStates = safeJSON(localStorage.getItem('chatReadStates_' + myName), {});
+    let lastIdx = -1;
+    (MESAJ_RAW.r || []).forEach((r, idx) => {
+        if ((partner === 'GLOBAL' && r[2] === 'GLOBAL') || (r[1] === partner && r[2] === myName) || (r[1] === myName && r[2] === partner)) lastIdx = idx;
+    });
+    if(lastIdx > -1) {
+        readStates[partner] = lastIdx; localStorage.setItem('chatReadStates_' + myName, JSON.stringify(readStates)); checkNotifs();
+    }
+    setTimeout(() => { const h = $('active-chat-history'); h.scrollTop = h.scrollHeight; $('chat-msg-input').focus(); }, 50);
+}
+
+function backToChatList() {
+    currentChatPartner = null;
+    if (window.innerWidth < 768) {
+        $('active-chat-view').classList.add('hidden'); $('active-chat-view').classList.remove('flex');
+        $('chat-list-view').classList.remove('hidden'); $('chat-list-view').classList.add('flex');
+    } else {
+        $('chat-empty-state').classList.remove('hidden'); $('chat-empty-state').classList.add('flex');
+        $('chat-active-container').classList.add('hidden'); $('chat-active-container').classList.remove('flex');
+    }
+    renderChatList();
+}
+
+function renderChatHistory() {
+    const myName = LOGGED_IN_USER.name;
+    let html = ''; let lastDateStr = '';
+    const deletedStates = safeJSON(localStorage.getItem('chatDeletedStates_' + myName), {});
+    const hideUpTo = deletedStates[currentChatPartner] || -1;
+
+    if (MESAJ_RAW.r) {
+        MESAJ_RAW.r.forEach((r, idx) => {
+            if(idx < hideUpTo) return; 
+            
+            const dateFull = r[0], from = r[1], to = r[2], msg = r[3];
+            const isGlobalMsg = to === 'GLOBAL';
+            
+            if ((currentChatPartner === 'GLOBAL' && isGlobalMsg) || (from === currentChatPartner && to === myName) || (from === myName && to === currentChatPartner)) {
+                const dateOnly = dateFull ? dateFull.split(' ')[0] : '';
+                const timeOnly = dateFull ? (dateFull.split(' ')[1] || '') : '';
+                if (dateOnly && dateOnly !== lastDateStr) {
+                    html += `<div class="flex justify-center my-3"><span class="bg-bg3 border border-border text-text3 text-[10px] py-1 px-3 rounded-full shadow-sm">${dateOnly}</span></div>`;
+                    lastDateStr = dateOnly;
+                }
+
+                const isMe = from === myName;
+                const bubbleClass = isMe ? 'bg-accent/20 border border-accent/30 text-text rounded-tr-none' : 'bg-bg3 border border-border text-text rounded-tl-none';
+                const alignClass = isMe ? 'items-end' : 'items-start';
+                const senderNameHtml = (!isMe && currentChatPartner === 'GLOBAL') ? `<span class="text-[10px] font-bold text-accent mb-1">${escapeHTML(from)}</span>` : '';
+                const readIcon = isMe ? `<span class="ml-1 text-[10px] text-accent4 font-bold">✓✓</span>` : '';
+
+                html += `
+                <div class="flex flex-col ${alignClass} w-full mb-1.5 px-1 md:px-4">
+                    <div class="${bubbleClass} rounded-xl p-2.5 max-w-[90%] md:max-w-[70%] shadow-sm relative flex flex-col group min-w-[80px]">
+                        ${senderNameHtml}
+                        <p class="text-xs md:text-[13px] leading-snug whitespace-pre-wrap break-words">${escapeHTML(msg)}</p>
+                        <div class="flex justify-end items-center mt-1 ml-4 self-end">
+                            <span class="text-[9px] text-text3 leading-none">${timeOnly}</span>
+                            ${readIcon}
+                        </div>
+                    </div>
+                </div>`;
+            }
+        });
+    }
+
+    if(html === '') { html = `<div class="flex-1 flex flex-col items-center justify-center text-text3 opacity-50 p-6"><div class="text-5xl mb-4 grayscale">💬</div><p class="text-sm text-center font-mono">Burada hiç mesaj yok.<br>${currentChatPartner === 'GLOBAL' ? 'Herkese ilk duyuruyu yapın!' : 'Sohbeti başlatmak için bir mesaj gönderin.'}</p></div>`; }
+    $('active-chat-history').innerHTML = html;
+}
+
 function closeNotifModal() {
     const el = $('notif-modal'); el.classList.add('opacity-0');
     setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
 }
 
-function toggleNotifForm() {
-    const form = $('notif-send-form');
-    const content = $('notif-content');
-    const btn = $('btn-show-send-notif');
-    if(form.classList.contains('hidden')) {
-        form.classList.remove('hidden'); form.classList.add('flex');
-        content.classList.add('hidden');
-        btn.innerText = 'GERİ DÖN';
-        
-        // Kişi listesini oluştur (Kendini hariç tut)
-        const otherUsers = Object.keys(USER_DATA).filter(u => u !== LOGGED_IN_USER.name).sort();
-        $('modal-n-user').innerHTML = `<option value="">Kime Göndereceksiniz?</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + otherUsers.map(u => `<option value="${u}">${u}</option>`).join('');
-    } else {
-        form.classList.add('hidden'); form.classList.remove('flex');
-        content.classList.remove('hidden');
-        btn.innerText = 'YENİ MESAJ';
-        // Geri dönüldüğünde en alta tekrar odaklansın
-        setTimeout(() => { const el = $('notif-content'); if(el) el.scrollTop = el.scrollHeight; }, 50);
-    }
-}
-
-function sendNotifFromModal(e) {
-    e.preventDefault();
-    const targetUser = $('modal-n-user').value; const msg = $('modal-n-msg').value.trim();
-    if(!targetUser || !msg) return;
+function sendChatMessage() {
+    const input = $('chat-msg-input'); const msg = input.value.trim();
+    if(!msg || !currentChatPartner) return;
     
     const now = new Date();
     const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
     
-    const payload = { action: "sendMessage", Tarih: timeStr, Kimden: LOGGED_IN_USER.name, Kime: targetUser, Mesaj: msg };
+    const payload = { action: "sendMessage", Tarih: timeStr, Kimden: LOGGED_IN_USER.name, Kime: currentChatPartner, Mesaj: msg };
     
-    // UI'ı anında güncelle (Optimistic Update)
     if(!MESAJ_RAW.r) MESAJ_RAW.r = [];
-    MESAJ_RAW.r.push([timeStr, LOGGED_IN_USER.name, targetUser, msg]);
+    MESAJ_RAW.r.push([timeStr, LOGGED_IN_USER.name, currentChatPartner, msg]);
     
-    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
+    input.value = ''; input.style.height = 'auto';
     
-    toast('Mesaj Gönderildi 📤', 'ok'); 
-    $('modal-n-msg').value = ''; 
-    toggleNotifForm(); 
-    openNotifModal(); // Modal'ı yeniden çiz (mesajı görmek için)
+    const myName = LOGGED_IN_USER.name;
+    const readStates = safeJSON(localStorage.getItem('chatReadStates_' + myName), {});
+    readStates[currentChatPartner] = MESAJ_RAW.r.length - 1;
+    localStorage.setItem('chatReadStates_' + myName, JSON.stringify(readStates));
+
+    renderChatHistory(); renderChatList();
+    const h = $('active-chat-history'); h.scrollTop = h.scrollHeight;
+    
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+}
+
+function showNewChatSelector() {
+    const overlay = $('new-chat-overlay'); overlay.classList.remove('hidden');
+    setTimeout(() => { overlay.classList.remove('-translate-x-full'); }, 10);
+    $('chat-contact-search').value = ''; renderContacts('');
+}
+
+function hideNewChatSelector() {
+    const overlay = $('new-chat-overlay'); overlay.classList.add('-translate-x-full');
+    setTimeout(() => { overlay.classList.add('hidden'); }, 300);
+}
+
+function renderContacts(filter) {
+    const f = filter.toLowerCase();
+    let users = Object.keys(USER_DATA).filter(u => u !== LOGGED_IN_USER.name);
+    if(f) users = users.filter(u => u.toLowerCase().includes(f));
+    
+    let html = '';
+    if(!f || 'herkese (duyuru)'.includes(f) || 'global'.includes(f)) {
+        html += `<div class="flex items-center gap-3 p-3 hover:bg-bg3 cursor-pointer border-b border-border/50" onclick="hideNewChatSelector(); openChat('GLOBAL');"><div class="w-10 h-10 rounded-full bg-accent3/20 flex items-center justify-center font-bold text-accent3 text-lg shrink-0">🌟</div><div class="flex flex-col"><span class="font-bold text-sm text-accent3">HERKESE (DUYURU)</span><span class="text-[10px] text-text3">Genel Duyuru Grubu</span></div></div>`;
+    }
+
+    users.sort().forEach(u => {
+        const uInfo = USER_DATA[u];
+        const avatar = uInfo.photo ? `<img src="${uInfo.photo}" class="w-10 h-10 rounded-full object-cover shrink-0 border border-border">` : `<div class="w-10 h-10 rounded-full bg-bg3 border border-border flex items-center justify-center font-bold text-text3 text-sm shrink-0">${u.slice(0,2).toUpperCase()}</div>`;
+        html += `<div class="flex items-center gap-3 p-3 hover:bg-bg3 cursor-pointer border-b border-border/50" onclick="hideNewChatSelector(); openChat('${safeAttr(u)}');">${avatar}<div class="flex flex-col"><span class="font-bold text-sm text-text">${u}</span><span class="text-[10px] text-text3 capitalize">${uInfo.role === 'admin' ? 'Yönetici' : 'Üye'}</span></div></div>`;
+    });
+    $('new-chat-contacts').innerHTML = html;
+}
+function filterContacts(v) { renderContacts(v); }
+
+function clearCurrentChat() {
+    if(!currentChatPartner) return;
+    if(currentChatPartner === 'GLOBAL' && LOGGED_IN_USER.role !== 'admin') return toast('Sadece yöneticiler duyuru geçmişini silebilir.', 'err');
+    if(!confirm(`${currentChatPartner} ile olan sohbet geçmişinizi GİZLEMEK istediğinize emin misiniz?\n(Bu işlem mesajları karşı taraftan veya asıl listeden silmez, sadece sizin ekranınızda temizler.)`)) return;
+    
+    const deletedStates = safeJSON(localStorage.getItem('chatDeletedStates_' + LOGGED_IN_USER.name), {});
+    deletedStates[currentChatPartner] = MESAJ_RAW.r ? MESAJ_RAW.r.length : 0;
+    localStorage.setItem('chatDeletedStates_' + LOGGED_IN_USER.name, JSON.stringify(deletedStates));
+    
+    toast('Sohbet geçmişi gizlendi.', 'ok'); renderChatHistory(); renderChatList();
 }
 
 // KULLANICI PROFİL FOTOĞRAFI YÖNETİMİ
