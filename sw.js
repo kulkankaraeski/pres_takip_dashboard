@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pres-takip-v1';
+const CACHE_NAME = 'pres-takip-v2';
 const STATIC_ASSETS = [
     './',
     './index.html',
