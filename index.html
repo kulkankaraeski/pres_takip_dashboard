@@ -76,6 +76,18 @@
             canvas { max-height: 250px !important; }
             .admin-only-btn { display: none !important; }
         }
+        
+        /* Toast Bildirimleri (Kritik #1 Fix) */
+        .toast-el {
+            position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+            padding: 12px 20px; border-radius: 8px; font-family: 'Fira Code', monospace;
+            font-size: 12px; color: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            transition: opacity 0.35s, transform 0.35s; pointer-events: none;
+            max-width: 320px; border-left: 4px solid;
+        }
+        .toast-ok   { background: #0f2a1a; border-color: #10b981; }
+        .toast-err  { background: #2a0f0f; border-color: #ef4444; }
+        .toast-warn { background: #2a1f0f; border-color: #f59e0b; }
     </style>
 </head>
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
@@ -290,11 +302,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Tarih</label>
-                            <input type="date" id="f-tarih" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors">
+                            <input type="date" id="f-tarih" required onchange="checkDuplicate()" class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors">
                         </div>
                         <div>
                             <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Çalışan</label>
-                            <select id="f-calisan" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer">
+                            <select id="f-calisan" required onchange="checkDuplicate()" class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer">
                                 <option value="">Seçiniz...</option>
                             </select>
                         </div>
@@ -581,7 +593,7 @@
             </div>
 
             <!-- SAĞ PANEL: AKTİF SOHBET -->
-            <div id="active-chat-view" class="hidden md:flex flex-1 flex-col bg-bg relative h-full">
+            <div id="active-chat-view" class="hidden flex-1 flex-col bg-bg relative h-full">
                 <!-- Boş Durum -->
                 <div id="chat-empty-state" class="flex-1 flex flex-col items-center justify-center text-text3 p-8 text-center gap-4 hidden">
                     <div class="text-7xl opacity-40 grayscale">💬</div>
@@ -1533,7 +1545,13 @@ function sendChatMessage() {
     renderChatHistory(); renderChatList();
     const h = $('active-chat-history'); h.scrollTop = h.scrollHeight;
     
-    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+    .catch(() => {
+        MESAJ_RAW.r.pop();
+        renderChatHistory();
+        renderChatList();
+        toast('Mesaj gönderilemedi. Bağlantıyı kontrol edin.', 'err');
+    });
 }
 
 function showNewChatSelector() {
