@@ -541,41 +541,80 @@
         </div>
     </div>
 
-    <!-- YENİ: KULLANICI BİLDİRİM GÖRÜNTÜLEME MODALI -->
-    <div id="notif-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-md w-full shadow-2xl relative flex flex-col max-h-[90vh]">
-            
-            <button onclick="closeNotifModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
-            
-            <div class="flex items-center justify-between border-b border-border pb-2 mb-4 pr-8 shrink-0">
-                <h2 class="font-bebas text-2xl tracking-[2px] text-accent2 flex items-center gap-2 m-0">🔔 BİLDİRİMLER</h2>
-                <div class="flex gap-2">
-                    <!-- Yöneticilere gösterilecek E-Tablo kısayolu -->
-                    <a href="https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/edit?usp=sharing" target="_blank" id="btn-notif-sheet" class="hidden px-3 py-1.5 bg-accent/20 hover:bg-accent text-accent hover:text-white rounded font-mono text-[10px] font-bold transition-colors shadow-sm" title="Mesajlar E-Tablosunu Aç">E-TABLO</a>
-                    <button id="btn-show-send-notif" onclick="toggleNotifForm()" class="hidden px-3 py-1.5 bg-accent2/20 hover:bg-accent2 text-accent2 hover:text-white rounded font-mono text-[10px] font-bold transition-colors shadow-sm">YENİ MESAJ</button>
+    <!-- YENİ: KULLANICI BİLDİRİM / SOHBET MODALI -->
+    <div id="notif-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-2 md:p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-bg2 border border-border rounded-lg max-w-5xl w-full h-[90vh] md:h-[85vh] shadow-2xl relative flex overflow-hidden">
+            <button onclick="closeNotifModal()" class="absolute top-3 right-4 md:right-6 text-text3 hover:text-accent2 text-3xl font-bold z-50 transition-colors bg-bg2 rounded-full w-8 h-8 flex items-center justify-center shadow-md">&times;</button>
+
+            <!-- SOL PANEL: SOHBET LİSTESİ -->
+            <div id="chat-list-view" class="w-full md:w-1/3 border-r border-border flex flex-col bg-bg2 relative h-full">
+                <!-- Üst Bar -->
+                <div class="p-4 border-b border-border flex items-center justify-between bg-bg3 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <img id="chat-my-avatar" src="" class="w-10 h-10 rounded-full border border-border object-cover hidden">
+                        <div id="chat-my-ini" class="w-10 h-10 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-base hidden shadow-inner"></div>
+                        <span class="font-bebas text-xl tracking-[1.5px] text-accent2">MESAJLAR</span>
+                    </div>
+                    <div class="flex items-center gap-2 pr-6 md:pr-0">
+                        <a href="https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/edit?usp=sharing" target="_blank" id="btn-notif-sheet" class="hidden text-accent hover:text-accent/80 text-2xl transition-transform hover:scale-110" title="E-Tabloyu Aç">📄</a>
+                    </div>
+                </div>
+                <!-- Arama ve Liste -->
+                <div class="p-3 border-b border-border shrink-0 bg-bg2">
+                    <input type="text" placeholder="Sohbet ara..." onkeyup="filterChatList(this.value)" class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors">
+                </div>
+                <div id="chat-list-content" class="flex-1 overflow-y-auto"></div>
+                <!-- Yeni Mesaj Butonu -->
+                <button onclick="showNewChatSelector()" class="absolute bottom-5 right-5 w-14 h-14 bg-accent hover:bg-accent/80 text-white rounded-full shadow-lg flex items-center justify-center text-3xl pb-1 z-10 transition-transform transform hover:scale-105 border border-white/20">+</button>
+                
+                <!-- YENİ SOHBET BAŞLATMA OVERLAY -->
+                <div id="new-chat-overlay" class="absolute inset-0 bg-bg2 flex flex-col z-20 transition-transform duration-300 -translate-x-full hidden">
+                    <div class="p-4 border-b border-border bg-bg3 flex items-center gap-3 shrink-0">
+                        <button onclick="hideNewChatSelector()" class="text-text2 hover:text-text font-bold px-2 text-xl transition-colors">←</button>
+                        <span class="font-bebas text-lg text-text tracking-[1px]">YENİ SOHBET</span>
+                    </div>
+                    <div class="p-3 border-b border-border shrink-0 bg-bg2">
+                        <input type="text" id="chat-contact-search" placeholder="Kişi ara..." onkeyup="filterContacts(this.value)" class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors">
+                    </div>
+                    <div id="new-chat-contacts" class="flex-1 overflow-y-auto"></div>
                 </div>
             </div>
-            
-            <div id="notif-content" class="flex flex-col gap-3 overflow-y-auto pr-1"></div>
-            
-            <form id="notif-send-form" onsubmit="sendNotifFromModal(event)" class="hidden flex-col gap-4 mt-2 pt-2">
-                <div>
-                    <label class="block text-[10px] text-text3 mb-1 uppercase tracking-wider">Kime Gönderilecek?</label>
-                    <select id="modal-n-user" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors cursor-pointer">
-                        <option value="">Seçiniz...</option>
-                    </select>
+
+            <!-- SAĞ PANEL: AKTİF SOHBET -->
+            <div id="active-chat-view" class="hidden md:flex flex-1 flex-col bg-bg relative h-full">
+                <!-- Boş Durum -->
+                <div id="chat-empty-state" class="flex-1 flex flex-col items-center justify-center text-text3 p-8 text-center gap-4 hidden">
+                    <div class="text-7xl opacity-40 grayscale">💬</div>
+                    <p class="font-mono text-sm leading-relaxed">Mesajları görüntülemek veya yeni mesaj göndermek için<br>sol menüden bir sohbet seçin.</p>
                 </div>
-                <div>
-                    <label class="block text-[10px] text-text3 mb-1 uppercase tracking-wider">Mesajınız</label>
-                    <textarea id="modal-n-msg" rows="4" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors resize-none placeholder-text3/50" placeholder="İletmek istediğiniz mesajı buraya yazın..."></textarea>
+                
+                <!-- Aktif Sohbet Alanı -->
+                <div id="chat-active-container" class="flex-1 flex flex-col hidden h-full">
+                    <div class="p-3 md:p-4 border-b border-border bg-bg3 flex items-center justify-between shrink-0 shadow-sm z-10 pr-12 md:pr-4">
+                        <div class="flex items-center gap-3">
+                            <button onclick="backToChatList()" class="md:hidden text-text2 hover:text-text font-bold px-2 text-xl">←</button>
+                            <div id="active-chat-avatar" class="w-10 h-10 md:w-12 md:h-12 rounded-full border border-border shrink-0 overflow-hidden shadow-inner flex items-center justify-center bg-bg3">
+                                <img id="active-chat-img" src="" class="w-full h-full object-cover hidden">
+                                <span id="active-chat-ini" class="font-bold text-text3 text-lg hidden"></span>
+                            </div>
+                            <span id="active-chat-name" class="font-bold text-base md:text-lg text-text uppercase"></span>
+                        </div>
+                        <button onclick="clearCurrentChat()" class="text-text3 hover:text-accent2 text-xs font-mono border border-transparent hover:border-accent2 px-3 py-1.5 rounded transition-colors flex items-center gap-1" title="Sohbeti Gizle">
+                            <span class="hidden sm:inline">GİZLE</span> 🗑
+                        </button>
+                    </div>
+                    
+                    <div id="active-chat-history" class="flex-1 overflow-y-auto p-3 md:p-5 bg-bg flex flex-col scroll-smooth gap-1"></div>
+                    
+                    <div class="p-3 md:p-4 border-t border-border bg-bg3 shrink-0 flex gap-2 items-end">
+                        <textarea id="chat-msg-input" rows="1" placeholder="Mesajınızı yazın..." class="flex-1 bg-bg border border-border text-text rounded-2xl p-3 md:p-4 text-sm md:text-base outline-none focus:border-accent resize-none max-h-32 min-h-[48px] shadow-inner transition-colors" oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault(); sendChatMessage();}"></textarea>
+                        <button onclick="sendChatMessage()" class="w-12 h-12 md:w-14 md:h-14 bg-accent hover:bg-accent/80 text-white rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform transform hover:scale-105 border border-white/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 md:w-7 md:h-7 ml-1"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg>
+                        </button>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="submit" class="flex-1 px-4 py-2.5 bg-accent2 hover:bg-red-500 text-white rounded font-mono text-xs font-bold transition-transform transform hover:scale-105 shadow-md flex items-center justify-center gap-2">
-                        <span>📤 GÖNDER</span>
-                    </button>
-                </div>
-            </form>
-            
+            </div>
+
         </div>
     </div>
 
