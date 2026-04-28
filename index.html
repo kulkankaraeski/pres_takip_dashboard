@@ -911,8 +911,13 @@ function rF(){
 }
 
 function rKaliphane() {
-    $('th-kalip').innerHTML = th(['Fason / Kalıp Adı', 'Lokasyon']);
-    $('tb-kalip').innerHTML = KALIP_RAW.map((x, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'kalip')"><td class="p-2 whitespace-nowrap"><b>${x.f}</b></td><td class="p-2 whitespace-nowrap"><span class="text-accent2 font-mono">${x.l}</span></td></tr>`).join('');
+    if(!KALIP_RAW.h || !KALIP_RAW.h.length) {
+        $('th-kalip').innerHTML = '';
+        $('tb-kalip').innerHTML = '<tr><td class="p-4 text-text3">Veri bulunamadı veya sayfa boş.</td></tr>';
+        return;
+    }
+    $('th-kalip').innerHTML = `<tr>${KALIP_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
+    $('tb-kalip').innerHTML = KALIP_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'kalip')">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
 }
 
 function rKayitlar() {
@@ -1047,7 +1052,7 @@ function closeModal() { const el = $('emp-modal'); el.classList.add('opacity-0')
 
 // GENEL KAYIT DETAY MODALI (Üretim Takip Denemeleri & Malzeme Takip İçin)
 function openGenericModal(idx, type = 'deneme') {
-    const rawData = type === 'malzeme' ? MALZEME_RAW : DENEME_RAW;
+    const rawData = type === 'malzeme' ? MALZEME_RAW : (type === 'kalip' ? KALIP_RAW : DENEME_RAW);
     const row = rawData.r[idx];
     const headers = rawData.h;
     let html = '';
@@ -1058,8 +1063,11 @@ function openGenericModal(idx, type = 'deneme') {
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
     let actionHtml = '';
     if(isAdmin) {
-        const sheetName = type === 'malzeme' ? 'Pres Malzeme Takip Listesi' : 'Üretim Takip Denemeleri';
-        actionHtml = `<div class="mt-4 pt-4 border-t border-border flex gap-2 justify-end"><button onclick="deleteGenericRecord(${idx}, '${sheetName}')" class="px-4 py-2 bg-accent2 text-white rounded shadow text-xs font-bold hover:bg-accent2/80 transition-colors">🗑 BU KAYDI SİL</button></div>`;
+        const sheetName = type === 'malzeme' ? 'Pres Malzeme Takip Listesi' : (type === 'kalip' ? 'Kalıphane Lokasyonları' : 'Üretim Takip Denemeleri');
+        actionHtml = `<div class="mt-4 pt-4 border-t border-border flex gap-2 justify-end">
+            <button onclick="editGenericRecord(${idx}, '${type}')" class="px-4 py-2 bg-accent text-white rounded shadow text-xs font-bold hover:bg-accent/80 transition-colors">✎ DÜZENLE</button>
+            <button onclick="deleteGenericRecord(${idx}, '${sheetName}')" class="px-4 py-2 bg-accent2 text-white rounded shadow text-xs font-bold hover:bg-accent2/80 transition-colors">🗑 BU KAYDI SİL</button>
+        </div>`;
     }
     
     $('gen-mdl-content').innerHTML = html + actionHtml;
@@ -1469,6 +1477,9 @@ async function saveProfileFromModal(e) {
     USER_DATA[name].photo = photo;
     let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
     if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
+    if(!lu[name]) lu[name] = {};
+    delete lu[name].photo; // Photo artık sadece Sheets'te, localStorage'da tutma
+    localStorage.setItem('localUsers', JSON.stringify(lu));
     if (photo) { 
         $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); 
         if($('user-avatar-xl')) { $('user-avatar-xl').src = photo; $('user-avatar-xl').classList.remove('hidden'); }
@@ -1515,6 +1526,15 @@ async function fetchUsers() {
             // Uygulama içinden eklenen veya düzenlenen kullanıcıları yerel bellekten yükle (Senkronize et)
             let lu = safeJSON(localStorage.getItem('localUsers'), {});
             Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
+            Object.keys(lu).forEach(k => {
+                if (lu[k].deleted) {
+                    delete USER_DATA[k];
+                } else {
+                    const sheetsPhoto = USER_DATA[k]?.photo; // Sheets'ten gelen fotoğrafı sakla
+                    USER_DATA[k] = { ...USER_DATA[k], ...lu[k] };
+                    if (sheetsPhoto) USER_DATA[k].photo = sheetsPhoto; // Sheets fotoğrafı her zaman kazanır
+                }
+            });
             
             if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
             
@@ -1526,6 +1546,15 @@ async function fetchUsers() {
         USER_DATA = safeJSON(localStorage.getItem('cachedUsers'), {});
         let lu = safeJSON(localStorage.getItem('localUsers'), {});
         Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
+        Object.keys(lu).forEach(k => {
+            if (lu[k].deleted) {
+                delete USER_DATA[k];
+            } else {
+                const sheetsPhoto = USER_DATA[k]?.photo; // Sheets'ten gelen fotoğrafı sakla
+                USER_DATA[k] = { ...USER_DATA[k], ...lu[k] };
+                if (sheetsPhoto) USER_DATA[k].photo = sheetsPhoto; // Sheets fotoğrafı her zaman kazanır
+            }
+        });
         if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin";
     }
 }
@@ -1794,28 +1823,6 @@ function parse(t){
     } return p.map(x=>{if(x.tP>0&&x.tP<=1)x.tP*=100; return x;});
 }
 
-function parseKalip(t){
-    if(!t) return [];
-    const l=t.split('\n').map(x=>x.trim()).filter(x=>x), p=[];
-    if(l.length < 2) return [];
-    const hLine = l[0];
-    let hCols=[], curH='', iQH=false;
-    for(let ch of hLine){if(ch==='"')iQH=!iQH; else if(ch===','&&!iQH){hCols.push(curH.trim().replace(/"/g,''));curH='';} else curH+=ch;} hCols.push(curH.trim().replace(/"/g,''));
-    let idxF = 0, idxL = 1;
-    hCols.forEach((col, i) => {
-        const low = col.toLowerCase();
-        if(low.includes('fason') || low.includes('kalıp')) idxF = i;
-        if(low.includes('lokasyon') || low.includes('yer') || low.includes('raf')) idxL = i;
-    });
-    for(let i=1;i<l.length;i++){
-        let c=[], cur='', iQ=false;
-        for(let ch of l[i]){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim());cur='';} else cur+=ch;} c.push(cur.trim());
-        c = c.map(x=>x.replace(/"/g,'').trim());
-        if(c[idxF] || c[idxL]) p.push({f: c[idxF]||'', l: c[idxL]||''});
-    }
-    return p;
-}
-
 function parseGeneric(t){
     if(!t || t.includes('<html')) return {h:[], r:[]};
     if(t.includes('Markdown Content:')) t = t.split('Markdown Content:')[1];
@@ -1863,7 +1870,7 @@ function fetchCSV(isBg = false) {
         getCSV(MESAJ_URL).catch(()=>'')
     ]).then(([t, k_text, d_text, m_text, msg_text]) => {
         RAW=parse(t);
-        KALIP_RAW=parseKalip(k_text);
+        KALIP_RAW=parseGeneric(k_text);
         DENEME_RAW=parseGeneric(d_text);
         MALZEME_RAW=parseGeneric(m_text);
         MESAJ_RAW=parseGeneric(msg_text);
@@ -1978,19 +1985,21 @@ window.addEventListener('beforeinstallprompt', (e) => {
 window.addEventListener('online', () => { toast('İnternet bağlantısı yeniden sağlandı.', 'ok'); fetchCSV(); });
 window.addEventListener('offline', () => toast('İnternet bağlantısı kesildi. Çevrimdışı moddasınız.', 'warn'));
 
-function openGenericFormModal(type) {
+function openGenericFormModal(type, editIdx = null) {
     const el = $('generic-form-modal');
-    $('gen-form-title').innerText = type === 'kalip' ? 'YENİ KALIP EKLE' : type === 'malzeme' ? 'YENİ MALZEME EKLE' : 'YENİ DENEME EKLE';
+    $('gen-form-title').innerText = editIdx !== null ? 'KAYDI DÜZENLE' : (type === 'kalip' ? 'YENİ KALIP EKLE' : type === 'malzeme' ? 'YENİ MALZEME EKLE' : 'YENİ DENEME EKLE');
     $('gen-form-fields').dataset.type = type;
+    $('gen-form-fields').dataset.editIdx = editIdx !== null ? editIdx : '';
     
-    const fields = type === 'kalip' 
-        ? [['Fason / Kalıp Adı', 'text'], ['Lokasyon', 'text']]
-        : [['Başlık', 'text'], ['Açıklama', 'text']];
+    const rawData = type === 'kalip' ? KALIP_RAW : (type === 'malzeme' ? MALZEME_RAW : DENEME_RAW);
+    let fields = (rawData && rawData.h && rawData.h.length > 0) ? rawData.h : (type === 'kalip' ? ['Fason / Kalıp Adı', 'Lokasyon'] : ['Başlık', 'Açıklama']);
     
-    $('gen-form-fields').innerHTML = fields.map(([label, inputType]) => `
+    const rowData = editIdx !== null ? rawData.r[editIdx] : [];
+    
+    $('gen-form-fields').innerHTML = fields.map((label, i) => `
         <div>
-            <label class="block text-[10px] font-mono text-text3 mb-1 uppercase">${label}</label>
-            <input type="${inputType}" name="${label}" required class="w-full bg-bg border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent">
+            <label class="block text-[10px] font-mono text-text3 mb-1 uppercase">${escapeHTML(label)}</label>
+            <input type="text" name="${escapeHTML(label)}" value="${escapeHTML(rowData[i] || '')}" required class="w-full bg-bg border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent">
         </div>`).join('');
     
     el.classList.remove('hidden'); el.classList.add('flex');
@@ -2028,17 +2037,28 @@ function closeGenericFormModal() {
 async function saveGenericForm(e) {
     e.preventDefault();
     const type = $('gen-form-fields').dataset.type;
+    const editIdx = $('gen-form-fields').dataset.editIdx;
     const sheetName = type === 'kalip' ? 'Kalıphane Lokasyonları' : type === 'malzeme' ? 'Pres Malzeme Takip Listesi' : 'Üretim Takip Denemeleri';
+    
     const formData = {};
     $('gen-form-fields').querySelectorAll('input, textarea, select').forEach(el => formData[el.name] = el.value);
-    const payload = { action: "addRecord", sheet: sheetName, data: formData };
+    
+    const payload = editIdx !== '' 
+        ? { action: "editGenericRecord", sheet: sheetName, rowIndex: parseInt(editIdx) + 2, data: formData } 
+        : { action: "addRecord", sheet: sheetName, data: formData };
+        
     try {
         toast('Kaydediliyor...', 'warn');
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-        toast('Kayıt eklendi!', 'ok');
+        toast(editIdx !== '' ? 'Kayıt güncellendi!' : 'Kayıt eklendi!', 'ok');
         closeGenericFormModal();
         setTimeout(() => fetchCSV(), 1000);
     } catch(err) { toast('İşlem başarısız', 'err'); }
+}
+
+function editGenericRecord(idx, type) {
+    closeGenericModal();
+    setTimeout(() => openGenericFormModal(type, idx), 300);
 }
 </script>
 </body>
