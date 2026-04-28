@@ -1575,20 +1575,7 @@ async function saveProfileFromModal(e) {
     USER_DATA[name].photo = photo;
     let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
     if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
-<<<<<<< HEAD
-    if(!lu[name]) lu[name] = {};
-    delete lu[name].photo; // Photo artık sadece Sheets'te, localStorage'da tutma
-    localStorage.setItem('localUsers', JSON.stringify(lu));
-    if (photo) { 
-        $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); 
-        if($('user-avatar-xl')) { $('user-avatar-xl').src = photo; $('user-avatar-xl').classList.remove('hidden'); }
-    } else { 
-        $('user-avatar').classList.add('hidden'); 
-        if($('user-avatar-xl')) $('user-avatar-xl').classList.add('hidden');
-    }
-=======
     if (photo) { $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); } else { $('user-avatar').classList.add('hidden'); }
->>>>>>> 600ccb65391e0b66e0333390a0a153a3f304c6ae
     toast('Profil fotoğrafı güncellendi.', 'ok'); closeProfileModal(); if(cTab==='admin') rAdmin();
 }
 
