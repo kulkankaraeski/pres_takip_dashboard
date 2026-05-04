@@ -76,6 +76,18 @@
             canvas { max-height: 250px !important; }
             .admin-only-btn { display: none !important; }
         }
+        
+        /* Toast Bildirimleri (Kritik #1 Fix) */
+        .toast-el {
+            position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+            padding: 12px 20px; border-radius: 8px; font-family: 'Fira Code', monospace;
+            font-size: 12px; color: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            transition: opacity 0.35s, transform 0.35s; pointer-events: none;
+            max-width: 320px; border-left: 4px solid;
+        }
+        .toast-ok   { background: #0f2a1a; border-color: #10b981; }
+        .toast-err  { background: #2a0f0f; border-color: #ef4444; }
+        .toast-warn { background: #2a1f0f; border-color: #f59e0b; }
     </style>
 </head>
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
@@ -199,10 +211,19 @@
                 <div class="bg-bg2 border border-border rounded p-4 lg:col-span-2"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">GÜNLÜK PERFORMANS (Çubuklara Tıklayın)</div><div class="h-[240px] relative"><canvas id="c1"></canvas></div></div>
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">VARDİYA ORANI (Dilimlere Tıklayın)</div><div class="h-[240px] relative"><canvas id="c2"></canvas></div></div>
             </div>
-            <!-- FIX #2: canvas id="c3" eklendi — rG() bu elementi çiziyordu ama HTML'de yoktu, Chart.js hata fırlatıyordu -->
-            <div class="bg-bg2 border border-border rounded p-4 mb-4">
-                <div class="font-bebas text-base tracking-[2px] text-text2 mb-2">PRES KULLANIMI (Çubuklara Tıklayın)</div>
-                <div class="h-[200px] relative"><canvas id="c3"></canvas></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base tracking-[2px] text-text2 mb-2">PRES KULLANIMI (Çubuklara Tıklayın)</div>
+                    <div class="h-[240px] relative"><canvas id="c3"></canvas></div>
+                </div>
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base tracking-[2px] text-text2 mb-2">VARDİYA KIYASLAMASI (PRES BAZLI ÜRETİM)</div>
+                    <div class="h-[240px] relative"><canvas id="c4"></canvas></div>
+                </div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col mb-4">
+                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-gun-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-gun-kiyas"><thead id="th-gun-kiyas"></thead><tbody id="tb-gun-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
                 <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">GÜNLÜK LİSTE (KAFALARA GÖRE AYRILMIŞ)</span><input type="text" onkeyup="fT('tb-gun',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
@@ -221,6 +242,20 @@
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">ÜRETİM TRENDİ (Noktalara Tıklayın)</div><div class="h-[240px] relative"><canvas id="w1"></canvas></div></div>
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">PERFORMANS TRENDİ</div><div class="h-[240px] relative"><canvas id="w2"></canvas></div></div>
             </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base text-text2 mb-2">VARDİYA KIYASLAMASI (PRES BAZLI ÜRETİM)</div>
+                    <div class="h-[240px] relative"><canvas id="w3"></canvas></div>
+                </div>
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base text-text2 mb-2">VARDİYA ORANI (Dilimlere Tıklayın)</div>
+                    <div class="h-[240px] relative"><canvas id="w4"></canvas></div>
+                </div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden mb-4">
+                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-haf-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-haf-kiyas"><thead id="th-haf-kiyas"></thead><tbody id="tb-haf-kiyas"></tbody></table></div>
+            </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">HAFTALIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-haf',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
                 <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-haf"><thead id="th-haf"></thead><tbody id="tb-haf"></tbody></table></div>
@@ -237,6 +272,20 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">ÜRETİM TRENDİ (Noktalara Tıklayın)</div><div class="h-[240px] relative"><canvas id="m1"></canvas></div></div>
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">PERFORMANS TRENDİ</div><div class="h-[240px] relative"><canvas id="m2"></canvas></div></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base text-text2 mb-2">VARDİYA KIYASLAMASI (PRES BAZLI ÜRETİM)</div>
+                    <div class="h-[240px] relative"><canvas id="m3"></canvas></div>
+                </div>
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base text-text2 mb-2">VARDİYA ORANI (Dilimlere Tıklayın)</div>
+                    <div class="h-[240px] relative"><canvas id="m4"></canvas></div>
+                </div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden mb-4">
+                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-ay-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-ay-kiyas"><thead id="th-ay-kiyas"></thead><tbody id="tb-ay-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">AYLIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-ay',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
@@ -312,11 +361,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Tarih</label>
-                            <input type="date" id="f-tarih" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors">
+                            <input type="date" id="f-tarih" required onchange="checkDuplicate()" class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors">
                         </div>
                         <div>
                             <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Çalışan</label>
-                            <select id="f-calisan" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer">
+                            <select id="f-calisan" required onchange="checkDuplicate()" class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer">
                                 <option value="">Seçiniz...</option>
                             </select>
                         </div>
@@ -563,41 +612,80 @@
         </div>
     </div>
 
-    <!-- YENİ: KULLANICI BİLDİRİM GÖRÜNTÜLEME MODALI -->
-    <div id="notif-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-md w-full shadow-2xl relative flex flex-col max-h-[90vh]">
-            
-            <button onclick="closeNotifModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
-            
-            <div class="flex items-center justify-between border-b border-border pb-2 mb-4 pr-8 shrink-0">
-                <h2 class="font-bebas text-2xl tracking-[2px] text-accent2 flex items-center gap-2 m-0">🔔 BİLDİRİMLER</h2>
-                <div class="flex gap-2">
-                    <!-- Yöneticilere gösterilecek E-Tablo kısayolu -->
-                    <a href="https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/edit?usp=sharing" target="_blank" id="btn-notif-sheet" class="hidden px-3 py-1.5 bg-accent/20 hover:bg-accent text-accent hover:text-white rounded font-mono text-[10px] font-bold transition-colors shadow-sm" title="Mesajlar E-Tablosunu Aç">E-TABLO</a>
-                    <button id="btn-show-send-notif" onclick="toggleNotifForm()" class="hidden px-3 py-1.5 bg-accent2/20 hover:bg-accent2 text-accent2 hover:text-white rounded font-mono text-[10px] font-bold transition-colors shadow-sm">YENİ MESAJ</button>
+    <!-- YENİ: KULLANICI BİLDİRİM / SOHBET MODALI -->
+    <div id="notif-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-2 md:p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-bg2 border border-border rounded-lg max-w-5xl w-full h-[90vh] md:h-[85vh] shadow-2xl relative flex overflow-hidden">
+            <button onclick="closeNotifModal()" class="absolute top-3 right-4 md:right-6 text-text3 hover:text-accent2 text-3xl font-bold z-50 transition-colors bg-bg2 rounded-full w-8 h-8 flex items-center justify-center shadow-md">&times;</button>
+
+            <!-- SOL PANEL: SOHBET LİSTESİ -->
+            <div id="chat-list-view" class="w-full md:w-1/3 border-r border-border flex flex-col bg-bg2 relative h-full">
+                <!-- Üst Bar -->
+                <div class="p-4 border-b border-border flex items-center justify-between bg-bg3 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <img id="chat-my-avatar" src="" class="w-10 h-10 rounded-full border border-border object-cover hidden">
+                        <div id="chat-my-ini" class="w-10 h-10 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-base hidden shadow-inner"></div>
+                        <span class="font-bebas text-xl tracking-[1.5px] text-accent2">MESAJLAR</span>
+                    </div>
+                    <div class="flex items-center gap-2 pr-6 md:pr-0">
+                        <a href="https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/edit?usp=sharing" target="_blank" id="btn-notif-sheet" class="hidden text-accent hover:text-accent/80 text-2xl transition-transform hover:scale-110" title="E-Tabloyu Aç">📄</a>
+                    </div>
+                </div>
+                <!-- Arama ve Liste -->
+                <div class="p-3 border-b border-border shrink-0 bg-bg2">
+                    <input type="text" placeholder="Sohbet ara..." onkeyup="filterChatList(this.value)" class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors">
+                </div>
+                <div id="chat-list-content" class="flex-1 overflow-y-auto"></div>
+                <!-- Yeni Mesaj Butonu -->
+                <button onclick="showNewChatSelector()" class="absolute bottom-5 right-5 w-14 h-14 bg-accent hover:bg-accent/80 text-white rounded-full shadow-lg flex items-center justify-center text-3xl pb-1 z-10 transition-transform transform hover:scale-105 border border-white/20">+</button>
+                
+                <!-- YENİ SOHBET BAŞLATMA OVERLAY -->
+                <div id="new-chat-overlay" class="absolute inset-0 bg-bg2 flex flex-col z-20 transition-transform duration-300 -translate-x-full hidden">
+                    <div class="p-4 border-b border-border bg-bg3 flex items-center gap-3 shrink-0">
+                        <button onclick="hideNewChatSelector()" class="text-text2 hover:text-text font-bold px-2 text-xl transition-colors">←</button>
+                        <span class="font-bebas text-lg text-text tracking-[1px]">YENİ SOHBET</span>
+                    </div>
+                    <div class="p-3 border-b border-border shrink-0 bg-bg2">
+                        <input type="text" id="chat-contact-search" placeholder="Kişi ara..." onkeyup="filterContacts(this.value)" class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors">
+                    </div>
+                    <div id="new-chat-contacts" class="flex-1 overflow-y-auto"></div>
                 </div>
             </div>
-            
-            <div id="notif-content" class="flex flex-col gap-3 overflow-y-auto pr-1"></div>
-            
-            <form id="notif-send-form" onsubmit="sendNotifFromModal(event)" class="hidden flex-col gap-4 mt-2 pt-2">
-                <div>
-                    <label class="block text-[10px] text-text3 mb-1 uppercase tracking-wider">Kime Gönderilecek?</label>
-                    <select id="modal-n-user" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors cursor-pointer">
-                        <option value="">Seçiniz...</option>
-                    </select>
+
+            <!-- SAĞ PANEL: AKTİF SOHBET -->
+            <div id="active-chat-view" class="hidden flex-1 flex-col bg-bg relative h-full">
+                <!-- Boş Durum -->
+                <div id="chat-empty-state" class="flex-1 flex flex-col items-center justify-center text-text3 p-8 text-center gap-4 hidden">
+                    <div class="text-7xl opacity-40 grayscale">💬</div>
+                    <p class="font-mono text-sm leading-relaxed">Mesajları görüntülemek veya yeni mesaj göndermek için<br>sol menüden bir sohbet seçin.</p>
                 </div>
-                <div>
-                    <label class="block text-[10px] text-text3 mb-1 uppercase tracking-wider">Mesajınız</label>
-                    <textarea id="modal-n-msg" rows="4" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent transition-colors resize-none placeholder-text3/50" placeholder="İletmek istediğiniz mesajı buraya yazın..."></textarea>
+                
+                <!-- Aktif Sohbet Alanı -->
+                <div id="chat-active-container" class="flex-1 flex flex-col hidden h-full">
+                    <div class="p-3 md:p-4 border-b border-border bg-bg3 flex items-center justify-between shrink-0 shadow-sm z-10 pr-12 md:pr-4">
+                        <div class="flex items-center gap-3">
+                            <button onclick="backToChatList()" class="md:hidden text-text2 hover:text-text font-bold px-2 text-xl">←</button>
+                            <div id="active-chat-avatar" class="w-10 h-10 md:w-12 md:h-12 rounded-full border border-border shrink-0 overflow-hidden shadow-inner flex items-center justify-center bg-bg3">
+                                <img id="active-chat-img" src="" class="w-full h-full object-cover hidden">
+                                <span id="active-chat-ini" class="font-bold text-text3 text-lg hidden"></span>
+                            </div>
+                            <span id="active-chat-name" class="font-bold text-base md:text-lg text-text uppercase"></span>
+                        </div>
+                        <button onclick="clearCurrentChat()" class="text-text3 hover:text-accent2 text-xs font-mono border border-transparent hover:border-accent2 px-3 py-1.5 rounded transition-colors flex items-center gap-1" title="Sohbeti Gizle">
+                            <span class="hidden sm:inline">GİZLE</span> 🗑
+                        </button>
+                    </div>
+                    
+                    <div id="active-chat-history" class="flex-1 overflow-y-auto p-3 md:p-5 bg-bg flex flex-col scroll-smooth gap-1"></div>
+                    
+                    <div class="p-3 md:p-4 border-t border-border bg-bg3 shrink-0 flex gap-2 items-end">
+                        <textarea id="chat-msg-input" rows="1" placeholder="Mesajınızı yazın..." class="flex-1 bg-bg border border-border text-text rounded-2xl p-3 md:p-4 text-sm md:text-base outline-none focus:border-accent resize-none max-h-32 min-h-[48px] shadow-inner transition-colors" oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault(); sendChatMessage();}"></textarea>
+                        <button onclick="sendChatMessage()" class="w-12 h-12 md:w-14 md:h-14 bg-accent hover:bg-accent/80 text-white rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform transform hover:scale-105 border border-white/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 md:w-7 md:h-7 ml-1"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg>
+                        </button>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="submit" class="flex-1 px-4 py-2.5 bg-accent2 hover:bg-red-500 text-white rounded font-mono text-xs font-bold transition-transform transform hover:scale-105 shadow-md flex items-center justify-center gap-2">
-                        <span>📤 GÖNDER</span>
-                    </button>
-                </div>
-            </form>
-            
+            </div>
+
         </div>
     </div>
 
@@ -804,6 +892,72 @@ function pkW(v){if(WEEKS.includes(v)){sW=v; rW();}else toast('Bu haftada veri yo
 function chM(x){const i=MONTHS.indexOf(sM); if(MONTHS[i+x]){sM=MONTHS[i+x]; rM();}}
 function pkM(v){const f=v.split('-').reverse().join('.'); if(MONTHS.includes(f)){sM=f; rM();}else toast('Bu ayda veri yok','warn');}
 
+// Vardiya Kıyaslama Çizimi (Ortak Fonksiyon)
+function renderShiftComparison(chartId, tbId, thId, data) {
+    const machines = {};
+    data.forEach(r => {
+        const v = r.vardiya || 'Diğer';
+        [1, 2].forEach(i => {
+            const p = r['pres'+i];
+            const u = r['uretim'+i] || 0;
+            const perf = r['perf'+i];
+            if (p) {
+                if (!machines[p]) machines[p] = {};
+                if (!machines[p][v]) machines[p][v] = { u: 0, pSum: 0, c: 0, emps: {} };
+                machines[p][v].u += u;
+                if (perf) { machines[p][v].pSum += perf; machines[p][v].c++; }
+                if (!machines[p][v].emps[r.calisan]) machines[p][v].emps[r.calisan] = { u:0, pSum:0, c:0 };
+                machines[p][v].emps[r.calisan].u += u;
+                if (perf) { machines[p][v].emps[r.calisan].pSum += perf; machines[p][v].emps[r.calisan].c++; }
+            }
+        });
+    });
+
+    const mList = Object.keys(machines).sort();
+    const sList = ['08:00-16:00', '16:00-24:00', '00:00-08:00', 'Diğer'];
+    
+    const datasets = [];
+    const colors = [cR('accent',0.8), cR('accent4',0.8), cR('accent3',0.8), cR('border',0.8)];
+    sList.forEach((s, idx) => {
+        const d = mList.map(m => machines[m][s] ? machines[m][s].u : 0);
+        if (d.some(v => v > 0)) {
+            datasets.push({ label: s, data: d, backgroundColor: colors[idx] });
+        }
+    });
+
+    if($(chartId)) { mc(chartId, 'bar', { labels: mList, datasets: datasets }); }
+
+    let rows = [];
+    mList.forEach(m => {
+        sList.forEach(s => {
+            if (machines[m][s]) {
+                const d = machines[m][s];
+                const empArr = Object.keys(d.emps).sort((a,b)=>d.emps[b].u - d.emps[a].u);
+                const empStr = empArr.map(e => `${escapeHTML(e)} <span class="text-text3 text-[10px]">(${n(d.emps[e].u)})</span>`).join('<br>');
+                const perf = d.c ? d.pSum / d.c : 0;
+                rows.push({ m, s, e: empStr, u: d.u, p: perf });
+            }
+        });
+    });
+
+    rows.sort((a,b) => { if(a.m !== b.m) return a.m.localeCompare(b.m); return b.u - a.u; });
+
+    if($(thId)) {
+        $(thId).innerHTML = th(['Makine', 'Vardiya', 'Çalışanlar (Üretim)', 'Top. Üretim', 'Ort. Perf']);
+        $(tbId).innerHTML = rows.map((r, i) => {
+            const mIndex = mList.indexOf(r.m);
+            const bgClass = mIndex % 2 === 0 ? '' : 'bg-bg2/50';
+            return `<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs ${bgClass}">
+                <td class="p-2 whitespace-nowrap align-top"><b>${escapeHTML(r.m)}</b></td>
+                <td class="p-2 whitespace-nowrap align-top">${escapeHTML(r.s)}</td>
+                <td class="p-2 align-top leading-relaxed text-text">${r.e}</td>
+                <td class="p-2 whitespace-nowrap align-top"><b class="text-accent">${n(r.u)}</b></td>
+                <td class="p-2 whitespace-nowrap align-top">${r.p > 0 ? pb(r.p) : '-'}</td>
+            </tr>`;
+        }).join('');
+    }
+}
+
 function rG(){
     if(!sD)return; $('c-day').innerText=sD; $('d-pick').value=sD.split('.').reverse().join('-');
     const dd=RAW.filter(r=>r.tarih===sD), s=calc(dd), sab=dd.filter(r=>r.vardiya==='08:00-16:00').length, aks=dd.filter(r=>r.vardiya==='16:00-24:00').length;
@@ -816,10 +970,11 @@ function rG(){
     mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?cR('accent',0.75):r.tP>=90?cR('accent4',0.75):r.tP>=70?cR('accent3',0.75):cR('accent2',0.75))}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
     mc('c2','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,dd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
-    // FIX #2: c3 artık HTML'de var, pres kullanım grafiği çiziliyor
     const pm={}; dd.forEach(r=>{if(r.pres1)pm[r.pres1]=(pm[r.pres1]||0)+r.uretim1; if(r.pres2)pm[r.pres2]=(pm[r.pres2]||0)+r.uretim2;});
     const ps=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,12);
     mc('c3','bar',{labels:ps.map(x=>x[0]),datasets:[{label:'Üretim (Adet)',data:ps.map(x=>x[1]),backgroundColor:cR('accent',0.75)}]});
+    
+    renderShiftComparison('c4', 'tb-gun-kiyas', 'th-gun-kiyas', dd);
     
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
     $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf', ...(isAdmin ? ['İşlem'] : [])]);
@@ -839,6 +994,12 @@ function rW(){
     const dt=[...new Set(wd.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,5), ...calc(wd.filter(r=>r.tarih===d))}));
     mc('w1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
     mc('w2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
+    
+    renderShiftComparison('w3', 'tb-haf-kiyas', 'th-haf-kiyas', wd);
+    
+    const sab=wd.filter(r=>r.vardiya==='08:00-16:00').length, aks=wd.filter(r=>r.vardiya==='16:00-24:00').length;
+    mc('w4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,wd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
+    
     const ws=[...new Set(wd.map(r=>r.calisan))].map(w=>({w,...calc(wd.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     $('th-haf').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
@@ -851,6 +1012,12 @@ function rM(){
     const dt=[...new Set(md.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,2), ...calc(md.filter(r=>r.tarih===d))}));
     mc('m1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
     mc('m2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
+    
+    renderShiftComparison('m3', 'tb-ay-kiyas', 'th-ay-kiyas', md);
+    
+    const sab=md.filter(r=>r.vardiya==='08:00-16:00').length, aks=md.filter(r=>r.vardiya==='16:00-24:00').length;
+    mc('m4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,md.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
+    
     const ws=[...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
@@ -1014,8 +1181,13 @@ function rF(){
 }
 
 function rKaliphane() {
-    $('th-kalip').innerHTML = th(['Fason / Kalıp Adı', 'Lokasyon']);
-    $('tb-kalip').innerHTML = KALIP_RAW.map((x, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'kalip')"><td class="p-2 whitespace-nowrap"><b>${x.f}</b></td><td class="p-2 whitespace-nowrap"><span class="text-accent2 font-mono">${x.l}</span></td></tr>`).join('');
+    if(!KALIP_RAW.h || !KALIP_RAW.h.length) {
+        $('th-kalip').innerHTML = '';
+        $('tb-kalip').innerHTML = '<tr><td class="p-4 text-text3">Veri bulunamadı veya sayfa boş.</td></tr>';
+        return;
+    }
+    $('th-kalip').innerHTML = `<tr>${KALIP_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
+    $('tb-kalip').innerHTML = KALIP_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'kalip')">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
 }
 
 function rKayitlar() {
@@ -1078,13 +1250,17 @@ function handleChartClick(id, label) {
     if(cTab === 'gunluk') {
        if(id==='c1') return openModal(label);
        if(id==='c2') { data = RAW.filter(r=>r.tarih===sD).filter(r=>label==='Diğer'?(r.vardiya!=='08:00-16:00'&&r.vardiya!=='16:00-24:00'):r.vardiya===label); title = sD+' | '+label+' VARDİYASI'; }
-       if(id==='c3') { data = RAW.filter(r=>r.tarih===sD).filter(r=>r.pres1===label || r.pres2===label); title = sD+' | '+label; }
+       if(id==='c3' || id==='c4') { data = RAW.filter(r=>r.tarih===sD).filter(r=>r.pres1===label || r.pres2===label); title = sD+' | '+label; }
     }
     else if(cTab === 'haftalik') {
        if(id==='w1' || id==='w2') { data = RAW.filter(r=>r.tarih.startsWith(label)); title = label + ' GÜNLÜK DETAYI'; }
+       if(id==='w3') { data = RAW.filter(r=>isoW(r.tarih)===sW).filter(r=>r.pres1===label || r.pres2===label); title = sW+' | '+label; }
+       if(id==='w4') { data = RAW.filter(r=>isoW(r.tarih)===sW).filter(r=>label==='Diğer'?(r.vardiya!=='08:00-16:00'&&r.vardiya!=='16:00-24:00'):r.vardiya===label); title = sW+' | '+label+' VARDİYASI'; }
     }
     else if(cTab === 'aylik') {
        if(id==='m1' || id==='m2') { data = RAW.filter(r=>r.tarih.startsWith(label)); title = label + '.' + sM.split('.')[1] + ' GÜNLÜK DETAYI'; }
+       if(id==='m3') { data = RAW.filter(r=>r.tarih.endsWith(sM)).filter(r=>r.pres1===label || r.pres2===label); title = sM+' | '+label; }
+       if(id==='m4') { data = RAW.filter(r=>r.tarih.endsWith(sM)).filter(r=>label==='Diğer'?(r.vardiya!=='08:00-16:00'&&r.vardiya!=='16:00-24:00'):r.vardiya===label); title = sM+' | '+label+' VARDİYASI'; }
     }
     else if(cTab === 'genel') {
        if(id==='h1' || id==='h2') { data = RAW.filter(r=>r.tarih.startsWith(label)); title = label + ' DETAYI'; }
@@ -1150,7 +1326,7 @@ function closeModal() { const el = $('emp-modal'); el.classList.add('opacity-0')
 
 // GENEL KAYIT DETAY MODALI (Üretim Takip Denemeleri & Malzeme Takip İçin)
 function openGenericModal(idx, type = 'deneme') {
-    const rawData = type === 'malzeme' ? MALZEME_RAW : DENEME_RAW;
+    const rawData = type === 'malzeme' ? MALZEME_RAW : (type === 'kalip' ? KALIP_RAW : DENEME_RAW);
     const row = rawData.r[idx];
     const headers = rawData.h;
     let html = '';
@@ -1161,8 +1337,11 @@ function openGenericModal(idx, type = 'deneme') {
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
     let actionHtml = '';
     if(isAdmin) {
-        const sheetName = type === 'malzeme' ? 'Pres Malzeme Takip Listesi' : 'Üretim Takip Denemeleri';
-        actionHtml = `<div class="mt-4 pt-4 border-t border-border flex gap-2 justify-end"><button onclick="deleteGenericRecord(${idx}, '${sheetName}')" class="px-4 py-2 bg-accent2 text-white rounded shadow text-xs font-bold hover:bg-accent2/80 transition-colors">🗑 BU KAYDI SİL</button></div>`;
+        const sheetName = type === 'malzeme' ? 'Pres Malzeme Takip Listesi' : (type === 'kalip' ? 'Kalıphane Lokasyonları' : 'Üretim Takip Denemeleri');
+        actionHtml = `<div class="mt-4 pt-4 border-t border-border flex gap-2 justify-end">
+            <button onclick="editGenericRecord(${idx}, '${type}')" class="px-4 py-2 bg-accent text-white rounded shadow text-xs font-bold hover:bg-accent/80 transition-colors">✎ DÜZENLE</button>
+            <button onclick="deleteGenericRecord(${idx}, '${sheetName}')" class="px-4 py-2 bg-accent2 text-white rounded shadow text-xs font-bold hover:bg-accent2/80 transition-colors">🗑 BU KAYDI SİL</button>
+        </div>`;
     }
     
     $('gen-mdl-content').innerHTML = html + actionHtml;
@@ -1668,7 +1847,13 @@ function sendChatMessage() {
     renderChatHistory(); renderChatList();
     const h = $('active-chat-history'); h.scrollTop = h.scrollHeight;
     
-    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+    .catch(() => {
+        MESAJ_RAW.r.pop();
+        renderChatHistory();
+        renderChatList();
+        toast('Mesaj gönderilemedi. Bağlantıyı kontrol edin.', 'err');
+    });
 }
 
 function showNewChatSelector() {
@@ -1792,7 +1977,15 @@ async function fetchUsers() {
             
             // Uygulama içinden eklenen veya düzenlenen kullanıcıları yerel bellekten yükle (Senkronize et)
             let lu = safeJSON(localStorage.getItem('localUsers'), {});
-            Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
+            Object.keys(lu).forEach(k => {
+                if (lu[k].deleted) {
+                    delete USER_DATA[k];
+                } else {
+                    const sheetsPhoto = USER_DATA[k]?.photo; // Sheets'ten gelen fotoğrafı sakla
+                    USER_DATA[k] = { ...USER_DATA[k], ...lu[k] };
+                    if (sheetsPhoto) USER_DATA[k].photo = sheetsPhoto; // Sheets fotoğrafı her zaman kazanır
+                }
+            });
             
             if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
             
@@ -1803,7 +1996,15 @@ async function fetchUsers() {
         // Offline durumunda önbellekten al
         USER_DATA = safeJSON(localStorage.getItem('cachedUsers'), {});
         let lu = safeJSON(localStorage.getItem('localUsers'), {});
-        Object.keys(lu).forEach(k => { if(lu[k].deleted) delete USER_DATA[k]; else USER_DATA[k] = { ...USER_DATA[k], ...lu[k] }; });
+        Object.keys(lu).forEach(k => {
+            if (lu[k].deleted) {
+                delete USER_DATA[k];
+            } else {
+                const sheetsPhoto = USER_DATA[k]?.photo; // Sheets'ten gelen fotoğrafı sakla
+                USER_DATA[k] = { ...USER_DATA[k], ...lu[k] };
+                if (sheetsPhoto) USER_DATA[k].photo = sheetsPhoto; // Sheets fotoğrafı her zaman kazanır
+            }
+        });
         if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin";
     }
 }
@@ -2063,28 +2264,6 @@ function parse(t){
     } return p.map(x=>{if(x.tP>0&&x.tP<=1)x.tP*=100; return x;});
 }
 
-function parseKalip(t){
-    if(!t) return [];
-    const l=t.split('\n').map(x=>x.trim()).filter(x=>x), p=[];
-    if(l.length < 2) return [];
-    const hLine = l[0];
-    let hCols=[], curH='', iQH=false;
-    for(let ch of hLine){if(ch==='"')iQH=!iQH; else if(ch===','&&!iQH){hCols.push(curH.trim().replace(/"/g,''));curH='';} else curH+=ch;} hCols.push(curH.trim().replace(/"/g,''));
-    let idxF = 0, idxL = 1;
-    hCols.forEach((col, i) => {
-        const low = col.toLowerCase();
-        if(low.includes('fason') || low.includes('kalıp')) idxF = i;
-        if(low.includes('lokasyon') || low.includes('yer') || low.includes('raf')) idxL = i;
-    });
-    for(let i=1;i<l.length;i++){
-        let c=[], cur='', iQ=false;
-        for(let ch of l[i]){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim());cur='';} else cur+=ch;} c.push(cur.trim());
-        c = c.map(x=>x.replace(/"/g,'').trim());
-        if(c[idxF] || c[idxL]) p.push({f: c[idxF]||'', l: c[idxL]||''});
-    }
-    return p;
-}
-
 function parseGeneric(t){
     if(!t || t.includes('<html')) return {h:[], r:[]};
     if(t.includes('Markdown Content:')) t = t.split('Markdown Content:')[1];
@@ -2132,7 +2311,7 @@ function fetchCSV(isBg = false) {
         getCSV(MESAJ_URL).catch(()=>'')
     ]).then(([t, k_text, d_text, m_text, msg_text]) => {
         RAW=parse(t);
-        KALIP_RAW=parseKalip(k_text);
+        KALIP_RAW=parseGeneric(k_text);
         DENEME_RAW=parseGeneric(d_text);
         MALZEME_RAW=parseGeneric(m_text);
         MESAJ_RAW=parseGeneric(msg_text);
@@ -2184,7 +2363,7 @@ if(savedUser && savedUser !== "undefined") {
         $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
         
         const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
-        $('user-name').innerHTML = roleBadge;
+            $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         fetchUsers().then(() => {
             if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
@@ -2249,6 +2428,82 @@ window.addEventListener('beforeinstallprompt', (e) => {
 // Çevrimdışı/Çevrimiçi Durum Bildirimi
 window.addEventListener('online', () => { toast('İnternet bağlantısı yeniden sağlandı.', 'ok'); fetchCSV(); });
 window.addEventListener('offline', () => toast('İnternet bağlantısı kesildi. Çevrimdışı moddasınız.', 'warn'));
+
+function openGenericFormModal(type, editIdx = null) {
+    const el = $('generic-form-modal');
+    $('gen-form-title').innerText = editIdx !== null ? 'KAYDI DÜZENLE' : (type === 'kalip' ? 'YENİ KALIP EKLE' : type === 'malzeme' ? 'YENİ MALZEME EKLE' : 'YENİ DENEME EKLE');
+    $('gen-form-fields').dataset.type = type;
+    $('gen-form-fields').dataset.editIdx = editIdx !== null ? editIdx : '';
+    
+    const rawData = type === 'kalip' ? KALIP_RAW : (type === 'malzeme' ? MALZEME_RAW : DENEME_RAW);
+    let fields = (rawData && rawData.h && rawData.h.length > 0) ? rawData.h : (type === 'kalip' ? ['Fason / Kalıp Adı', 'Lokasyon'] : ['Başlık', 'Açıklama']);
+    
+    const rowData = editIdx !== null ? rawData.r[editIdx] : [];
+    
+    $('gen-form-fields').innerHTML = fields.map((label, i) => `
+        <div>
+            <label class="block text-[10px] font-mono text-text3 mb-1 uppercase">${escapeHTML(label)}</label>
+            <input type="text" name="${escapeHTML(label)}" value="${escapeHTML(rowData[i] || '')}" required class="w-full bg-bg border border-border text-text rounded p-2.5 text-xs outline-none focus:border-accent">
+        </div>`).join('');
+    
+    el.classList.remove('hidden'); el.classList.add('flex');
+    setTimeout(() => el.classList.remove('opacity-0'), 10);
+}
+
+function replyTo(user) {
+    if (!user || user === 'SİSTEM' || user === 'GLOBAL') return;
+    const form = $('notif-send-form');
+    const content = $('notif-content');
+    const btn = $('btn-show-send-notif');
+    if (form.classList.contains('hidden')) {
+        form.classList.remove('hidden'); form.classList.add('flex');
+        content.classList.add('hidden');
+        if (btn) btn.innerText = 'GERİ DÖN';
+        const otherUsers = Object.keys(USER_DATA).filter(u => u !== LOGGED_IN_USER.name).sort();
+        $('modal-n-user').innerHTML = `<option value="">Kime Göndereceksiniz?</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + otherUsers.map(u => `<option value="${u}">${u}</option>`).join('');
+        if (Array.from($('modal-n-user').options).some(opt => opt.value === user)) {
+            $('modal-n-user').value = user;
+        }
+    } else {
+        if (Array.from($('modal-n-user').options).some(opt => opt.value === user)) {
+            $('modal-n-user').value = user;
+        }
+    }
+    setTimeout(() => $('modal-n-msg').focus(), 50);
+}
+
+function closeGenericFormModal() {
+    const el = $('generic-form-modal');
+    el.classList.add('opacity-0');
+    setTimeout(() => { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
+}
+
+async function saveGenericForm(e) {
+    e.preventDefault();
+    const type = $('gen-form-fields').dataset.type;
+    const editIdx = $('gen-form-fields').dataset.editIdx;
+    const sheetName = type === 'kalip' ? 'Kalıphane Lokasyonları' : type === 'malzeme' ? 'Pres Malzeme Takip Listesi' : 'Üretim Takip Denemeleri';
+    
+    const formData = {};
+    $('gen-form-fields').querySelectorAll('input, textarea, select').forEach(el => formData[el.name] = el.value);
+    
+    const payload = editIdx !== '' 
+        ? { action: "editGenericRecord", sheet: sheetName, rowIndex: parseInt(editIdx) + 2, data: formData } 
+        : { action: "addRecord", sheet: sheetName, data: formData };
+        
+    try {
+        toast('Kaydediliyor...', 'warn');
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        toast(editIdx !== '' ? 'Kayıt güncellendi!' : 'Kayıt eklendi!', 'ok');
+        closeGenericFormModal();
+        setTimeout(() => fetchCSV(), 1000);
+    } catch(err) { toast('İşlem başarısız', 'err'); }
+}
+
+function editGenericRecord(idx, type) {
+    closeGenericModal();
+    setTimeout(() => openGenericFormModal(type, idx), 300);
+}
 </script>
 </body>
 </html>
