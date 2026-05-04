@@ -167,7 +167,7 @@
             <button onclick="exportToPDF()" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
                 📥 PDF
             </button>
-            <button onclick="fetchCSV()" id="btn-refresh" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-accent border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="fetchCSV(true)" id="btn-refresh" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-accent border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
                 ↻ GÜNCELLE
             </button>
         </div>
@@ -827,7 +827,13 @@ function mc(id,t,d,o={}){
 }
 
 function swT(t,el){
-    cTab=t; document.querySelectorAll('.panel').forEach(e=>{e.classList.remove('active','block');e.classList.add('hidden');});
+    cTab=t; 
+    
+    const url = new URL(window.location);
+    url.searchParams.set('tab', t);
+    window.history.replaceState({}, '', url);
+    
+    document.querySelectorAll('.panel').forEach(e=>{e.classList.remove('active','block');e.classList.add('hidden');});
     document.querySelectorAll('.nav-tab').forEach(e=>{
         e.classList.remove('bg-accent', 'text-bg2', 'border-accent', 'shadow-md');
         e.classList.add('bg-bg3', 'text-text2', 'border-border', 'hover:bg-border', 'hover:text-text');
@@ -1357,7 +1363,7 @@ async function deleteGenericRecord(index, sheetName) {
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
         toast('Silme komutu gönderildi.', 'ok');
         closeGenericModal();
-        setTimeout(() => fetchCSV(), 1000);
+        setTimeout(() => fetchCSV(true), 1000);
     } catch(err) { toast('İşlem başarısız', 'err'); }
 }
 
@@ -1444,7 +1450,7 @@ async function deleteProductionRecord(tarih, calisan) {
         toast('Siliniyor...', 'warn');
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
         toast('Silme isteği gönderildi.', 'ok');
-        setTimeout(() => fetchCSV(), 1000);
+        setTimeout(() => fetchCSV(true), 1000);
     } catch(err) { toast('İşlem başarısız', 'err'); }
 }
 
@@ -1512,7 +1518,7 @@ async function submitForm(e){
         if (editModeRecord) cancelEdit();
         else { e.target.reset(); popF(); }
         if($('dup-warn')) $('dup-warn').classList.add('hidden');
-        setTimeout(() => fetchCSV(), 1000); // 1 saniye sonra verileri yenile
+        setTimeout(() => fetchCSV(true), 1000); // 1 saniye sonra verileri yenile
     } catch(err) {
         alert('❌ İŞLEM HATASI: İnternet bağlantınızı kontrol edin.');
     } finally {
@@ -2199,7 +2205,7 @@ function sendNotif(e) {
     
     toast(targetUser === 'GLOBAL' ? 'Herkese mesaj gönderildi.' : targetUser + ' kullanıcısına mesaj gönderildi.', 'ok'); 
     $('admin-n-msg').value = '';
-    setTimeout(() => fetchCSV(), 1000); // 1 saniye sonra verileri yenile
+    setTimeout(() => fetchCSV(true), 1000); // 1 saniye sonra verileri yenile
 }
 
 function clearNotif() {
@@ -2445,7 +2451,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // Çevrimdışı/Çevrimiçi Durum Bildirimi
-window.addEventListener('online', () => { toast('İnternet bağlantısı yeniden sağlandı.', 'ok'); fetchCSV(); });
+window.addEventListener('online', () => { toast('İnternet bağlantısı yeniden sağlandı.', 'ok'); fetchCSV(true); });
 window.addEventListener('offline', () => toast('İnternet bağlantısı kesildi. Çevrimdışı moddasınız.', 'warn'));
 
 function openGenericFormModal(type, editIdx = null) {
@@ -2515,7 +2521,7 @@ async function saveGenericForm(e) {
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
         toast(editIdx !== '' ? 'Kayıt güncellendi!' : 'Kayıt eklendi!', 'ok');
         closeGenericFormModal();
-        setTimeout(() => fetchCSV(), 1000);
+        setTimeout(() => fetchCSV(true), 1000);
     } catch(err) { toast('İşlem başarısız', 'err'); }
 }
 
