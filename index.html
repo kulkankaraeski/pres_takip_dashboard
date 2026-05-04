@@ -210,10 +210,19 @@
                 <div class="bg-bg2 border border-border rounded p-4 lg:col-span-2"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">GÜNLÜK PERFORMANS (Çubuklara Tıklayın)</div><div class="h-[240px] relative"><canvas id="c1"></canvas></div></div>
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">VARDİYA ORANI (Dilimlere Tıklayın)</div><div class="h-[240px] relative"><canvas id="c2"></canvas></div></div>
             </div>
-            <!-- FIX #2: canvas id="c3" eklendi — rG() bu elementi çiziyordu ama HTML'de yoktu, Chart.js hata fırlatıyordu -->
-            <div class="bg-bg2 border border-border rounded p-4 mb-4">
-                <div class="font-bebas text-base tracking-[2px] text-text2 mb-2">PRES KULLANIMI (Çubuklara Tıklayın)</div>
-                <div class="h-[200px] relative"><canvas id="c3"></canvas></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base tracking-[2px] text-text2 mb-2">PRES KULLANIMI (Çubuklara Tıklayın)</div>
+                    <div class="h-[240px] relative"><canvas id="c3"></canvas></div>
+                </div>
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base tracking-[2px] text-text2 mb-2">VARDİYA KIYASLAMASI (PRES BAZLI ÜRETİM)</div>
+                    <div class="h-[240px] relative"><canvas id="c4"></canvas></div>
+                </div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col mb-4">
+                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-gun-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
+                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-gun-kiyas"><thead id="th-gun-kiyas"></thead><tbody id="tb-gun-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
                 <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">GÜNLÜK LİSTE (KAFALARA GÖRE AYRILMIŞ)</span><input type="text" onkeyup="fT('tb-gun',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
@@ -232,6 +241,20 @@
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">ÜRETİM TRENDİ (Noktalara Tıklayın)</div><div class="h-[240px] relative"><canvas id="w1"></canvas></div></div>
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">PERFORMANS TRENDİ</div><div class="h-[240px] relative"><canvas id="w2"></canvas></div></div>
             </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base text-text2 mb-2">VARDİYA KIYASLAMASI (PRES BAZLI ÜRETİM)</div>
+                    <div class="h-[240px] relative"><canvas id="w3"></canvas></div>
+                </div>
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base text-text2 mb-2">VARDİYA ORANI (Dilimlere Tıklayın)</div>
+                    <div class="h-[240px] relative"><canvas id="w4"></canvas></div>
+                </div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden mb-4">
+                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-haf-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-haf-kiyas"><thead id="th-haf-kiyas"></thead><tbody id="tb-haf-kiyas"></tbody></table></div>
+            </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">HAFTALIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-haf',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
                 <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-haf"><thead id="th-haf"></thead><tbody id="tb-haf"></tbody></table></div>
@@ -248,6 +271,20 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">ÜRETİM TRENDİ (Noktalara Tıklayın)</div><div class="h-[240px] relative"><canvas id="m1"></canvas></div></div>
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">PERFORMANS TRENDİ</div><div class="h-[240px] relative"><canvas id="m2"></canvas></div></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base text-text2 mb-2">VARDİYA KIYASLAMASI (PRES BAZLI ÜRETİM)</div>
+                    <div class="h-[240px] relative"><canvas id="m3"></canvas></div>
+                </div>
+                <div class="bg-bg2 border border-border rounded p-4">
+                    <div class="font-bebas text-base text-text2 mb-2">VARDİYA ORANI (Dilimlere Tıklayın)</div>
+                    <div class="h-[240px] relative"><canvas id="m4"></canvas></div>
+                </div>
+            </div>
+            <div class="bg-bg2 border border-border rounded overflow-hidden mb-4">
+                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-ay-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-ay-kiyas"><thead id="th-ay-kiyas"></thead><tbody id="tb-ay-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">AYLIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-ay',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
@@ -833,6 +870,72 @@ function pkW(v){if(WEEKS.includes(v)){sW=v; rW();}else toast('Bu haftada veri yo
 function chM(x){const i=MONTHS.indexOf(sM); if(MONTHS[i+x]){sM=MONTHS[i+x]; rM();}}
 function pkM(v){const f=v.split('-').reverse().join('.'); if(MONTHS.includes(f)){sM=f; rM();}else toast('Bu ayda veri yok','warn');}
 
+// Vardiya Kıyaslama Çizimi (Ortak Fonksiyon)
+function renderShiftComparison(chartId, tbId, thId, data) {
+    const machines = {};
+    data.forEach(r => {
+        const v = r.vardiya || 'Diğer';
+        [1, 2].forEach(i => {
+            const p = r['pres'+i];
+            const u = r['uretim'+i] || 0;
+            const perf = r['perf'+i];
+            if (p) {
+                if (!machines[p]) machines[p] = {};
+                if (!machines[p][v]) machines[p][v] = { u: 0, pSum: 0, c: 0, emps: {} };
+                machines[p][v].u += u;
+                if (perf) { machines[p][v].pSum += perf; machines[p][v].c++; }
+                if (!machines[p][v].emps[r.calisan]) machines[p][v].emps[r.calisan] = { u:0, pSum:0, c:0 };
+                machines[p][v].emps[r.calisan].u += u;
+                if (perf) { machines[p][v].emps[r.calisan].pSum += perf; machines[p][v].emps[r.calisan].c++; }
+            }
+        });
+    });
+
+    const mList = Object.keys(machines).sort();
+    const sList = ['08:00-16:00', '16:00-24:00', '00:00-08:00', 'Diğer'];
+    
+    const datasets = [];
+    const colors = [cR('accent',0.8), cR('accent4',0.8), cR('accent3',0.8), cR('border',0.8)];
+    sList.forEach((s, idx) => {
+        const d = mList.map(m => machines[m][s] ? machines[m][s].u : 0);
+        if (d.some(v => v > 0)) {
+            datasets.push({ label: s, data: d, backgroundColor: colors[idx] });
+        }
+    });
+
+    if($(chartId)) { mc(chartId, 'bar', { labels: mList, datasets: datasets }); }
+
+    let rows = [];
+    mList.forEach(m => {
+        sList.forEach(s => {
+            if (machines[m][s]) {
+                const d = machines[m][s];
+                const empArr = Object.keys(d.emps).sort((a,b)=>d.emps[b].u - d.emps[a].u);
+                const empStr = empArr.map(e => `${escapeHTML(e)} <span class="text-text3 text-[10px]">(${n(d.emps[e].u)})</span>`).join('<br>');
+                const perf = d.c ? d.pSum / d.c : 0;
+                rows.push({ m, s, e: empStr, u: d.u, p: perf });
+            }
+        });
+    });
+
+    rows.sort((a,b) => { if(a.m !== b.m) return a.m.localeCompare(b.m); return b.u - a.u; });
+
+    if($(thId)) {
+        $(thId).innerHTML = th(['Makine', 'Vardiya', 'Çalışanlar (Üretim)', 'Top. Üretim', 'Ort. Perf']);
+        $(tbId).innerHTML = rows.map((r, i) => {
+            const mIndex = mList.indexOf(r.m);
+            const bgClass = mIndex % 2 === 0 ? '' : 'bg-bg2/50';
+            return `<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs ${bgClass}">
+                <td class="p-2 whitespace-nowrap align-top"><b>${escapeHTML(r.m)}</b></td>
+                <td class="p-2 whitespace-nowrap align-top">${escapeHTML(r.s)}</td>
+                <td class="p-2 align-top leading-relaxed text-text">${r.e}</td>
+                <td class="p-2 whitespace-nowrap align-top"><b class="text-accent">${n(r.u)}</b></td>
+                <td class="p-2 whitespace-nowrap align-top">${r.p > 0 ? pb(r.p) : '-'}</td>
+            </tr>`;
+        }).join('');
+    }
+}
+
 function rG(){
     if(!sD)return; $('c-day').innerText=sD; $('d-pick').value=sD.split('.').reverse().join('-');
     const dd=RAW.filter(r=>r.tarih===sD), s=calc(dd), sab=dd.filter(r=>r.vardiya==='08:00-16:00').length, aks=dd.filter(r=>r.vardiya==='16:00-24:00').length;
@@ -845,10 +948,11 @@ function rG(){
     mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?cR('accent',0.75):r.tP>=90?cR('accent4',0.75):r.tP>=70?cR('accent3',0.75):cR('accent2',0.75))}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
     mc('c2','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,dd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
-    // FIX #2: c3 artık HTML'de var, pres kullanım grafiği çiziliyor
     const pm={}; dd.forEach(r=>{if(r.pres1)pm[r.pres1]=(pm[r.pres1]||0)+r.uretim1; if(r.pres2)pm[r.pres2]=(pm[r.pres2]||0)+r.uretim2;});
     const ps=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,12);
     mc('c3','bar',{labels:ps.map(x=>x[0]),datasets:[{label:'Üretim (Adet)',data:ps.map(x=>x[1]),backgroundColor:cR('accent',0.75)}]});
+    
+    renderShiftComparison('c4', 'tb-gun-kiyas', 'th-gun-kiyas', dd);
     
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
     $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf', ...(isAdmin ? ['İşlem'] : [])]);
@@ -868,6 +972,12 @@ function rW(){
     const dt=[...new Set(wd.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,5), ...calc(wd.filter(r=>r.tarih===d))}));
     mc('w1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
     mc('w2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
+    
+    renderShiftComparison('w3', 'tb-haf-kiyas', 'th-haf-kiyas', wd);
+    
+    const sab=wd.filter(r=>r.vardiya==='08:00-16:00').length, aks=wd.filter(r=>r.vardiya==='16:00-24:00').length;
+    mc('w4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,wd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
+    
     const ws=[...new Set(wd.map(r=>r.calisan))].map(w=>({w,...calc(wd.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     $('th-haf').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
@@ -880,6 +990,12 @@ function rM(){
     const dt=[...new Set(md.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,2), ...calc(md.filter(r=>r.tarih===d))}));
     mc('m1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
     mc('m2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
+    
+    renderShiftComparison('m3', 'tb-ay-kiyas', 'th-ay-kiyas', md);
+    
+    const sab=md.filter(r=>r.vardiya==='08:00-16:00').length, aks=md.filter(r=>r.vardiya==='16:00-24:00').length;
+    mc('m4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,md.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
+    
     const ws=[...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
@@ -989,13 +1105,17 @@ function handleChartClick(id, label) {
     if(cTab === 'gunluk') {
        if(id==='c1') return openModal(label);
        if(id==='c2') { data = RAW.filter(r=>r.tarih===sD).filter(r=>label==='Diğer'?(r.vardiya!=='08:00-16:00'&&r.vardiya!=='16:00-24:00'):r.vardiya===label); title = sD+' | '+label+' VARDİYASI'; }
-       if(id==='c3') { data = RAW.filter(r=>r.tarih===sD).filter(r=>r.pres1===label || r.pres2===label); title = sD+' | '+label; }
+       if(id==='c3' || id==='c4') { data = RAW.filter(r=>r.tarih===sD).filter(r=>r.pres1===label || r.pres2===label); title = sD+' | '+label; }
     }
     else if(cTab === 'haftalik') {
        if(id==='w1' || id==='w2') { data = RAW.filter(r=>r.tarih.startsWith(label)); title = label + ' GÜNLÜK DETAYI'; }
+       if(id==='w3') { data = RAW.filter(r=>isoW(r.tarih)===sW).filter(r=>r.pres1===label || r.pres2===label); title = sW+' | '+label; }
+       if(id==='w4') { data = RAW.filter(r=>isoW(r.tarih)===sW).filter(r=>label==='Diğer'?(r.vardiya!=='08:00-16:00'&&r.vardiya!=='16:00-24:00'):r.vardiya===label); title = sW+' | '+label+' VARDİYASI'; }
     }
     else if(cTab === 'aylik') {
        if(id==='m1' || id==='m2') { data = RAW.filter(r=>r.tarih.startsWith(label)); title = label + '.' + sM.split('.')[1] + ' GÜNLÜK DETAYI'; }
+       if(id==='m3') { data = RAW.filter(r=>r.tarih.endsWith(sM)).filter(r=>r.pres1===label || r.pres2===label); title = sM+' | '+label; }
+       if(id==='m4') { data = RAW.filter(r=>r.tarih.endsWith(sM)).filter(r=>label==='Diğer'?(r.vardiya!=='08:00-16:00'&&r.vardiya!=='16:00-24:00'):r.vardiya===label); title = sM+' | '+label+' VARDİYASI'; }
     }
     else if(cTab === 'genel') {
        if(id==='h1' || id==='h2') { data = RAW.filter(r=>r.tarih.startsWith(label)); title = label + ' DETAYI'; }
