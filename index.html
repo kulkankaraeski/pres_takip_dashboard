@@ -2300,9 +2300,11 @@ function hideLoader() {
 }
 
 function fetchCSV(isBg = false) {
-    if(!isBg) showLoader();
+    if(!isBg) {
+        showLoader();
+        ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
+    }
     const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
-    ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
     Promise.all([
         getCSV(URL),
         getCSV(KALIP_URL).catch(()=>''),
@@ -2318,7 +2320,10 @@ function fetchCSV(isBg = false) {
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
-        sD=DATES.length ? DATES[DATES.length-1] : ''; sM=MONTHS.length ? MONTHS[MONTHS.length-1] : ''; sW=WEEKS.length ? WEEKS[WEEKS.length-1] : '';
+        
+        if (!sD || !DATES.includes(sD)) sD = DATES.length ? DATES[DATES.length-1] : ''; 
+        if (!sM || !MONTHS.includes(sM)) sM = MONTHS.length ? MONTHS[MONTHS.length-1] : ''; 
+        if (!sW || !WEEKS.includes(sW)) sW = WEEKS.length ? WEEKS[WEEKS.length-1] : '';
         
         // Ayın Elemanını Hesapla ve Yazdır
         if(sM) {
@@ -2334,16 +2339,30 @@ function fetchCSV(isBg = false) {
         }
         
         const s=calc(RAW); $('hdr-total').innerText=n(s.u); $('hdr-perf').innerText=s.p.toFixed(1)+'%'; $('hdr-workers').innerText=new Set(RAW.map(r=>r.calisan)).size;
-        popF(); // Form için verileri doldur
+        if (!isBg) popF(); // Form için verileri doldur (arkaplan yenilemede açık olan dropdownları bozmamak için)
         checkNotifs();
         checkSystemAlarms();
         $('src-status').innerText='● CANLI VERİ'; $('src-status').style.color='#a8e063'; $('src-info').innerText=`${RAW.length} kayıt`;
         
-        // FIX #5: Aktif sekmenin nav elementini cTab'a göre güvenilir şekilde bul.
-        // Eski kod: querySelector('.text-accent.border-accent') — veri yüklenirken henüz
-        // class atanmamış olabiliyor ve fallback her zaman ilk sekmeyi döndürüyordu.
-        const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
-        swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
+        if (isBg) {
+            // Arkaplan güncellemesinde sekmeyi baştan yükleme (animasyon ve scroll sıfırlamasını engeller), sadece içeriği güncelle
+            if(cTab==='gunluk')rG(); if(cTab==='haftalik')rW(); if(cTab==='aylik')rM(); if(cTab==='genel')rH(); if(cTab==='alarm')rAlarm(); if(cTab==='calisan')rC(); if(cTab==='pres')rP(); if(cTab==='fason')rF(); if(cTab==='kaliphane')rKaliphane(); if(cTab==='malzeme')rMalzeme(); if(cTab==='kayitlar')rKayitlar(); if(cTab==='plan')rPlan(); if(cTab==='admin')rAdmin();
+            
+            // Arama kutularında filtre varsa tekrar anında uygula (250ms gecikmeyi bypass et)
+            const activePanel = $('panel-'+cTab);
+            if(activePanel) {
+                activePanel.querySelectorAll('input[type="text"][onkeyup*="fT"]').forEach(inp => {
+                    if(inp.value) {
+                        const match = inp.getAttribute('onkeyup').match(/fT\('([^']+)'/);
+                        if(match && match[1]) fT(match[1], inp.value, true);
+                    }
+                });
+            }
+        } else {
+            // FIX #5: Aktif sekmenin nav elementini cTab'a göre güvenilir şekilde bul.
+            const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
+            swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
+        }
     }).catch(e=>{
         console.error('Veri İşleme Hatası:', e);
         $('src-status').innerText='● BAĞLANTI HATASI'; $('src-status').style.color='#e86d3a';
