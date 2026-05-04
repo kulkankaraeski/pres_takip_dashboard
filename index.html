@@ -182,6 +182,7 @@
         <div onclick="swT('malzeme',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">PRES MALZEME TAKİP</div>
         <div onclick="swT('kayitlar',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
         <div onclick="swT('plan',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM PLANI</div>
+        <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="nav-tab nav-btn bg-bg3 text-accent2 border-border hover:bg-border transition-all duration-300">🚨 ALARMLAR</div>
         <div onclick="swT('form',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ GİRİŞ FORMU</div>
         <div id="nav-admin" onclick="swT('admin',this)" class="nav-tab nav-btn hidden bg-bg3 text-accent2 border-border hover:bg-border">YÖNETİM PANELİ</div>
     </nav>
@@ -250,6 +251,27 @@
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">GENEL PERFORMANS</div><div class="h-[240px] relative"><canvas id="h2"></canvas></div></div>
             </div>
             <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">EN İYİ 10 ÇALIŞAN (Çubuklara Tıklayın)</div><div class="h-[260px] relative"><canvas id="h3"></canvas></div></div>
+        </div>
+
+        <div class="panel hidden" id="panel-alarm">
+            <h2 class="font-bebas text-2xl text-accent2 tracking-wider mb-4 flex items-center gap-2">🚨 SİSTEM ALARMLARI VE KIYASLAMA ANALİZİ</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" id="alarm-kpis"></div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-start">
+                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-lg border-accent2/30">
+                    <div class="p-4 border-b border-border bg-accent2/10"><span class="font-bebas text-base text-accent2">🔴 KRİTİK UYARILAR LİSTESİ (Son 14 Gün)</span></div>
+                    <div class="overflow-auto max-h-[50vh]"><table class="w-full text-left border-collapse"><thead id="th-alarm"></thead><tbody id="tb-alarm"></tbody></table></div>
+                </div>
+                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-lg">
+                    <div class="p-4 border-b border-border bg-accent/10"><span class="font-bebas text-base text-accent">📊 AYNI MAKİNE / FARKLI VARDİYA KIYASLAMALARI</span></div>
+                    <div class="overflow-auto max-h-[50vh] p-4 bg-bg3/30" id="makine-kiyas-container"></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-bg2 border border-border rounded p-4 shadow-sm"><div class="font-bebas text-base text-text2 mb-2">ÇALIŞAN PERFORMANS DAĞILIMI (Son 14 Gün)</div><div class="h-[240px] relative"><canvas id="alarm-c1"></canvas></div></div>
+                <div class="bg-bg2 border border-border rounded p-4 shadow-sm"><div class="font-bebas text-base text-text2 mb-2">FASON PERFORMANS DAĞILIMI (Son 14 Gün)</div><div class="h-[240px] relative"><canvas id="alarm-c2"></canvas></div></div>
+            </div>
         </div>
 
         <div class="panel hidden" id="panel-calisan">
@@ -740,7 +762,7 @@ function swT(t,el){
 
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
     if(!RAW.length)return;
-    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='malzeme')rMalzeme(); if(t==='kayitlar')rKayitlar(); if(t==='plan')rPlan(); if(t==='admin')rAdmin();
+    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='alarm')rAlarm(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='malzeme')rMalzeme(); if(t==='kayitlar')rKayitlar(); if(t==='plan')rPlan(); if(t==='admin')rAdmin();
 }
 
 // Tema Değiştirme
@@ -842,6 +864,129 @@ function rH(){
     const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u).slice(0,10);
     // FIX #4: x.w.calisan her zaman undefined'dı (x.w zaten string). Düzeltildi.
     mc('h3','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
+}
+
+function checkSystemAlarms() {
+    if(!RAW.length) return;
+    const last14Dates = DATES.slice(-14);
+    const recentData = RAW.filter(r => last14Dates.includes(r.tarih));
+    let alarmCount = 0;
+    
+    const empPerf = {}; const pressDown = {}; const fasonPerf = {};
+    recentData.forEach(r => {
+        if(!empPerf[r.calisan]) empPerf[r.calisan] = {p:0, c:0};
+        empPerf[r.calisan].p += r.tP; empPerf[r.calisan].c++;
+        [1,2].forEach(i => {
+            const pr = r['pres'+i], fas = r['fason'+i], dur = r['durus'+i], perf = r['perf'+i];
+            if(pr) { if(!pressDown[pr]) pressDown[pr] = 0; pressDown[pr] += dur; }
+            if(fas) { if(!fasonPerf[fas]) fasonPerf[fas] = {p:0, c:0}; fasonPerf[fas].p += perf; fasonPerf[fas].c++; }
+        });
+    });
+    
+    Object.values(empPerf).forEach(v => { if(v.c > 0 && v.p/v.c < 80) alarmCount++; });
+    Object.values(pressDown).forEach(v => { if(v > 60) alarmCount++; });
+    Object.values(fasonPerf).forEach(v => { if(v.c > 0 && v.p/v.c < 80) alarmCount++; });
+
+    const btn = $('nav-alarm-btn');
+    if(btn) {
+        if(alarmCount > 0) {
+            btn.innerHTML = `🚨 ALARMLAR <span class="bg-accent2 text-white px-1.5 py-0.5 rounded-full text-[9px] animate-pulse shadow-md ml-1">${alarmCount}</span>`;
+            btn.classList.add('border-accent2', 'text-accent2');
+        } else {
+            btn.innerHTML = `🚨 ANALİZ`;
+            btn.classList.remove('border-accent2', 'text-accent2');
+        }
+    }
+}
+
+function rAlarm() {
+    const last14Dates = DATES.slice(-14);
+    const recentData = RAW.filter(r => last14Dates.includes(r.tarih));
+
+    const empPerf = {}; const pressDown = {}; const fasonPerf = {};
+    const makineKiyas = {};
+
+    recentData.forEach(r => {
+        if(!empPerf[r.calisan]) empPerf[r.calisan] = {p:0, c:0, vals:[]};
+        empPerf[r.calisan].p += r.tP; empPerf[r.calisan].c++; empPerf[r.calisan].vals.push(r.tP);
+
+        [1,2].forEach(i => {
+            const pr = r['pres'+i], fas = r['fason'+i], dur = r['durus'+i], perf = r['perf'+i];
+            if(pr) {
+                if(!pressDown[pr]) pressDown[pr] = 0; pressDown[pr] += dur;
+                if(perf > 0) {
+                    if(!makineKiyas[pr]) makineKiyas[pr] = {};
+                    const k = r.vardiya + ' | ' + r.calisan;
+                    if(!makineKiyas[pr][k]) makineKiyas[pr][k] = {p:0, c:0, e:r.calisan, v:r.vardiya};
+                    makineKiyas[pr][k].p += perf; makineKiyas[pr][k].c++;
+                }
+            }
+            if(fas) { 
+                if(!fasonPerf[fas]) fasonPerf[fas] = {p:0, c:0, vals:[]}; 
+                fasonPerf[fas].p += perf; fasonPerf[fas].c++; fasonPerf[fas].vals.push(perf);
+            }
+        });
+    });
+
+    const badEmps = Object.entries(empPerf).map(([k,v])=>({k, v:v.p/v.c})).filter(x=>x.v>0 && x.v<80).sort((a,b)=>a.v-b.v);
+    const badPresses = Object.entries(pressDown).map(([k,v])=>({k, v})).filter(x=>x.v>60).sort((a,b)=>b.v-a.v);
+    const badFasons = Object.entries(fasonPerf).map(([k,v])=>({k, v:v.p/v.c})).filter(x=>x.v>0 && x.v<80).sort((a,b)=>a.v-b.v);
+
+    $('alarm-kpis').innerHTML =
+        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Sorunlu Çalışanlar', badEmps.length, 'Ort. Perf < %80', "swT('calisan', document.querySelector('.nav-tab[onclick*=\\'calisan\\']'))") +
+        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Kritik Makine Duruşları', badPresses.length, 'Son 14 Gün > 60 dk', "swT('pres', document.querySelector('.nav-tab[onclick*=\\'pres\\']'))") +
+        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Sorunlu Fasonlar', badFasons.length, 'Ort. Perf < %80', "swT('fason', document.querySelector('.nav-tab[onclick*=\\'fason\\']'))");
+
+    let kiyasHtml = '';
+    Object.keys(makineKiyas).sort().forEach(pr => {
+        const workers = Object.values(makineKiyas[pr]).map(x => ({e: x.e, v: x.v, p: x.p/x.c})).sort((a,b) => b.p - a.p);
+        if(workers.length > 1) { 
+            kiyasHtml += `<div class="mb-4 bg-bg rounded-lg border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <h4 class="font-bebas tracking-wide text-accent bg-bg2 p-2.5 border-b border-border text-sm flex justify-between items-center">
+                    <span>🏭 ${pr}</span>
+                    <span class="text-[10px] text-text3 font-mono normal-case tracking-normal">En İyi: ${workers[0].e.split(' ')[0]}</span>
+                </h4>
+                <table class="w-full text-left border-collapse text-[10px] sm:text-[11px] font-mono">
+                    <thead class="bg-bg/50">${th(['Çalışan', 'Vardiya', 'Ort. Perf'])}</thead>
+                    <tbody>`;
+            workers.forEach((w, idx) => {
+                const rowClass = idx === 0 ? 'text-accent4 bg-accent4/5' : (idx === workers.length-1 && w.p < 80 ? 'text-accent2 bg-accent2/5' : 'text-text2');
+                const badge = idx === 0 ? '🏆 ' : (w.p < 80 ? '⚠️ ' : '');
+                kiyasHtml += `<tr class="${rowClass} border-b border-border/50 hover:bg-bg/50 transition-colors">
+                    <td class="p-2 font-sans font-medium">${badge}${w.e}</td>
+                    <td class="p-2 text-text3">${w.v || '-'}</td>
+                    <td class="p-2 font-bold">${pb(w.p)}</td>
+                </tr>`;
+            });
+            kiyasHtml += `</tbody></table></div>`;
+        }
+    });
+    if(!kiyasHtml) kiyasHtml = '<div class="text-text3 font-mono text-xs p-4 text-center">Kıyaslama yapılacak aynı makinede yeterli farklı vardiya/çalışan verisi bulunamadı.</div>';
+    $('makine-kiyas-container').innerHTML = kiyasHtml;
+
+    const alarms = [];
+    badEmps.forEach(x => alarms.push(['ÇALIŞAN', x.k, `Ortalama performans çok düşük (${x.v.toFixed(1)}%)`]));
+    badPresses.forEach(x => alarms.push(['MAKİNE', x.k, `Ciddi duruş süresi alarmı (${x.v} dk)`]));
+    badFasons.forEach(x => alarms.push(['FASON', x.k, `Fason ortalama performansı sınırın altında (${x.v.toFixed(1)}%)`]));
+
+    $('th-alarm').innerHTML = th(['Tip', 'İlgili Kayıt', 'Sistem Uyarısı']);
+    $('tb-alarm').innerHTML = alarms.length ? alarms.map(a => tr([
+        `<span class="text-accent2 font-bold text-[10px] uppercase bg-accent2/10 px-1.5 py-0.5 rounded">${a[0]}</span>`,
+        `<b class="text-text">${a[1]}</b>`,
+        `<span class="text-text2">${a[2]}</span>`
+    ])).join('') : '<tr><td colspan="3" class="p-6 text-center text-accent4 font-bold">Harika! Son 14 günde tespit edilen kritik bir sorun yok. 🎉</td></tr>';
+
+    const eSort = Object.entries(empPerf).map(([k,v])=>({k, p:v.p/v.c})).sort((a,b)=>b.p-a.p).slice(0,12);
+    mc('alarm-c1', 'bar', {
+        labels: eSort.map(x=>x.k.split(' ')[0]),
+        datasets: [{label:'Ort. Perf %', data: eSort.map(x=>x.p), backgroundColor: eSort.map(x=>x.p<80 ? cR('accent2',0.8) : cR('accent',0.8))}]
+    });
+    
+    const fSort = Object.entries(fasonPerf).map(([k,v])=>({k, p:v.p/v.c})).sort((a,b)=>b.p-a.p).slice(0,12);
+    mc('alarm-c2', 'bar', {
+        labels: fSort.map(x=>x.k),
+        datasets: [{label:'Ort. Perf %', data: fSort.map(x=>x.p), backgroundColor: fSort.map(x=>x.p<80 ? cR('accent2',0.8) : cR('accent3',0.8))}]
+    });
 }
 
 function rC(){
@@ -1759,7 +1904,7 @@ function logout() {
 function rAdmin() {
     const allTabs = [
         {id: 'gunluk', name: 'GÜNLÜK RAPOR'}, {id: 'haftalik', name: 'HAFTALIK RAPOR'}, {id: 'aylik', name: 'AYLIK RAPOR'},
-        {id: 'genel', name: 'GENEL ÖZET'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
+        {id: 'genel', name: 'GENEL ÖZET'}, {id: 'alarm', name: 'ALARM & ANALİZ'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
         {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'malzeme', name: 'PRES MALZEME TAKİP'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
         {id: 'form', name: 'VERİ GİRİŞ FORMU'}
     ];
@@ -2012,6 +2157,7 @@ function fetchCSV(isBg = false) {
         const s=calc(RAW); $('hdr-total').innerText=n(s.u); $('hdr-perf').innerText=s.p.toFixed(1)+'%'; $('hdr-workers').innerText=new Set(RAW.map(r=>r.calisan)).size;
         popF(); // Form için verileri doldur
         checkNotifs();
+        checkSystemAlarms();
         $('src-status').innerText='● CANLI VERİ'; $('src-status').style.color='#a8e063'; $('src-info').innerText=`${RAW.length} kayıt`;
         
         // FIX #5: Aktif sekmenin nav elementini cTab'a göre güvenilir şekilde bul.
