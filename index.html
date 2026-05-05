@@ -731,13 +731,13 @@ const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm
 const MESAJ_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Mesajlar');
 
 // FORM İÇİN SABİT TANIMLAR (Kendinize Göre Değiştirebilirsiniz)
-const SABIT_CALISANLAR = ["Yusuf Yalçıntaş", "Ahmet Yılmaz", "Mehmet Demir"];
+const SABIT_CALISANLAR = ["Yusuf Yalçıntaş"];
 const SABIT_PRESLER = ["PRES 1", "PRES 2", "PRES 3", "PRES 4", "PRES 5"];
 const SABIT_FASONLAR = ["FASON 1", "FASON 2", "FASON 3"];
 
 function $(id){return document.getElementById(id);}
-function n(v){return v>0?v.toLocaleString('tr-TR'):'-';}
-function pb(p){const c=p>=120?'bg-accent/20 text-accent':p>=90?'bg-accent4/20 text-accent4':p>=70?'bg-accent2/20 text-accent2':'bg-accent3/20 text-accent3'; return `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${c}">${p.toFixed(1)}%</span>`;}
+function n(v){const val=Number(v)||0; return val>0?val.toLocaleString('tr-TR'):'-';}
+function pb(p){const val=Number(p)||0; const c=val>=120?'bg-accent/20 text-accent':val>=90?'bg-accent4/20 text-accent4':val>=70?'bg-accent2/20 text-accent2':'bg-accent3/20 text-accent3'; return `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${c}">${val.toFixed(1)}%</span>`;}
 function isoW(d){const[D,M,Y]=d.split('.').map(Number);const dt=new Date(Y,M-1,D);dt.setDate(dt.getDate()+4-(dt.getDay()||7));return `${dt.getFullYear()}-W${String(Math.ceil((((dt-new Date(dt.getFullYear(),0,1))/86400000)+1)/7)).padStart(2,'0')}`;}
 function calc(arr){return{u:arr.reduce((s,r)=>s+r.tU,0),b:arr.reduce((s,r)=>s+r.tB,0),p:arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0,d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
 const cR=(v,a=1)=>`rgba(${getComputedStyle(document.documentElement).getPropertyValue('--c-'+v).trim()},${a})`;
@@ -794,9 +794,16 @@ function mc(id,t,d,o={}){
     if(!el) { console.warn('mc(): canvas bulunamadı → id='+id); return; }
     const c={
         responsive:true,maintainAspectRatio:false,
-        onClick: (e, elements, chart) => {
-            if(elements.length > 0) { const label = String(chart.data.labels[elements[0].index]); handleChartClick(id, label); }
-        },
+                onClick: (e, elements, chartInstance) => {
+                    const chart = chartInstance || charts[id];
+                    if(elements && elements.length > 0 && chart) { 
+                        const idx = elements[0].index !== undefined ? elements[0].index : elements[0]._index;
+                        if(idx !== undefined && chart.data.labels && chart.data.labels[idx] !== undefined) {
+                            const label = String(chart.data.labels[idx]); 
+                            handleChartClick(id, label); 
+                        }
+                    }
+                },
         plugins:{legend:{labels:{color:cR('text3'),font:{family:"'Fira Code'",size:10}}}},
         scales:{x:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}},y:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}}}
     }; 
@@ -1128,10 +1135,11 @@ function handleChartClick(id, label) {
 }
 
 function openRecsModal(title, data) {
+    if (!data) data = [];
     recsModalData = data; recsModalTitle = title;
-    $('recs-title').innerText = title; const s = calc(data);
+    $('recs-title').innerText = title || ''; const s = calc(data);
     const cCard = (l, v1, v2, v3) => `<div class="bg-bg border border-border rounded p-3 flex flex-col"><span class="text-xs font-mono text-text3 mb-1">${l}</span><span class="font-bold text-lg text-text">${v1}</span><div class="flex justify-between mt-1"><span class="text-[10px] text-accent">${v2}</span><span class="text-[10px] text-accent2">${v3}</span></div></div>`;
-    $('recs-stats').innerHTML = cCard('TOPLAM ÜRETİM', n(s.u)+' Adet', s.c+' Kayıt', n(s.b)+' Hedef') + cCard('ORTALAMA PERF.', s.p.toFixed(1)+'%', '', '') + cCard('TOPLAM DURUŞ', n(s.d)+' Dk', '', '') + cCard('ÇALIŞAN', new Set(data.map(r=>r.calisan)).size+' Kişi', '', '');
+    $('recs-stats').innerHTML = cCard('TOPLAM ÜRETİM', n(s.u)+' Adet', s.c+' Kayıt', n(s.b)+' Hedef') + cCard('ORTALAMA PERF.', (Number(s.p)||0).toFixed(1)+'%', '', '') + cCard('TOPLAM DURUŞ', n(s.d)+' Dk', '', '') + cCard('ÇALIŞAN', new Set(data.map(r=>r.calisan)).size+' Kişi', '', '');
     
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
     $('t-recs').innerHTML = `<thead>${thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf', ...(isAdmin ? ['İşlem'] : [])])}</thead><tbody id="recs-body" class="text-xs">` + 
@@ -1155,7 +1163,7 @@ function openModal(emp) {
             <span class="text-xs font-mono text-text3 mb-1">${lbl}</span>
             <div class="flex items-baseline gap-1"><span class="font-bold text-xl text-text">${n(val.u)}</span><span class="text-[10px] text-text3 mb-1"> / ${n(val.b)} Hdf</span></div>
             <div class="flex justify-between items-center mt-2 border-t border-border/50 pt-2 gap-2">
-                <span class="text-[11px] ${val.p>=100?'text-accent':'text-accent2'} font-bold">${val.p.toFixed(1)}% Perf.</span>
+                        <span class="text-[11px] ${val.p>=100?'text-accent':'text-accent2'} font-bold">${(Number(val.p)||0).toFixed(1)}% Perf.</span>
                 <span class="text-[11px] font-mono text-accent2">${n(val.d)} dk Duruş</span>
             </div>
         </div>`;
