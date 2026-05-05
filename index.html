@@ -365,9 +365,8 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Çalışan</label>
-                            <select id="f-calisan" required onchange="checkDuplicate()" class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer">
-                                <option value="">Seçiniz...</option>
-                            </select>
+                            <input type="text" id="f-calisan" list="form-user-list" placeholder="İsim yazın veya seçin..." required autocomplete="off" onchange="checkDuplicate()" class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors">
+                            <datalist id="form-user-list"></datalist>
                         </div>
                         <div>
                             <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Vardiya</label>
@@ -594,9 +593,8 @@
             <h2 class="font-bebas text-2xl tracking-[2px] text-accent mb-2">SİSTEM GİRİŞİ</h2>
             <p class="text-text3 text-xs font-mono mb-6">Lütfen kullanıcı bilgilerinizi girin.</p>
             <form onsubmit="login(event)" class="space-y-4">
-                <select id="login-user" required class="w-full bg-bg3 border border-border text-text rounded p-3 outline-none focus:border-accent transition-colors text-center appearance-none cursor-pointer">
-                    <option value="">Kullanıcı Seçiniz...</option>
-                </select>
+                <input type="text" id="login-user" list="user-list" placeholder="İsim yazın veya seçin..." required autocomplete="off" class="w-full bg-bg3 border border-border text-text rounded p-3 outline-none focus:border-accent transition-colors text-center">
+                <datalist id="user-list"></datalist>
                 <div class="relative">
                     <input type="password" id="login-pass" placeholder="Şifre" required class="w-full bg-bg3 border border-border text-text rounded py-3 px-10 outline-none focus:border-accent transition-colors text-center">
                     <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-text3 hover:text-accent transition-colors outline-none" tabindex="-1">
@@ -1177,16 +1175,16 @@ function rC(){
 }
 
 function rP(){
-    const pM={}; RAW.forEach(r=>{[1,2].forEach(i=>{const p=r['pres'+i]; if(p){if(!pM[p])pM[p]={b:0,u:0,pp:[],d:0,c:0}; pM[p].b+=r['beklenen'+i]; pM[p].u+=r['uretim'+i]; if(r['perf'+i])pM[p].pp.push(r['perf'+i]); pM[p].d+=r['durus'+i]; pM[p].c++;}});});
-    const pl=Object.entries(pM).map(([p,v])=>({p, b:v.b, u:v.u, d:v.d, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
+    const pM={}; RAW.forEach(r=>{[1,2].forEach(i=>{const p=r['pres'+i]; if(p){if(!pM[p])pM[p]={b:0,u:0,pp:[],d:0,c:0}; pM[p].b+=Number(r['beklenen'+i])||0; pM[p].u+=Number(r['uretim'+i])||0; if(r['perf'+i])pM[p].pp.push(Number(r['perf'+i])); pM[p].d+=Number(r['durus'+i])||0; pM[p].c++;}});});
+    const pl=Object.entries(pM).map(([p,v])=>({p, b:v.b, u:v.u, d:v.d, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b,0)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
     mc('p1','bar',{labels:pl.map(x=>x.p),datasets:[{label:'Üretim',data:pl.map(x=>x.u),backgroundColor:cR('accent',0.75)}]});
     $('th-pre').innerHTML=th(['Pres','Hedef (Adet)','Top.Üretim','Ort.Perf','Kayıt','Duruş (Dk)']);
     $('tb-pre').innerHTML=pl.map(x=>tr([`<b>${x.p}</b>`, n(x.b), n(x.u), pb(x.a), x.c, n(x.d)])).join('');
 }
 
 function rF(){
-    const fM={}; RAW.forEach(r=>{[1,2].forEach(i=>{const f=r['fason'+i]; if(f){if(!fM[f])fM[f]={b:0,u:0,pp:[],c:0}; fM[f].b+=r['beklenen'+i]; fM[f].u+=r['uretim'+i]; if(r['perf'+i])fM[f].pp.push(r['perf'+i]); fM[f].c++;}});});
-    const fl=Object.entries(fM).map(([f,v])=>({f, b:v.b, u:v.u, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
+    const fM={}; RAW.forEach(r=>{[1,2].forEach(i=>{const f=r['fason'+i]; if(f){if(!fM[f])fM[f]={b:0,u:0,pp:[],c:0}; fM[f].b+=Number(r['beklenen'+i])||0; fM[f].u+=Number(r['uretim'+i])||0; if(r['perf'+i])fM[f].pp.push(Number(r['perf'+i])); fM[f].c++;}});});
+    const fl=Object.entries(fM).map(([f,v])=>({f, b:v.b, u:v.u, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b,0)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
     mc('f1','bar',{labels:fl.slice(0,15).map(x=>x.f),datasets:[{label:'Üretim',data:fl.slice(0,15).map(x=>x.u),backgroundColor:cR('accent',0.75)}]},{idx:'y'});
     mc('f2','bar',{labels:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.f),datasets:[{label:'Perf %',data:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.a),backgroundColor:cR('accent4',0.75)}]},{idx:'y'});
     $('th-fas').innerHTML=th(['Fason','Hedef (Adet)','Top.Üretim','Ort.Perf','Kayıt']);
@@ -1385,16 +1383,17 @@ function exportRecsToPDF() {
 
 // FORM İŞLEMLERİ VE DOĞRULAMA
 function popF(){
-    const calisanSelect = $('f-calisan');
-    const vC = calisanSelect.value, vP1 = $('f-pres1').value, vP2 = $('f-pres2').value, vF1 = $('f-fason1').value, vF2 = $('f-fason2').value;
+    const calisanInput = $('f-calisan');
+    const vC = calisanInput.value, vP1 = $('f-pres1').value, vP2 = $('f-pres2').value, vF1 = $('f-fason1').value, vF2 = $('f-fason2').value;
 
     if (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') {
         const emps=[...new Set([...Object.keys(USER_DATA), ...SABIT_CALISANLAR, ...RAW.map(r=>r.calisan)])].filter(x=>x).sort();
-        calisanSelect.innerHTML='<option value="">Seçiniz...</option>'+emps.map(e=>`<option value="${e}">${e}</option>`).join('');
-        calisanSelect.disabled = false;
+        const dl = $('form-user-list');
+        if (dl) dl.innerHTML = emps.map(e=>`<option value="${e}">`).join('');
+        calisanInput.disabled = false;
     } else if (LOGGED_IN_USER) {
-        calisanSelect.innerHTML = `<option value="${LOGGED_IN_USER.name}" selected>${LOGGED_IN_USER.name}</option>`;
-        calisanSelect.disabled = true;
+        calisanInput.value = LOGGED_IN_USER.name;
+        calisanInput.disabled = true;
     }
 
     const presses=[...new Set([...SABIT_PRESLER, ...RAW.map(r=>r.pres1), ...RAW.map(r=>r.pres2)])].filter(x=>x).sort();
@@ -1406,7 +1405,7 @@ function popF(){
     const fOpts='<option value="">Yok/Seçiniz...</option>'+fasons.map(f=>`<option value="${f}">${f}</option>`).join('');
     $('f-fason1').innerHTML=fOpts; $('f-fason2').innerHTML=fOpts;
     
-    if(vC && LOGGED_IN_USER.role === 'admin') calisanSelect.value = vC;
+    if(vC && LOGGED_IN_USER.role === 'admin') calisanInput.value = vC;
     if(vP1) $('f-pres1').value = vP1;
     if(vP2) $('f-pres2').value = vP2;
     if(vF1) $('f-fason1').value = vF1;
@@ -2055,9 +2054,10 @@ function showLogin() {
         $('login-pass').disabled = false;
         if(Object.keys(USER_DATA).length > 0) {
             $('login-error').innerText = '';
-            let opts = '<option value="">Kullanıcı Seçiniz...</option>';
-            Object.keys(USER_DATA).sort().forEach(u => opts += `<option value="${u}">${u}</option>`);
-            $('login-user').innerHTML = opts;
+            let opts = '';
+            Object.keys(USER_DATA).sort().forEach(u => opts += `<option value="${u}">`);
+            const dl = $('user-list');
+            if(dl) dl.innerHTML = opts;
         } else {
             $('login-error').innerText = 'Kullanıcı listesi çekilemedi.';
         }
