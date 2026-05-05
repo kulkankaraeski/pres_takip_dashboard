@@ -753,7 +753,7 @@ const MALZEME_DOC_ID = '1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c';
 const matchMalz = MALZEME_DOC_ID.match(/\/d\/([a-zA-Z0-9-_]+)/);
 const extMalzemeId = matchMalz ? matchMalz[1] : MALZEME_DOC_ID;
 
-const URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
 const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
 const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Pres Malzeme Takip Listesi');
@@ -2021,6 +2021,7 @@ async function fetchUsers() {
                     else if (r.includes('üye') || r.includes('user')) role = 'user';
                 }
                 let photo = (photoIdx !== -1 && cols[photoIdx]) ? cols[photoIdx] : '';
+                if (photo && !photo.startsWith('http') && !photo.startsWith('data:')) photo = '';
                 
                 if (name) USER_DATA[name] = { pass: String(pass), role: role, photo: photo };
             }
@@ -2034,6 +2035,7 @@ async function fetchUsers() {
                     const sheetsPhoto = USER_DATA[k]?.photo; // Sheets'ten gelen fotoğrafı sakla
                     USER_DATA[k] = { ...USER_DATA[k], ...lu[k] };
                     if (sheetsPhoto) USER_DATA[k].photo = sheetsPhoto; // Sheets fotoğrafı her zaman kazanır
+                    if (USER_DATA[k].photo && !USER_DATA[k].photo.startsWith('http') && !USER_DATA[k].photo.startsWith('data:')) USER_DATA[k].photo = '';
                 }
             });
             
@@ -2358,7 +2360,7 @@ function fetchCSV(isBg = false) {
     }
     const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
     Promise.all([
-        getCSV(URL),
+        getCSV(SHEET_URL),
         getCSV(KALIP_URL).catch(()=>''),
         getCSV(DENEME_URL).catch(()=>''),
         getCSV(MALZEME_URL).catch(()=>''),
