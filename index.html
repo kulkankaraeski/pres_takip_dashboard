@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-512.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -843,7 +844,7 @@ function mc(id,t,d,o={}){
 function swT(t,el){
     cTab=t; 
     
-    const url = new URL(window.location);
+    const url = new URL(window.location.href);
     url.searchParams.set('tab', t);
     window.history.replaceState({}, '', url);
     
@@ -2052,6 +2053,7 @@ async function fetchUsers() {
                 const sheetsPhoto = USER_DATA[k]?.photo; // Sheets'ten gelen fotoğrafı sakla
                 USER_DATA[k] = { ...USER_DATA[k], ...lu[k] };
                 if (sheetsPhoto) USER_DATA[k].photo = sheetsPhoto; // Sheets fotoğrafı her zaman kazanır
+                if (USER_DATA[k].photo && !USER_DATA[k].photo.startsWith('http') && !USER_DATA[k].photo.startsWith('data:')) USER_DATA[k].photo = '';
             }
         });
         if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin";
