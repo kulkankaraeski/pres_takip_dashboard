@@ -39,7 +39,15 @@
         .emp-link:hover{color:#a8e063;text-decoration-color:#a8e063}
         
         /* Panel Görünümlü Navigasyon Butonları (Mobil Uyumlu) */
-        .nav-btn { flex: 1 1 auto; text-align: center; padding: 8px 12px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; font-size: 13px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease-in-out; border-width: 1px; white-space: nowrap; user-select: none; }
+        .nav-btn { flex: 1 1 auto; text-align: center; padding: 8px 12px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; font-size: 13px; border-radius: 6px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-width: 1px; white-space: nowrap; user-select: none; position: relative; overflow: hidden; }
+        .nav-btn:active { transform: scale(0.95); }
+        .nav-btn::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg); transition: left 0.5s ease-in-out; z-index: 1; pointer-events: none;
+        }
+        .nav-btn:hover::after { left: 150%; }
+        .nav-btn.nav-active { background-color: var(--accent) !important; color: var(--bg2) !important; border-color: var(--accent) !important; box-shadow: 0 4px 6px -1px rgba(var(--c-accent), 0.3), 0 2px 4px -1px rgba(var(--c-accent), 0.2) !important; }
         @media (max-width: 768px) { .nav-btn { font-size: 11px; padding: 6px 8px; flex-basis: 30%; } }
         
         /* Tablo Başlık Sabitleme & Renkler */
@@ -181,7 +189,7 @@
                 📊 GÜNLÜK RAPOR <span class="text-[10px]">▼</span>
             </button>
             <div class="absolute left-0 top-full mt-1 hidden flex-col bg-bg2 border border-border rounded shadow-2xl min-w-[200px] w-full md:w-auto overflow-hidden">
-                <div onclick="swT('gunluk',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-accent text-bg2 shadow-md w-full text-left">GÜNLÜK RAPOR</div>
+                <div onclick="swT('gunluk',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left nav-active">GÜNLÜK RAPOR</div>
                 <div onclick="swT('haftalik',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">HAFTALIK RAPOR</div>
                 <div onclick="swT('aylik',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">AYLIK RAPOR</div>
                 <div onclick="swT('genel',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">GENEL ÖZET</div>
@@ -840,12 +848,8 @@ function swT(t,el){
     window.history.replaceState({}, '', url);
     
     document.querySelectorAll('.panel').forEach(e=>{e.classList.remove('active','block');e.classList.add('hidden');});
-    document.querySelectorAll('.nav-tab').forEach(e=>{
-        e.classList.remove('bg-accent', 'text-bg2', 'border-accent', 'shadow-md');
-        e.classList.add('bg-bg3', 'text-text2', 'border-border', 'hover:bg-border', 'hover:text-text');
-    });
-    el.classList.remove('bg-bg3', 'text-text2', 'border-border', 'hover:bg-border', 'hover:text-text');
-    el.classList.add('bg-accent', 'text-bg2', 'border-accent', 'shadow-md');
+    document.querySelectorAll('.nav-tab').forEach(e => e.classList.remove('nav-active'));
+    if(el) el.classList.add('nav-active');
     
     const dropdownBtn = $('raporlar-btn');
     const dropdownMenu = dropdownBtn?.nextElementSibling;
