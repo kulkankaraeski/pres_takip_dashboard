@@ -865,7 +865,6 @@ function swT(t,el){
     const dropdownBtn = $('raporlar-btn');
     const dropdownMenu = dropdownBtn?.nextElementSibling;
     if (dropdownMenu) { dropdownMenu.classList.add('hidden'); dropdownMenu.classList.remove('flex'); }
-    if (dropdownBtn && el.closest('#nav-dropdown-raporlar')) {
     if (dropdownBtn && el && el.closest('#nav-dropdown-raporlar')) {
         dropdownBtn.innerHTML = '📊 ' + el.innerText + ' <span class="text-[10px]">▼</span>';
         dropdownBtn.classList.add('bg-accent/20', 'text-accent', 'border-accent');
