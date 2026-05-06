@@ -2016,7 +2016,13 @@ function sendChatMessage() {
     const now = new Date();
     const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
     
-    const payload = { action: "sendMessage", Tarih: timeStr, Kimden: LOGGED_IN_USER.name, Kime: currentChatPartner, Mesaj: msg };
+    const payload = { 
+        action: "addRecord", 
+        sheet: "Mesajlar", 
+        data: { "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": msg },
+        // Apps Script eski metotla okuma yapıyorsa diye yedek veriler:
+        "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": msg
+    };
     
     if(!MESAJ_RAW.r) MESAJ_RAW.r = [];
     MESAJ_RAW.r.push([timeStr, LOGGED_IN_USER.name, currentChatPartner, msg]);
@@ -2032,6 +2038,7 @@ function sendChatMessage() {
     const h = $('active-chat-history'); h.scrollTop = h.scrollHeight;
     
     fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+    .then(() => setTimeout(() => fetchCSV(true), 1000))
     .catch(() => {
         MESAJ_RAW.r.pop();
         renderChatHistory();
@@ -2413,7 +2420,13 @@ function sendNotif(e) {
     const now = new Date();
     const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
     
-    const payload = { action: "sendMessage", Tarih: timeStr, Kimden: LOGGED_IN_USER.name, Kime: targetUser, Mesaj: msg };
+    const payload = { 
+        action: "addRecord", 
+        sheet: "Mesajlar", 
+        data: { "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": targetUser, "Mesaj": msg },
+        // Apps Script eski metotla okuma yapıyorsa diye yedek veriler:
+        "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": targetUser, "Mesaj": msg
+    };
     fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
     
     toast(targetUser === 'GLOBAL' ? 'Herkese mesaj gönderildi.' : targetUser + ' kullanıcısına mesaj gönderildi.', 'ok'); 
