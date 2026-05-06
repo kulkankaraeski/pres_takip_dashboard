@@ -1231,10 +1231,12 @@ function rKayitlar() {
     }
 
     window._kayitlarData = DENEME_RAW; // filtre için sakla
-    renderKayitCards(DENEME_RAW.r);
+            // DOM şişmesini ve donmayı önlemek için orijinal indexleri koruyarak sadece son 100 kaydı göster
+            const mapped = DENEME_RAW.r.map((r, i) => ({ idx: i, data: r })).reverse();
+            renderKayitCards(mapped.slice(0, 100));
 }
 
-function renderKayitCards(rows) {
+        function renderKayitCards(items) {
     const container = $('kayit-list');
     if (!container) return;
 
@@ -1260,12 +1262,15 @@ function renderKayitCards(rows) {
     // Özet gösterim için ilk 4 temel sütun
     const summaryIdxs = basicIdxs.slice(0, 4);
 
-    if (!rows.length) {
+            if (!items.length) {
         container.innerHTML = '<div class="p-8 text-center text-text3 font-mono text-xs">Arama sonucu bulunamadı.</div>';
         return;
     }
 
-    container.innerHTML = rows.map((row, rowIdx) => {
+            container.innerHTML = items.map((item) => {
+                const rowIdx = item.idx;
+                const row = item.data;
+                
         const summaryHtml = summaryIdxs.map(i => {
             const val = row[i] || '';
             if (!val || val === '-') return '';
@@ -1315,7 +1320,7 @@ function renderKayitCards(rows) {
             </div>` : '';
 
         return `
-        <div class="kayit-card group" data-idx="${rowIdx}" data-search="${escapeHTML(row.join(' ').toLowerCase())}">
+        <div class="kayit-card group" data-idx="${rowIdx}">
             <!-- ÖZET SATIR (tıklanabilir) -->
             <div class="flex items-center justify-between px-3 md:px-4 py-2.5 cursor-pointer hover:bg-bg3/70 transition-colors select-none"
                  onclick="toggleKayitCard(this)">
@@ -1362,12 +1367,19 @@ function toggleKayitCard(headerEl) {
     }
 }
 
-function filterKayitlar(q) {
-    const f = q.toLowerCase().trim();
-    document.querySelectorAll('.kayit-card').forEach(card => {
-        const haystack = card.getAttribute('data-search') || '';
-        card.style.display = (!f || haystack.includes(f)) ? '' : 'none';
-    });
+        let kayitSearchTimeout;
+        function filterKayitlar(q) {
+            clearTimeout(kayitSearchTimeout);
+            kayitSearchTimeout = setTimeout(() => {
+                const f = q.toLowerCase().trim();
+                const mapped = DENEME_RAW.r.map((r, i) => ({ idx: i, data: r })).reverse();
+                if (!f) {
+                    renderKayitCards(mapped.slice(0, 100));
+                    return;
+                }
+                const filtered = mapped.filter(item => item.data.join(' ').toLowerCase().includes(f));
+                renderKayitCards(filtered.slice(0, 100));
+            }, 300);
 }
 
 function rMalzeme() {
