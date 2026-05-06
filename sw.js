@@ -35,12 +35,16 @@ self.addEventListener('fetch', event => {
     // Diğer statik dosyalar için "Ağ Öncelikli (Network First)" stratejisi.
     // Bu sayede uygulama dosyaları önbelleğe alınır, açılış hızı ciddi oranda artar.
     event.respondWith(
-        fetch(event.request)
-            .then(response => {
+        (async () => {
+            if (event.preloadResponse) {
+                const preloadRes = await event.preloadResponse;
+                if (preloadRes) return preloadRes;
+            }
+            return fetch(event.request).then(response => {
                 const responseClone = response.clone();
                 caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
                 return response;
-            })
-            .catch(() => caches.match(event.request).then(res => res || new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')))
+            }).catch(() => caches.match(event.request).then(res => res || new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')));
+        })()
     );
 });
