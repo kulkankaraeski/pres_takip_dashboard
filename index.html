@@ -734,6 +734,13 @@
         </div>
     </div>
 
+    <!-- YENİ: SESLİ ASİSTAN BUTONU -->
+    <button id="voice-assistant-btn" onclick="toggleVoiceAssistant()" class="fixed bottom-6 left-6 z-[9000] w-12 h-12 md:w-14 md:h-14 bg-accent hover:bg-accent/80 text-white rounded-full flex items-center justify-center shadow-2xl transition-transform transform hover:scale-110 border border-white/20">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 md:w-7 md:h-7">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+        </svg>
+    </button>
+
 <script>
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
@@ -2760,6 +2767,143 @@ async function saveGenericForm(e) {
 function editGenericRecord(idx, type) {
     closeGenericModal();
     setTimeout(() => openGenericFormModal(type, idx), 300);
+}
+
+// YENİ: SESLİ ASİSTAN MEKANİZMASI
+let recognition = null;
+let isListening = false;
+
+function initSpeechRecognition() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        toast('Tarayıcınız sesli asistanı desteklemiyor.', 'err');
+        return null;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'tr-TR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+        isListening = true;
+        $('voice-assistant-btn').classList.add('animate-pulse', 'bg-accent2');
+        $('voice-assistant-btn').classList.remove('bg-accent');
+        toast('Sizi dinliyorum...', 'ok');
+    };
+
+    recognition.onresult = (event) => {
+        const command = event.results[0][0].transcript.toLowerCase();
+        toast('Komut: ' + command, 'ok');
+        processVoiceCommand(command);
+    };
+
+    recognition.onerror = (event) => {
+        if(event.error !== 'no-speech') toast('Ses anlaşılamadı veya mikrofon izni yok.', 'err');
+    };
+
+    recognition.onend = () => {
+        isListening = false;
+        $('voice-assistant-btn').classList.remove('animate-pulse', 'bg-accent2');
+        $('voice-assistant-btn').classList.add('bg-accent');
+    };
+    return recognition;
+}
+
+function toggleVoiceAssistant() {
+    if(!recognition) { if(!initSpeechRecognition()) return; }
+    if(isListening) recognition.stop();
+    else recognition.start();
+}
+
+function speakText(text, onEndCallback = null) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'tr-TR';
+    if (onEndCallback) utterance.onend = onEndCallback;
+    window.speechSynthesis.speak(utterance);
+}
+
+let voiceState = 'idle';
+let tempVoiceData = {};
+
+function processVoiceCommand(command) {
+    // Form doldurma adımları için durum makinesi (State Machine)
+    if (voiceState === 'waiting_emp_name') {
+        // İsimdeki kelimelerin ilk harflerini büyük yap
+        tempVoiceData.name = command.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        voiceState = 'waiting_emp_pass';
+        speakText(`${tempVoiceData.name} için bir şifre söyleyin.`, () => {
+            setTimeout(() => { if(!isListening) { try { recognition.start(); } catch(e){} } }, 500);
+        });
+        return;
+    } else if (voiceState === 'waiting_emp_pass') {
+        // Şifredeki rakamları ayıkla
+        let pass = command.replace(/[^0-9]/g, '');
+        if (!pass) pass = '1234'; // Anlaşılamazsa varsayılan
+        tempVoiceData.pass = pass;
+        voiceState = 'idle';
+        speakText(`${tempVoiceData.name} isimli kullanıcı ${pass} şifresiyle kaydediliyor.`);
+        if (wakeWordEnabled) { $('voice-assistant-btn').classList.remove('animate-pulse', 'bg-accent2'); $('voice-assistant-btn').classList.add('bg-accent'); }
+        
+        // Formu programatik olarak doldur ve arka planda gönder
+        $('admin-u-name').value = tempVoiceData.name;
+        $('admin-u-pass').value = tempVoiceData.pass;
+        $('admin-u-role').value = 'user';
+        $('admin-u-photo').value = '';
+        saveUserObj({ preventDefault: () => {} });
+        return;
+    }
+
+    // Sesli işlem iptali mekanizması
+    if (command.includes('iptal') || command.includes('vazgeç') || command.includes('durdur')) {
+        if (voiceState !== 'idle') {
+            voiceState = 'idle';
+            tempVoiceData = {};
+            speakText('İşlem iptal edildi.');
+            if (wakeWordEnabled) { $('voice-assistant-btn').classList.remove('animate-pulse', 'bg-accent2'); $('voice-assistant-btn').classList.add('bg-accent'); }
+            return;
+        }
+    }
+
+    if(command.includes('rapor') || command.includes('günlük')) {
+        speakText('Günlük rapor açılıyor.');
+        const navEl = document.querySelector(`.nav-tab[onclick*="'gunluk'"]`);
+        if(navEl) swT('gunluk', navEl);
+    } else if(command.includes('form') || command.includes('veri gir')) {
+        speakText('Veri giriş formu açılıyor.');
+        const navEl = document.querySelector(`.nav-tab[onclick*="'form'"]`);
+        if(navEl) swT('form', navEl);
+    } else if(command.includes('karanlık') || command.includes('koyu')) {
+        if(document.documentElement.classList.contains('light-mode')) toggleTheme();
+        speakText('Karanlık moda geçildi.');
+    } else if(command.includes('aydınlık') || command.includes('ışık')) {
+        if(!document.documentElement.classList.contains('light-mode')) toggleTheme();
+        speakText('Aydınlık moda geçildi.');
+    } else if(command.includes('durum') || command.includes('özet') || command.includes('ne kadar')) {
+        if(RAW.length === 0) { speakText('Sistemde henüz veri yok.'); } else {
+            const todayData = RAW.filter(r => r.tarih === sD); const s = calc(todayData);
+            speakText(`Bugün toplam ${n(s.u)} adet üretim yapıldı. Ortalama performans yüzde ${s.p.toFixed(1)} ve toplam duruş süresi ${n(s.d)} dakika.`);
+        }
+    } else if(command.includes('çalışan ekle') || command.includes('personel ekle') || command.includes('kullanıcı ekle')) {
+        if(!LOGGED_IN_USER || LOGGED_IN_USER.role !== 'admin') {
+            speakText('Kullanıcı eklemek için yönetici yetkisine sahip olmalısınız.');
+            return;
+        }
+        const navEl = document.querySelector(`.nav-tab[onclick*="'admin'"]`);
+        if(navEl) swT('admin', navEl);
+        voiceState = 'waiting_emp_name';
+        tempVoiceData = {};
+        speakText('Yeni çalışanın adını ve soyadını söyler misiniz?', () => {
+            setTimeout(() => { if(!isListening) { try { recognition.start(); } catch(e){} } }, 500);
+        });
+    } else if(command.includes('çıkış')) { speakText('Çıkış yapılıyor. Görüşmek üzere.'); setTimeout(() => logout(), 2000); }
+    else { speakText('Anlamadım, lütfen komutu tekrar edin.'); }
+
+    if (wakeWordEnabled && voiceState === 'idle') {
+        $('voice-assistant-btn').classList.remove('animate-pulse', 'bg-accent2');
+        $('voice-assistant-btn').classList.add('bg-accent');
+    }
 }
 </script>
 </body>
