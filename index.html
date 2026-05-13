@@ -6,6 +6,7 @@
     <title>Pres Üretim Takip Dashboard</title>
     <meta name="theme-color" content="#121410">
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" id="dynamic-favicon" href="icon-512.png" type="image/png">
     <link rel="apple-touch-icon" href="icon-512.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -1396,18 +1397,18 @@ function rPlan() {
     const frame = $('plan-frame');
     if(frame && !frame.getAttribute('src')) {
         // rm=minimal parametresi Google E-Tabloların üst menülerini gizler, daha profesyonel görünür.
-        frame.setAttribute('src', "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/htmlembed?widget=true&headers=false");
+        frame.setAttribute('src', "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?rm=minimal");
     }
 }
 
 function toggleFullScreen(id) {
     const el = $(id);
     if (!document.fullscreenElement) {
-        if (el.requestFullscreen) { el.requestFullscreen(); }
+        if (el.requestFullscreen) { el.requestFullscreen().catch(e=>console.warn(e)); }
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
     } else {
-        if (document.exitFullscreen) { document.exitFullscreen(); }
+        if (document.exitFullscreen) { document.exitFullscreen().catch(e=>console.warn(e)); }
         else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
         else if (document.msExitFullscreen) { document.msExitFullscreen(); }
     }
@@ -2156,7 +2157,7 @@ async function saveProfileFromModal(e) {
     const pass = USER_DATA[name].pass;
     const role = USER_DATA[name].role;
     const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
-    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.error(err));
     USER_DATA[name].photo = photo;
     let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
     if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
@@ -2273,7 +2274,7 @@ function showLogin() {
         } else {
             $('login-error').innerText = 'Kullanıcı listesi çekilemedi.';
         }
-    });
+    }).catch(err => console.error('fetchUsers error:', err));
     
     fetchCSV(true); // Arka planda verileri gizlice çek (Giriş yapıldığında ekran hazır olsun)
 }
@@ -2628,7 +2629,7 @@ if(savedUser && savedUser !== "undefined") {
             applyRoleRestrictions();
             checkNotifs();
             fetchCSV();
-        });
+    }).catch(err => console.error('Auto login fetchUsers error:', err));
     } else {
         showLogin();
     }
@@ -2669,8 +2670,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
         installBtn.onclick = async () => {
             installBtn.classList.add('hidden');
             installBtn.classList.remove('flex');
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
+            if (!deferredPrompt) return;
+            try {
+                await deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+            } catch(err) {
+                console.warn('PWA prompt hatası:', err);
+            }
             deferredPrompt = null;
         };
     }
