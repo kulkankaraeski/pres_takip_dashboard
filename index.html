@@ -2772,6 +2772,8 @@ function editGenericRecord(idx, type) {
 // YENİ: SESLİ ASİSTAN MEKANİZMASI
 let recognition = null;
 let isListening = false;
+let wakeWordEnabled = false; // Kullanıcı butona basınca sürekli dinleme başlar
+let isAwake = false; // "Hey Yusuf" denildiğinde aktifleşme durumu
 
 function initSpeechRecognition() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -2781,38 +2783,96 @@ function initSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.lang = 'tr-TR';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    recognition.continuous = true; // Sesi kesmeden sürekli dinle
+    recognition.interimResults = true; // Anlık kelimeleri yakala
 
     recognition.onstart = () => {
         isListening = true;
-        $('voice-assistant-btn').classList.add('animate-pulse', 'bg-accent2');
-        $('voice-assistant-btn').classList.remove('bg-accent');
-        toast('Sizi dinliyorum...', 'ok');
+        updateVoiceUI();
+        if(!isAwake) toast('Asistan arka planda aktif. "Hey Yusuf" diyerek uyandırabilirsiniz.', 'ok');
     };
 
+    let lastCommandProcessed = 0;
+
     recognition.onresult = (event) => {
-        const command = event.results[0][0].transcript.toLowerCase();
-        toast('Komut: ' + command, 'ok');
-        processVoiceCommand(command);
+        let finalTranscript = '';
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+            else interimTranscript += event.results[i][0].transcript;
+        }
+
+        const currentText = (finalTranscript || interimTranscript).toLowerCase().trim();
+
+        if (!isAwake) {
+            // UYANDIRMA KELİMESİ KONTROLÜ (Interim ile anında tepki verir)
+            if (currentText.includes('hey yusuf') || currentText.includes('e yusuf')) {
+                isAwake = true;
+                updateVoiceUI();
+                speakText('Sizi dinliyorum, buyurun.');
+            }
+        } else {
+            // KOMUT İŞLEME (Sadece kullanıcı konuşmasını bitirince [final] çalışır)
+            if (finalTranscript) {
+                const now = Date.now();
+                if (now - lastCommandProcessed > 1500) { // Aynı komutu tekrar işlemesini engelle (Throttle)
+                    toast('Komut: ' + finalTranscript, 'ok');
+                    processVoiceCommand(finalTranscript.toLowerCase());
+                    lastCommandProcessed = now;
+                    isAwake = false; // Komutu aldıktan sonra tekrar uykuya geç
+                    updateVoiceUI();
+                }
+            }
+        }
     };
 
     recognition.onerror = (event) => {
-        if(event.error !== 'no-speech') toast('Ses anlaşılamadı veya mikrofon izni yok.', 'err');
+        if(event.error !== 'no-speech') console.warn('Ses tanıma hatası:', event.error);
+        if(event.error === 'not-allowed') wakeWordEnabled = false;
     };
 
     recognition.onend = () => {
-        isListening = false;
-        $('voice-assistant-btn').classList.remove('animate-pulse', 'bg-accent2');
-        $('voice-assistant-btn').classList.add('bg-accent');
+        if (wakeWordEnabled && isListening) {
+            // Google Chrome timeout süresini bypass etmek için yeniden başlat
+            setTimeout(() => { try { recognition.start(); } catch(e){} }, 500);
+        } else {
+            isListening = false;
+            isAwake = false;
+            updateVoiceUI();
+        }
     };
     return recognition;
 }
 
+function updateVoiceUI() {
+    const btn = $('voice-assistant-btn');
+    if (!btn) return;
+    if (isAwake) {
+        btn.classList.add('animate-pulse', 'bg-accent2', 'scale-110');
+        btn.classList.remove('bg-accent');
+        btn.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.8)'; // Uyandığında kırmızı parlama
+    } else if (isListening) {
+        btn.classList.add('bg-accent');
+        btn.classList.remove('animate-pulse', 'bg-accent2', 'scale-110');
+        btn.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.6)'; // Dinlemedeyken mavi parlama
+    } else {
+        btn.classList.add('bg-accent');
+        btn.classList.remove('animate-pulse', 'bg-accent2', 'scale-110');
+        btn.style.boxShadow = 'none';
+    }
+}
+
 function toggleVoiceAssistant() {
     if(!recognition) { if(!initSpeechRecognition()) return; }
-    if(isListening) recognition.stop();
-    else recognition.start();
+    if(isListening) {
+        wakeWordEnabled = false;
+        isListening = false;
+        recognition.stop();
+        toast('Sesli asistan kapatıldı.', 'warn');
+    } else {
+        wakeWordEnabled = true;
+        recognition.start();
+    }
 }
 
 function speakText(text, onEndCallback = null) {
@@ -2828,23 +2888,17 @@ let voiceState = 'idle';
 let tempVoiceData = {};
 
 function processVoiceCommand(command) {
-    // Form doldurma adımları için durum makinesi (State Machine)
     if (voiceState === 'waiting_emp_name') {
-        // İsimdeki kelimelerin ilk harflerini büyük yap
         tempVoiceData.name = command.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         voiceState = 'waiting_emp_pass';
-        speakText(`${tempVoiceData.name} için bir şifre söyleyin.`, () => {
-            setTimeout(() => { if(!isListening) { try { recognition.start(); } catch(e){} } }, 500);
-        });
+        speakText(`${tempVoiceData.name} için bir şifre söyleyin.`);
         return;
     } else if (voiceState === 'waiting_emp_pass') {
-        // Şifredeki rakamları ayıkla
         let pass = command.replace(/[^0-9]/g, '');
         if (!pass) pass = '1234'; // Anlaşılamazsa varsayılan
         tempVoiceData.pass = pass;
         voiceState = 'idle';
         speakText(`${tempVoiceData.name} isimli kullanıcı ${pass} şifresiyle kaydediliyor.`);
-        if (wakeWordEnabled) { $('voice-assistant-btn').classList.remove('animate-pulse', 'bg-accent2'); $('voice-assistant-btn').classList.add('bg-accent'); }
         
         // Formu programatik olarak doldur ve arka planda gönder
         $('admin-u-name').value = tempVoiceData.name;
@@ -2855,54 +2909,127 @@ function processVoiceCommand(command) {
         return;
     }
 
-    // Sesli işlem iptali mekanizması
     if (command.includes('iptal') || command.includes('vazgeç') || command.includes('durdur')) {
         if (voiceState !== 'idle') {
             voiceState = 'idle';
             tempVoiceData = {};
             speakText('İşlem iptal edildi.');
-            if (wakeWordEnabled) { $('voice-assistant-btn').classList.remove('animate-pulse', 'bg-accent2'); $('voice-assistant-btn').classList.add('bg-accent'); }
             return;
         }
     }
 
-    if(command.includes('rapor') || command.includes('günlük')) {
-        speakText('Günlük rapor açılıyor.');
-        const navEl = document.querySelector(`.nav-tab[onclick*="'gunluk'"]`);
-        if(navEl) swT('gunluk', navEl);
-    } else if(command.includes('form') || command.includes('veri gir')) {
-        speakText('Veri giriş formu açılıyor.');
-        const navEl = document.querySelector(`.nav-tab[onclick*="'form'"]`);
-        if(navEl) swT('form', navEl);
-    } else if(command.includes('karanlık') || command.includes('koyu')) {
-        if(document.documentElement.classList.contains('light-mode')) toggleTheme();
-        speakText('Karanlık moda geçildi.');
-    } else if(command.includes('aydınlık') || command.includes('ışık')) {
-        if(!document.documentElement.classList.contains('light-mode')) toggleTheme();
-        speakText('Aydınlık moda geçildi.');
-    } else if(command.includes('durum') || command.includes('özet') || command.includes('ne kadar')) {
+    let handled = false;
+
+    // 1. Durum ve Özet Komutu
+    if (command.includes('durum') || command.includes('özet') || command.includes('ne kadar üret') || command.includes('ne yaptık')) {
         if(RAW.length === 0) { speakText('Sistemde henüz veri yok.'); } else {
             const todayData = RAW.filter(r => r.tarih === sD); const s = calc(todayData);
             speakText(`Bugün toplam ${n(s.u)} adet üretim yapıldı. Ortalama performans yüzde ${s.p.toFixed(1)} ve toplam duruş süresi ${n(s.d)} dakika.`);
         }
-    } else if(command.includes('çalışan ekle') || command.includes('personel ekle') || command.includes('kullanıcı ekle')) {
-        if(!LOGGED_IN_USER || LOGGED_IN_USER.role !== 'admin') {
-            speakText('Kullanıcı eklemek için yönetici yetkisine sahip olmalısınız.');
-            return;
-        }
-        const navEl = document.querySelector(`.nav-tab[onclick*="'admin'"]`);
-        if(navEl) swT('admin', navEl);
-        voiceState = 'waiting_emp_name';
-        tempVoiceData = {};
-        speakText('Yeni çalışanın adını ve soyadını söyler misiniz?', () => {
-            setTimeout(() => { if(!isListening) { try { recognition.start(); } catch(e){} } }, 500);
-        });
-    } else if(command.includes('çıkış')) { speakText('Çıkış yapılıyor. Görüşmek üzere.'); setTimeout(() => logout(), 2000); }
-    else { speakText('Anlamadım, lütfen komutu tekrar edin.'); }
+        handled = true;
+    }
 
-    if (wakeWordEnabled && voiceState === 'idle') {
-        $('voice-assistant-btn').classList.remove('animate-pulse', 'bg-accent2');
-        $('voice-assistant-btn').classList.add('bg-accent');
+    // 2. Gelişmiş Arama & Filtreleme (Fason ve Üretim Takip)
+    if (!handled && (command.includes('üretim takip') || command.includes('denemelerini') || command.includes('denemesi'))) {
+        let searchTerm = '';
+        const match = command.match(/(.*?)\s+(fason|fasonu|fasonunun|kalıbı|kalıbının|için)/);
+        if (match && match[1]) {
+            searchTerm = match[1].trim();
+        } else {
+            // Eğer regex bulamazsa baştaki ilk kelimeyi almaya çalış
+            const words = command.split(' ');
+            if (words.length > 0 && !['bana','şu','bu','geçmiş'].includes(words[0])) searchTerm = words[0];
+        }
+
+        speakText((searchTerm ? searchTerm + ' fasonu için ' : '') + 'Üretim takip denemeleri açılıyor.');
+        const navEl = document.querySelector(`.nav-tab[onclick*="'kayitlar'"]`);
+        if (navEl) swT('kayitlar', navEl);
+        
+        if (searchTerm) {
+            setTimeout(() => {
+                const searchBox = $('kayit-search');
+                if (searchBox) {
+                    searchBox.value = searchTerm;
+                    filterKayitlar(searchTerm);
+                }
+            }, 500);
+        }
+        handled = true;
+    }
+
+    // 3. Çalışan / Form Detayı (Örn: "Ahmet in verisini göster")
+    if (!handled) {
+        const users = Object.keys(USER_DATA);
+        let matchedUser = users.find(u => {
+            const firstName = u.toLowerCase().split(' ')[0];
+            return command.includes(firstName);
+        });
+
+        if (matchedUser && (command.includes('göster') || command.includes('formunu') || command.includes('verisini') || command.includes('ne yapmış') || command.includes('detay'))) {
+            // Söylenen çalışanın detay modalını aç (Geçmiş tüm formu/tarihleri içinde listelenir)
+            speakText(`${matchedUser} isimli çalışanın geçmiş formları ve performans detayları açılıyor.`);
+            openModal(matchedUser); 
+            handled = true;
+        }
+    }
+    
+    // 4. Sayfa Yönlendirmeleri (Navigasyon)
+    if (!handled) {
+        const pages = [
+            { kw: ['malzeme takip', 'malzemeleri'], tab: 'malzeme', name: 'Pres Malzeme Takip' },
+            { kw: ['kalıphane', 'kalıpları'], tab: 'kaliphane', name: 'Kalıphane' },
+            { kw: ['üretim planı', 'planı göster'], tab: 'plan', name: 'Üretim Planı' },
+            { kw: ['alarm', 'uyarıları'], tab: 'alarm', name: 'Alarmlar' },
+            { kw: ['fason listesi', 'fason detay'], tab: 'fason', name: 'Fason Detay' },
+            { kw: ['presler', 'makineler', 'pres makine'], tab: 'pres', name: 'Pres Makineleri' },
+            { kw: ['çalışanlar', 'personel listesi', 'çalışan performans'], tab: 'calisan', name: 'Çalışan Performansı' },
+            { kw: ['genel özet', 'tüm veriler'], tab: 'genel', name: 'Genel Özet' },
+            { kw: ['aylık rapor', 'bu ay'], tab: 'aylik', name: 'Aylık Rapor' },
+            { kw: ['haftalık rapor', 'bu hafta'], tab: 'haftalik', name: 'Haftalık Rapor' },
+            { kw: ['günlük rapor', 'bugün'], tab: 'gunluk', name: 'Günlük Rapor' },
+            { kw: ['veri gir', 'form aç', 'kayıt gir'], tab: 'form', name: 'Veri Giriş Formu' }
+        ];
+        for (let p of pages) {
+            if (p.kw.some(k => command.includes(k))) {
+                speakText(`${p.name} sayfası açılıyor.`);
+                const navEl = document.querySelector(`.nav-tab[onclick*="'${p.tab}'"]`);
+                if (navEl) swT(p.tab, navEl);
+                handled = true;
+                break;
+            }
+        }
+    }
+
+    // 5. Diğer Aksiyonlar (Çalışan Ekleme, Tema, Çıkış)
+    if (!handled) {
+        if (command.includes('çalışan ekle') || command.includes('personel ekle') || command.includes('kullanıcı ekle')) {
+            if(!LOGGED_IN_USER || LOGGED_IN_USER.role !== 'admin') {
+                speakText('Kullanıcı eklemek için yönetici yetkisine sahip olmalısınız.');
+                return;
+            }
+            const navEl = document.querySelector(`.nav-tab[onclick*="'admin'"]`);
+            if(navEl) swT('admin', navEl);
+            voiceState = 'waiting_emp_name';
+            tempVoiceData = {};
+            speakText('Yeni çalışanın adını ve soyadını söyler misiniz?');
+            handled = true;
+        } else if (command.includes('karanlık') || command.includes('koyu')) {
+            if(!document.documentElement.classList.contains('light-mode')) toggleTheme();
+            speakText('Karanlık moda geçildi.');
+            handled = true;
+        } else if (command.includes('aydınlık') || command.includes('ışık')) {
+            if(document.documentElement.classList.contains('light-mode')) toggleTheme();
+            speakText('Aydınlık moda geçildi.');
+            handled = true;
+        } else if (command.includes('çıkış')) { 
+            speakText('Çıkış yapılıyor. Görüşmek üzere.'); 
+            setTimeout(() => logout(), 2000); 
+            handled = true;
+        }
+    }
+    
+    if (!handled) {
+        speakText('Anlamadım, komutu tekrar edebilir veya daha belirgin kelimeler kullanabilirsiniz.');
     }
 }
 </script>
