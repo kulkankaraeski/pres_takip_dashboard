@@ -2809,7 +2809,6 @@ function initSpeechRecognition() {
             if (currentText.includes('hey yusuf') || currentText.includes('e yusuf')) {
                 isAwake = true;
                 updateVoiceUI();
-                speakText('Sizi dinliyorum, buyurun.');
             }
         } else {
             // KOMUT İŞLEME (Sadece kullanıcı konuşmasını bitirince [final] çalışır)
@@ -2865,12 +2864,19 @@ function updateVoiceUI() {
 function toggleVoiceAssistant() {
     if(!recognition) { if(!initSpeechRecognition()) return; }
     if(isListening) {
-        wakeWordEnabled = false;
-        isListening = false;
-        recognition.stop();
-        toast('Sesli asistan kapatıldı.', 'warn');
+        if(!isAwake) {
+            isAwake = true; // Arka planda uyuyorsa, butona tıklayınca hemen uyanır
+            updateVoiceUI();
+        } else {
+            wakeWordEnabled = false;
+            isListening = false;
+            isAwake = false;
+            recognition.stop();
+            toast('Sesli asistan kapatıldı.', 'warn');
+        }
     } else {
         wakeWordEnabled = true;
+        isAwake = true; // Sisteme ilk basıldığında da direkt uyanık (komut bekler) modda başlar
         recognition.start();
     }
 }
