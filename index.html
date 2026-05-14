@@ -2077,8 +2077,6 @@ function sendChatMessage(directMsg = null) {
     const payload = { 
         action: "addRecord", 
         sheet: "Mesajlar", 
-        data: { "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": finalMsg },
-        // Apps Script eski metotla okuma yapıyorsa diye yedek veriler:
         "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": finalMsg
     };
     
@@ -2577,8 +2575,6 @@ function sendNotif(e) {
     const payload = { 
         action: "addRecord", 
         sheet: "Mesajlar", 
-        data: { "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": targetUser, "Mesaj": msg },
-        // Apps Script eski metotla okuma yapıyorsa diye yedek veriler:
         "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": targetUser, "Mesaj": msg
     };
     fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
