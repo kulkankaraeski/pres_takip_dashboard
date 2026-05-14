@@ -1827,9 +1827,33 @@ document.addEventListener('visibilitychange', () => {
     if (!document.hidden) { document.title = ORIGINAL_TITLE; drawFaviconBadge(false); }
 });
 
+// YENİ: BİLDİRİM SESİ ÜRETİCİSİ (Web Audio API)
+function playBeepSound() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine'; // Düz ve zarif bir ton (sine)
+        osc.frequency.setValueAtTime(800, ctx.currentTime); // 800 Hz frekansı
+        gain.gain.setValueAtTime(0.1, ctx.currentTime); // %10 Ses seviyesi (rahatsız etmez)
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15); // Hızlıca sönümlenir (Dıt)
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+    } catch(e) { console.warn("Ses çalınamadı", e); }
+}
+
 function openNotifModal() {
     if(!LOGGED_IN_USER) return;
     
+    playBeepSound(); // Bildirim penceresi açıldığında DIT sesini çal
+
     if(LOGGED_IN_USER.role === 'admin') { if($('btn-notif-sheet')) $('btn-notif-sheet').classList.remove('hidden'); }
     
     const myU = USER_DATA[LOGGED_IN_USER.name] || {};
@@ -1972,6 +1996,14 @@ function renderChatHistory() {
     const deletedStates = safeJSON(localStorage.getItem('chatDeletedStates_' + myName), {});
     const hideUpTo = deletedStates[currentChatPartner] || -1;
 
+    // Akıllı Okundu Bilgisi için karşı tarafın yazdığı son mesajın sırasını bul
+    let lastPartnerMsgIdx = -1;
+    if (MESAJ_RAW.r) {
+        MESAJ_RAW.r.forEach((r, idx) => {
+            if (r[1] === currentChatPartner) lastPartnerMsgIdx = idx;
+        });
+    }
+
     if (MESAJ_RAW.r) {
         MESAJ_RAW.r.forEach((r, idx) => {
             if(idx < hideUpTo) return; 
@@ -1987,17 +2019,34 @@ function renderChatHistory() {
                     lastDateStr = dateOnly;
                 }
 
+                let displayMsg = escapeHTML(msg);
+                // Eğer mesaj bir medya dosyası ise çözümle (Görüntü veya Ses)
+                if (msg.startsWith('[MEDIA:')) {
+                    const closingBracket = msg.indexOf(']');
+                    if(closingBracket > -1) {
+                        const mimeType = msg.substring(7, closingBracket);
+                        const b64 = msg.substring(closingBracket + 1);
+                        if (mimeType.startsWith('image/')) {
+                            displayMsg = `<img src="${b64}" class="max-w-full max-h-48 rounded-lg mt-1 border border-border/50 cursor-pointer object-contain" onclick="window.open('${b64}')">`;
+                        } else if (mimeType.startsWith('audio/')) {
+                            displayMsg = `<audio controls src="${b64}" class="max-w-[200px] mt-1 h-8 outline-none"></audio>`;
+                        }
+                    }
+                }
+
                 const isMe = from === myName;
+                // Mesaj sırası, karşı tarafın son mesajından önceyse %100 okunmuştur (Yeşil Tik)
+                const isRead = idx < lastPartnerMsgIdx;
                 const bubbleClass = isMe ? 'bg-accent/20 border border-accent/30 text-text rounded-tr-none' : 'bg-bg3 border border-border text-text rounded-tl-none';
                 const alignClass = isMe ? 'items-end' : 'items-start';
                 const senderNameHtml = (!isMe && currentChatPartner === 'GLOBAL') ? `<span class="text-[10px] font-bold text-accent mb-1">${escapeHTML(from)}</span>` : '';
-                const readIcon = isMe ? `<span class="ml-1 text-[10px] text-accent4 font-bold">✓✓</span>` : '';
+                const readIcon = isMe ? `<span class="ml-1 text-[10.5px] ${isRead ? 'text-accent4' : 'text-text3'} font-bold tracking-tighter">✓✓</span>` : '';
 
                 html += `
                 <div class="flex flex-col ${alignClass} w-full mb-1.5 px-1 md:px-4">
                     <div class="${bubbleClass} rounded-xl p-2.5 max-w-[90%] md:max-w-[70%] shadow-sm relative flex flex-col group min-w-[80px]">
                         ${senderNameHtml}
-                        <p class="text-xs md:text-[13px] leading-snug whitespace-pre-wrap break-words">${escapeHTML(msg)}</p>
+                        <div class="text-xs md:text-[13px] leading-snug whitespace-pre-wrap break-words">${displayMsg}</div>
                         <div class="flex justify-end items-center mt-1 ml-4 self-end">
                             <span class="text-[9px] text-text3 leading-none">${timeOnly}</span>
                             ${readIcon}
@@ -2017,9 +2066,10 @@ function closeNotifModal() {
     setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
 }
 
-function sendChatMessage() {
+function sendChatMessage(directMsg = null) {
     const input = $('chat-msg-input'); const msg = input.value.trim();
-    if(!msg || !currentChatPartner) return;
+    const finalMsg = (typeof directMsg === 'string') ? directMsg : msg;
+    if(!finalMsg || !currentChatPartner) return;
     
     const now = new Date();
     const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
@@ -2027,15 +2077,17 @@ function sendChatMessage() {
     const payload = { 
         action: "addRecord", 
         sheet: "Mesajlar", 
-        data: { "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": msg },
+        data: { "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": finalMsg },
         // Apps Script eski metotla okuma yapıyorsa diye yedek veriler:
-        "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": msg
+        "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": finalMsg
     };
     
     if(!MESAJ_RAW.r) MESAJ_RAW.r = [];
-    MESAJ_RAW.r.push([timeStr, LOGGED_IN_USER.name, currentChatPartner, msg]);
+    MESAJ_RAW.r.push([timeStr, LOGGED_IN_USER.name, currentChatPartner, finalMsg]);
     
-    input.value = ''; input.style.height = 'auto';
+    if (typeof directMsg !== 'string') {
+        input.value = ''; input.style.height = 'auto';
+    }
     
     const myName = LOGGED_IN_USER.name;
     const readStates = safeJSON(localStorage.getItem('chatReadStates_' + myName), {});
@@ -2053,6 +2105,100 @@ function sendChatMessage() {
         renderChatList();
         toast('Mesaj gönderilemedi. Bağlantıyı kontrol edin.', 'err');
     });
+}
+
+// YENİ: Medya (Resim/Ses) İşleme (Google Sheets hücresine sığması için aşırı sıkıştırma uygulanır)
+function handleChatFileUpload(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        let dataUrl = event.target.result;
+        if(file.type.startsWith('image/')) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 400; 
+                let width = img.width; let height = img.height;
+                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                dataUrl = canvas.toDataURL('image/jpeg', 0.5); // Sert Sıkıştırma
+                
+                if (dataUrl.length > 48000) { toast('Görüntü çok büyük, daha düşük çözünürlüklü bir fotoğraf seçin.', 'err'); return; }
+                sendMediaMessage(dataUrl, 'image/jpeg');
+            }
+            img.src = dataUrl;
+        } else if (file.type.startsWith('audio/')) {
+            if (dataUrl.length > 48000) { toast('Ses dosyası Google Sheets limitini aşıyor. Maksimum 3-4 saniyelik ses gönderebilirsiniz.', 'err'); return; }
+            sendMediaMessage(dataUrl, file.type);
+        } else {
+            toast('Sadece resim veya kısa ses dosyaları desteklenir.', 'warn');
+        }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+}
+
+function sendMediaMessage(base64Data, mimeType) {
+    const msg = `[MEDIA:${mimeType}]${base64Data}`;
+    sendChatMessage(msg);
+}
+
+// YENİ: BAS-KONUŞ SİSTEMİ MANTIĞI
+let chatAudioRecorder = null;
+let chatAudioChunks = [];
+let isChatRecording = false;
+let chatRecordTimeout = null;
+
+async function startChatVoiceRecord(e) {
+    if (e.cancelable) e.preventDefault(); // Telefonda basılı tutarken ekranın kaymasını önler
+    if (isChatRecording) return;
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        chatAudioRecorder = new MediaRecorder(stream);
+        chatAudioChunks = [];
+        
+        chatAudioRecorder.ondataavailable = event => { if (event.data.size > 0) chatAudioChunks.push(event.data); };
+        
+        chatAudioRecorder.onstop = () => {
+            stream.getTracks().forEach(track => track.stop()); // Mikrofonu kapat
+            if (chatAudioChunks.length > 0 && isChatRecording) {
+                const audioBlob = new Blob(chatAudioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const b64 = reader.result;
+                    if (b64.length > 48000) toast('Kayıt çok uzun. Lütfen en fazla 3-4 saniyelik ses gönderin.', 'err');
+                    else sendMediaMessage(b64, 'audio/webm');
+                };
+            }
+            isChatRecording = false;
+            $('btn-chat-mic').classList.remove('bg-accent2', 'text-white', 'animate-pulse');
+            $('btn-chat-mic').classList.add('bg-bg2', 'text-text2');
+            $('chat-msg-input').placeholder = "Mesajınızı yazın...";
+        };
+        
+        chatAudioRecorder.start();
+        isChatRecording = true;
+        
+        $('btn-chat-mic').classList.add('bg-accent2', 'text-white', 'animate-pulse');
+        $('btn-chat-mic').classList.remove('bg-bg2', 'text-text2');
+        $('chat-msg-input').placeholder = "🎤 Kaydediliyor... (Bırakarak Gönder)";
+        
+        // Google Sheets limitine takılmaması için otomatik süre sonlandırıcı (4.5 Saniye)
+        chatRecordTimeout = setTimeout(() => { if(isChatRecording) stopChatVoiceRecord(); }, 4500);
+        
+    } catch (err) { toast('Mikrofon erişimine izin verilmedi.', 'err'); }
+}
+
+function stopChatVoiceRecord(e) { if (e && e.cancelable) e.preventDefault(); if (!isChatRecording || !chatAudioRecorder) return; clearTimeout(chatRecordTimeout); chatAudioRecorder.stop(); }
+
+function cancelChatVoiceRecord(e) {
+    if (e && e.cancelable) e.preventDefault(); if (!isChatRecording || !chatAudioRecorder) return;
+    isChatRecording = false; chatAudioRecorder.stop(); toast('Ses kaydı iptal edildi.', 'warn');
 }
 
 function showNewChatSelector() {
@@ -2935,35 +3081,146 @@ function processVoiceCommand(command) {
         handled = true;
     }
 
-    // 2. Gelişmiş Arama & Filtreleme (Fason ve Üretim Takip)
-    if (!handled && (command.includes('üretim takip') || command.includes('denemelerini') || command.includes('denemesi'))) {
-        let searchTerm = '';
-        const match = command.match(/(.*?)\s+(fason|fasonu|fasonunun|kalıbı|kalıbının|için)/);
-        if (match && match[1]) {
-            searchTerm = match[1].trim();
+    // 2. Akıllı Sayfa Yönlendirmesi ve Tablo Filtreleme (NLP Mantığı)
+    // 2. Akıllı Form Doldurma (NLP ile Tek Cümlede Veri Girişi)
+    // Örn: "Ahmet dün sabah vardiyasında pres 1'de 5000 adet üretti ve 20 dakika duruş yaptı"
+    let isFormFill = command.includes('üretti') || command.includes('adet') || command.includes('duruş yaptı') || command.includes('formu doldur');
+    if (!handled && isFormFill) {
+        let formEmp = null, formShift = '', formPres = '', formUretim = '', formDurus = '', formTarih = '';
+        
+        // 1- Çalışan Çıkarımı
+        const users = Object.keys(USER_DATA);
+        formEmp = users.find(u => command.includes(u.toLowerCase())); // Tam isim eşleşmesi
+        if (!formEmp) formEmp = users.find(u => command.includes(u.toLowerCase().split(' ')[0])); // Sadece ilk isim
+        
+        // 2- Vardiya Çıkarımı
+        if (command.includes('sabah') || command.includes('08:00') || command.includes('sekiz')) formShift = '08:00-16:00';
+        else if (command.includes('akşam') || command.includes('16:00') || command.includes('on altı')) formShift = '16:00-24:00';
+        else if (command.includes('gece') || command.includes('00:00') || command.includes('sıfır')) formShift = '00:00-08:00';
+
+        // 3- Pres Makinesi Çıkarımı
+        let presMatch = command.match(/pres\s*(\d+)/);
+        if (presMatch) formPres = `PRES ${presMatch[1]}`;
+
+        // 4- Üretim Sayısı Çıkarımı (Örn: "5000 adet", "5 bin adet")
+        let uretimMatch = command.match(/(\d+)\s*(bin\s*)?(adet|tane|üretti|üretim)/);
+        if (uretimMatch) {
+            formUretim = uretimMatch[1];
+            if (uretimMatch[2]) formUretim += '000'; // "5 bin" dendiğinde sıfırları tamamla
         } else {
-            // Eğer regex bulamazsa baştaki ilk kelimeyi almaya çalış
-            const words = command.split(' ');
-            if (words.length > 0 && !['bana','şu','bu','geçmiş'].includes(words[0])) searchTerm = words[0];
+            let numbers = command.match(/\b\d{3,}\b/); // Başka kelime bulamazsa 3 haneden büyük ilk sayıyı al
+            if (numbers) formUretim = numbers[0];
         }
 
-        speakText((searchTerm ? searchTerm + ' fasonu için ' : '') + 'Üretim takip denemeleri açılıyor.');
-        const navEl = document.querySelector(`.nav-tab[onclick*="'kayitlar'"]`);
-        if (navEl) swT('kayitlar', navEl);
-        
-        if (searchTerm) {
+        // 5- Duruş Süresi Çıkarımı
+        let durusMatch = command.match(/(\d+)\s*(dakika|dk|duruş|durdu)/);
+        if (durusMatch) formDurus = durusMatch[1];
+
+        // 6- Tarih Çıkarımı (Dün)
+        if (command.includes('dün')) {
+            let d = new Date();
+            d.setDate(d.getDate() - 1);
+            formTarih = d.toISOString().split('T')[0];
+        } // "Bugün" demeye gerek yok, sistem otomatik bugünü atar
+
+        // Eğer yakalanan geçerli veriler varsa işlemi başlat
+        if (formEmp || formShift || formPres || formUretim) {
+            speakText('Anladığım veriler forma işleniyor. Lütfen kontrol edip kaydet butonuna basın.');
+            const navEl = document.querySelector(`.nav-tab[onclick*="'form'"]`);
+            if (navEl) swT('form', navEl);
+
             setTimeout(() => {
-                const searchBox = $('kayit-search');
-                if (searchBox) {
-                    searchBox.value = searchTerm;
-                    filterKayitlar(searchTerm);
+                popF(); // Form listelerini ve tarihini hazırla
+                if (formTarih) $('f-tarih').value = formTarih;
+                if (formEmp) $('f-calisan').value = formEmp;
+                if (formShift) $('f-vardiya').value = formShift;
+                if (formPres) {
+                    const presSelect = $('f-pres1');
+                    if (!Array.from(presSelect.options).some(o => o.value === formPres)) presSelect.add(new Option(formPres, formPres));
+                    presSelect.value = formPres;
                 }
-            }, 500);
+                if (formUretim) $('f-uretim1').value = formUretim;
+                if (formDurus) $('f-durus1').value = formDurus;
+                
+                checkDuplicate(); // Mükerrer kayıt var mı diye kontrol mekanizmasını tetikle
+            }, 600);
+            handled = true;
         }
-        handled = true;
+    }
+
+    // 3. Akıllı Sayfa Yönlendirmesi ve Tablo Filtreleme (NLP Mantığı)
+    if (!handled) {
+        const pageDictionary = [
+            { tab: 'kayitlar', name: 'Üretim Takip Denemeleri', kw: ['üretim takip', 'deneme', 'kayıtlar'], isSpecial: true },
+            { tab: 'malzeme', name: 'Pres Malzeme Takip', kw: ['malzeme'], filterTb: 'tb-malzeme' },
+            { tab: 'kaliphane', name: 'Kalıphane', kw: ['kalıphane', 'kalıp'], filterTb: 'tb-kalip' },
+            { tab: 'fason', name: 'Fason Detay', kw: ['fason'], filterTb: 'tb-fas' },
+            { tab: 'pres', name: 'Pres Makineleri', kw: ['presler', 'makine', 'tezgah', 'pres'], filterTb: 'tb-pre' },
+            { tab: 'calisan', name: 'Çalışan Performansı', kw: ['personel', 'çalışanlar', 'işçi'], filterTb: 'tb-cal' },
+            { tab: 'plan', name: 'Üretim Planı', kw: ['üretim planı', 'plan'], filterTb: null },
+            { tab: 'alarm', name: 'Alarmlar', kw: ['alarm', 'uyarı', 'analiz'], filterTb: null },
+            { tab: 'genel', name: 'Genel Özet', kw: ['genel özet', 'tüm veriler'], filterTb: null },
+            { tab: 'aylik', name: 'Aylık Rapor', kw: ['aylık rapor', 'bu ay', 'aylık'], filterTb: 'tb-ay' },
+            { tab: 'haftalik', name: 'Haftalık Rapor', kw: ['haftalık rapor', 'bu hafta', 'haftalık'], filterTb: 'tb-haf' },
+            { tab: 'gunluk', name: 'Günlük Rapor', kw: ['günlük rapor', 'bugün', 'günlük'], filterTb: 'tb-gun' },
+            { tab: 'form', name: 'Veri Giriş Formu', kw: ['veri gir', 'form aç', 'kayıt gir', 'form'], filterTb: null },
+            { tab: 'admin', name: 'Yönetim Paneli', kw: ['yönetim', 'admin paneli', 'ayarlar'], filterTb: null }
+        ];
+
+        let matchedPage = null;
+        let strippedCommand = command;
+
+        for (let p of pageDictionary) {
+            const foundKw = p.kw.find(k => command.includes(k));
+            if (foundKw) {
+                matchedPage = p;
+                // Cümledeki sayfa kelimesini ve olası Türkçe eklerini (-ı, -lar, vb.) temizle
+                strippedCommand = strippedCommand.replace(new RegExp(foundKw + '[a-zçğıöşü]*', 'g'), '');
+                break;
+            }
+        }
+
+        if (matchedPage) {
+            // Doğal dildeki bağlaçları, fiilleri ve gereksiz kelimeleri ayıkla
+            const stopwords = ['bana','şu','bu','sayfa','sayfayı','sayfasına','sayfasında','sayfası','sayfada','git','aç','göster','ara','bul','filtrele','getir','için','hakkında','geçmiş','bütün','tüm','detaylarını','detayını','ve','de','da','listesi','verisi','verilerini','verisini','durumu'];
+            stopwords.forEach(sw => {
+                strippedCommand = strippedCommand.replace(new RegExp('(^|\\s)' + sw + '[a-zçğıöşü]*(\\s|$)', 'g'), ' ');
+            });
+            
+            // Çift boşlukları düzelt ve temizle
+            strippedCommand = strippedCommand.replace(/\s+/g, ' ').trim();
+            
+            // Geriye kalan kısımdan arama hedefini bozan tanımlayıcıları sil
+            let searchTerm = strippedCommand.replace(/\b(fason|kalıp|makine|pres|deneme|takip|rapor)[a-zçğıöşü]*\b/g, '').trim();
+            searchTerm = searchTerm.replace(/'[a-zçğıöşü]+/g, ''); // "18cp27'yi" -> "18cp27"
+
+            if (searchTerm && (matchedPage.filterTb || matchedPage.isSpecial)) {
+                speakText(`${matchedPage.name} sayfasında ${searchTerm} aranıyor.`);
+            } else {
+                speakText(`${matchedPage.name} sayfası açılıyor.`);
+            }
+
+            const navEl = document.querySelector(`.nav-tab[onclick*="'${matchedPage.tab}'"]`);
+            if (navEl) swT(matchedPage.tab, navEl);
+
+            if (searchTerm) {
+                setTimeout(() => {
+                    if (matchedPage.isSpecial) {
+                        const searchBox = $('kayit-search');
+                        if (searchBox) { searchBox.value = searchTerm; filterKayitlar(searchTerm); }
+                    } else if (matchedPage.filterTb) {
+                        const inputEl = document.querySelector(`input[onkeyup*="'${matchedPage.filterTb}'"]`);
+                        if (inputEl) { inputEl.value = searchTerm; }
+                        fT(matchedPage.filterTb, searchTerm);
+                    }
+                }, 600);
+            }
+            handled = true;
+        }
     }
 
     // 3. Çalışan / Form Detayı (Örn: "Ahmet in verisini göster")
+    // 4. Çalışan / Form Detayı (Örn: "Ahmet in verisini göster")
     if (!handled) {
         const users = Object.keys(USER_DATA);
         let matchedUser = users.find(u => {
@@ -2978,35 +3235,9 @@ function processVoiceCommand(command) {
             handled = true;
         }
     }
-    
-    // 4. Sayfa Yönlendirmeleri (Navigasyon)
-    if (!handled) {
-        const pages = [
-            { kw: ['malzeme takip', 'malzemeleri'], tab: 'malzeme', name: 'Pres Malzeme Takip' },
-            { kw: ['kalıphane', 'kalıpları'], tab: 'kaliphane', name: 'Kalıphane' },
-            { kw: ['üretim planı', 'planı göster'], tab: 'plan', name: 'Üretim Planı' },
-            { kw: ['alarm', 'uyarıları'], tab: 'alarm', name: 'Alarmlar' },
-            { kw: ['fason listesi', 'fason detay'], tab: 'fason', name: 'Fason Detay' },
-            { kw: ['presler', 'makineler', 'pres makine'], tab: 'pres', name: 'Pres Makineleri' },
-            { kw: ['çalışanlar', 'personel listesi', 'çalışan performans'], tab: 'calisan', name: 'Çalışan Performansı' },
-            { kw: ['genel özet', 'tüm veriler'], tab: 'genel', name: 'Genel Özet' },
-            { kw: ['aylık rapor', 'bu ay'], tab: 'aylik', name: 'Aylık Rapor' },
-            { kw: ['haftalık rapor', 'bu hafta'], tab: 'haftalik', name: 'Haftalık Rapor' },
-            { kw: ['günlük rapor', 'bugün'], tab: 'gunluk', name: 'Günlük Rapor' },
-            { kw: ['veri gir', 'form aç', 'kayıt gir'], tab: 'form', name: 'Veri Giriş Formu' }
-        ];
-        for (let p of pages) {
-            if (p.kw.some(k => command.includes(k))) {
-                speakText(`${p.name} sayfası açılıyor.`);
-                const navEl = document.querySelector(`.nav-tab[onclick*="'${p.tab}'"]`);
-                if (navEl) swT(p.tab, navEl);
-                handled = true;
-                break;
-            }
-        }
-    }
 
     // 5. Diğer Aksiyonlar (Çalışan Ekleme, Tema, Çıkış)
+    // 5. Sayfa Yönlendirmeleri ve Diğer Aksiyonlar (Çalışan Ekleme, Tema, Çıkış)
     if (!handled) {
         if (command.includes('çalışan ekle') || command.includes('personel ekle') || command.includes('kullanıcı ekle')) {
             if(!LOGGED_IN_USER || LOGGED_IN_USER.role !== 'admin') {
