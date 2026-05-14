@@ -24,28 +24,32 @@
     </script>
     <style>
         :root {
-            --bg: #0f172a; --bg2: #1e293b; --bg3: #334155; --border: #475569;
-            --text: #f8fafc; --text2: #cbd5e1; --text3: #94a3b8;
+            --bg: #090e17; --bg2: #111827; --bg3: #1f2937; --border: #374151;
+            --text: #f3f4f6; --text2: #9ca3af; --text3: #6b7280;
             --accent: #3b82f6; --accent2: #ef4444; --accent3: #f59e0b; --accent4: #10b981;
-            --c-accent: 59, 130, 246; --c-accent2: 239, 68, 68; --c-accent3: 245, 158, 11; --c-accent4: 16, 185, 129; --c-border: 71, 85, 105; --c-text3: 148, 163, 184;
+            --c-accent: 59, 130, 246; --c-accent2: 239, 68, 68; --c-accent3: 245, 158, 11; --c-accent4: 16, 185, 129; --c-border: 55, 65, 81; --c-text3: 107, 114, 128;
         }
         .light-mode {
-            --bg: #f8fafc; --bg2: #f1f5f9; --bg3: #e2e8f0; --border: #cbd5e1;
-            --text: #0f172a; --text2: #334155; --text3: #64748b;
+            --bg: #f9fafb; --bg2: #ffffff; --bg3: #f3f4f6; --border: #e5e7eb;
+            --text: #111827; --text2: #4b5563; --text3: #9ca3af;
             --accent: #2563eb; --accent2: #dc2626; --accent3: #d97706; --accent4: #059669;
-            --c-accent: 37, 99, 235; --c-accent2: 220, 38, 38; --c-accent3: 217, 119, 6; --c-accent4: 5, 150, 105; --c-border: 203, 213, 225; --c-text3: 100, 116, 139;
+            --c-accent: 37, 99, 235; --c-accent2: 220, 38, 38; --c-accent3: 217, 119, 6; --c-accent4: 5, 150, 105; --c-border: 229, 231, 235; --c-text3: 156, 163, 175;
         }
-        body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.3s, color 0.3s;}
-        ::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-track{background:var(--bg2)} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-        .panel{display:none;opacity:0;} .panel.active{display:block;opacity:1;animation:slideIn 0.35s ease-out forwards}
-        @keyframes slideIn{from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)}}
-        .skeleton{background:linear-gradient(90deg,#1c2018 25%,#2a3024 50%,#1c2018 75%);background-size:200% 100%;animation:skel 1.5s infinite;border-radius:4px}
+        body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.4s ease, color 0.4s ease;}
+        ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:var(--bg); border-radius: 4px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px; transition: background 0.3s;} ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
+        
+        .panel { display: none; opacity: 0; }
+        .panel.active { display: block; opacity: 1; animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(15px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        
+        .skeleton{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:skel 1.5s infinite;border-radius:8px}
         @keyframes skel{0%{background-position:200% 0} 100%{background-position:-200% 0}}
+        
         .emp-link{cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-color:#2a3024;transition:all 0.2s}
         .emp-link:hover{color:#a8e063;text-decoration-color:#a8e063}
         
         /* Panel Görünümlü Navigasyon Butonları (Mobil Uyumlu) */
-        .nav-btn { flex: 1 1 auto; text-align: center; padding: 8px 12px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; font-size: 13px; border-radius: 6px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-width: 1px; white-space: nowrap; user-select: none; position: relative; overflow: hidden; }
+        .nav-btn { flex: 1 1 auto; text-align: center; padding: 10px 14px; font-family: 'Poppins', sans-serif; font-weight: 600; letter-spacing: 0.5px; font-size: 13px; border-radius: 8px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-width: 1px; white-space: nowrap; user-select: none; position: relative; overflow: hidden; }
         .nav-btn:active { transform: scale(0.95); }
         .nav-btn::after {
             content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
@@ -53,7 +57,7 @@
             transform: skewX(-25deg); transition: left 0.5s ease-in-out; z-index: 1; pointer-events: none;
         }
         .nav-btn:hover::after { left: 150%; }
-        .nav-btn.nav-active { background-color: var(--accent) !important; color: var(--bg2) !important; border-color: var(--accent) !important; box-shadow: 0 4px 6px -1px rgba(var(--c-accent), 0.3), 0 2px 4px -1px rgba(var(--c-accent), 0.2) !important; }
+        .nav-btn.nav-active { background-color: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; box-shadow: 0 4px 12px -2px rgba(var(--c-accent), 0.4), 0 2px 6px -1px rgba(var(--c-accent), 0.2) !important; transform: translateY(-1px); }
         @media (max-width: 768px) { .nav-btn { font-size: 11px; padding: 6px 8px; flex-basis: 30%; } }
         
         /* Tablo Başlık Sabitleme & Renkler */
@@ -93,7 +97,7 @@
         
         /* Toast Bildirimleri (Kritik #1 Fix) */
         .toast-el {
-            position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+            position: fixed; top: 24px; right: 24px; z-index: 9999;
             padding: 12px 20px; border-radius: 8px; font-family: 'Fira Code', monospace;
             font-size: 12px; color: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             transition: opacity 0.35s, transform 0.35s; pointer-events: none;
@@ -107,6 +111,13 @@
         .kayit-card:nth-child(even) { background-color: rgba(var(--c-border),0.06); }
         .kayit-card .kayit-detail { animation: slideDown 0.25s ease-out; }
         @keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+        
+        /* Genel UI İyileştirmeleri */
+        input, select, textarea { transition: all 0.3s ease; }
+        input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px rgba(var(--c-accent), 0.3); }
+        button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        button:active { transform: scale(0.95); }
+        .glass-panel { background: rgba(var(--c-bg2), 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(var(--c-border), 0.5); }
     </style>
 </head>
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
@@ -135,10 +146,10 @@
         </div>
     </div>
 
-    <header id="app-header" class="hidden flex-col xl:flex-row gap-4 justify-between items-center bg-bg2 border border-border p-3 md:p-4 rounded-lg shadow-lg relative overflow-hidden">
+    <header id="app-header" class="hidden flex-col xl:flex-row gap-4 justify-between items-center bg-bg2/90 backdrop-blur-md border border-border/50 p-4 md:p-5 rounded-2xl shadow-xl relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
         
-        <div class="flex flex-col items-center xl:items-start bg-bg3 border border-border rounded-lg p-3 shadow-sm shrink-0 w-full xl:w-auto">
+        <div class="flex flex-col items-center xl:items-start bg-bg3/80 border border-border/50 rounded-xl p-3 shadow-sm shrink-0 w-full xl:w-auto transition-transform hover:-translate-y-0.5">
             <h1 class="font-bebas text-xl md:text-2xl tracking-[2px] text-accent leading-none">PRES ÜRETİM TAKİP</h1>
             <div class="flex items-center gap-2 mt-2 text-[9px] md:text-[10px] font-mono text-text3">
                 <span id="src-status">● BAĞLANIYOR...</span>
@@ -148,19 +159,19 @@
         </div>
         
         <div class="flex flex-row flex-wrap xl:flex-nowrap items-center justify-center gap-2 md:gap-3 font-mono text-xs md:text-sm text-text2 flex-1 w-full xl:w-auto">
-            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam Üretim</span><span id="hdr-total" class="text-lg font-bold text-text">-</span></div>
-            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-lg font-bold text-accent4">-</span></div>
-            <div class="flex flex-col items-center bg-bg3 border border-border rounded-lg px-3 py-2 shadow-sm flex-1 xl:flex-none xl:w-[110px]"><span class="text-[9px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-lg font-bold text-text">-</span></div>
+            <div class="flex flex-col items-center bg-bg3/80 border border-border/50 rounded-xl px-4 py-2 shadow-sm flex-1 xl:flex-none xl:w-[120px] transition-transform hover:-translate-y-0.5"><span class="text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam Üretim</span><span id="hdr-total" class="text-xl font-bold text-text">-</span></div>
+            <div class="flex flex-col items-center bg-bg3/80 border border-border/50 rounded-xl px-4 py-2 shadow-sm flex-1 xl:flex-none xl:w-[120px] transition-transform hover:-translate-y-0.5"><span class="text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-xl font-bold text-accent4">-</span></div>
+            <div class="flex flex-col items-center bg-bg3/80 border border-border/50 rounded-xl px-4 py-2 shadow-sm flex-1 xl:flex-none xl:w-[120px] transition-transform hover:-translate-y-0.5"><span class="text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-xl font-bold text-text">-</span></div>
             
             <!-- FIX #3: onclick eklendi — cursor-pointer'ın arkasında handler yoktu -->
-            <div id="hdr-best" class="hidden flex-col items-center justify-center px-4 py-1.5 ayin-elemani-kutu rounded-lg bg-bg3 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 xl:flex-none xl:min-w-[160px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
-                <span class="text-[9px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
+            <div id="hdr-best" class="hidden flex-col items-center justify-center px-5 py-2 ayin-elemani-kutu rounded-xl bg-bg3/80 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 xl:flex-none xl:min-w-[180px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
+                <span class="text-[10px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
                 <span id="hdr-best-name" class="text-base md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
                 <span id="hdr-best-det" class="text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
             </div>
             
             <!-- YENİ: BİLDİRİM KUTUSU -->
-            <div id="hdr-notif" class="flex flex-col justify-center px-4 py-1.5 rounded bg-bg3 border border-border cursor-pointer transition-transform hover:scale-105 flex-1 xl:flex-none xl:w-[160px] relative" onclick="openNotifModal()">
+            <div id="hdr-notif" class="flex flex-col justify-center px-4 py-2 rounded-xl bg-bg3/80 border border-border/50 cursor-pointer transition-transform hover:scale-105 hover:shadow-md flex-1 xl:flex-none xl:w-[160px] relative" onclick="openNotifModal()">
                 <span id="hdr-notif-title" class="text-[9px] tracking-wider text-text3 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
                 <span id="hdr-notif-text" class="text-[10px] font-mono text-text2 truncate leading-tight">Bildirim Yok</span>
                 <span id="notif-badge" class="absolute -top-1.5 -right-1.5 bg-accent2 text-white rounded-full w-4 h-4 hidden items-center justify-center text-[8px] font-bold shadow-sm">1</span>
@@ -168,38 +179,38 @@
         </div>
 
         <div class="flex flex-wrap xl:flex-nowrap items-center justify-center gap-2 shrink-0 w-full xl:w-auto">
-            <div id="user-info" class="hidden items-center gap-2 font-mono text-xs bg-bg3 border border-border rounded-lg p-1.5 md:pr-3 shadow-sm cursor-pointer hover:bg-border transition-colors group" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
+            <div id="user-info" class="hidden items-center gap-2 font-mono text-xs bg-bg3/80 border border-border/50 rounded-xl p-1.5 md:pr-3 shadow-sm cursor-pointer hover:bg-border/80 transition-all hover:-translate-y-0.5 group" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
                 <!-- YENİ: KULLANICI AVATARI -->
                 <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border">
                 <span id="user-name" class="text-text2 ml-1 group-hover:text-text transition-colors"></span>
-                <button onclick="event.stopPropagation(); logout()" class="px-2 py-1 bg-accent2/20 hover:bg-accent2/40 text-accent2 rounded text-[10px] transition-colors ml-2">ÇIKIŞ</button>
+                <button onclick="event.stopPropagation(); logout()" class="px-2 py-1 bg-accent2/10 hover:bg-accent2/90 hover:text-white text-accent2 rounded text-[10px] font-bold transition-colors ml-2">ÇIKIŞ</button>
             </div>
             
             <!-- YENİ: UYGULAMA İNDİRME BUTONU -->
-            <button id="btn-install" class="hidden px-3 py-2 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-lg font-mono text-[10px] items-center gap-1.5 transition-all shadow-sm whitespace-nowrap animate-bounce">
+            <button id="btn-install" class="hidden px-3 py-2 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-xl font-mono text-[10px] items-center gap-1.5 transition-all hover:scale-105 hover:shadow-lg whitespace-nowrap animate-bounce">
                 📲 İNDİR
             </button>
 
-            <button onclick="toggleTheme()" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="toggleTheme()" class="px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
                 🌓 TEMA
             </button>
-            <button onclick="exportToPDF()" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="exportToPDF()" class="px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
                 📥 PDF
             </button>
-            <button onclick="fetchCSV(true)" id="btn-refresh" class="px-3 py-2 md:py-2.5 bg-bg3 hover:bg-border text-accent border border-border rounded-lg font-mono text-[10px] flex items-center gap-1.5 transition-colors shadow-sm whitespace-nowrap">
+            <button onclick="fetchCSV(true)" id="btn-refresh" class="px-4 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-accent font-bold border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
                 ↻ GÜNCELLE
             </button>
         </div>
     </header>
 
     <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-x-hidden">
-    <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2 p-1.5 md:p-2 rounded-lg border border-border shrink-0 shadow-sm" id="main-nav">
+    <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2/80 backdrop-blur-md p-1.5 md:p-2 rounded-xl border border-border/50 shrink-0 shadow-md" id="main-nav">
         <!-- Raporlar Dropdown -->
         <div class="relative flex-1 md:flex-none z-50" id="nav-dropdown-raporlar">
-            <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex');" class="nav-btn w-full bg-accent/20 text-accent border-accent flex justify-center items-center gap-2 outline-none">
+            <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex');" class="nav-btn w-full bg-accent/20 text-accent border-accent flex justify-center items-center gap-2 outline-none shadow-sm">
                 📊 GÜNLÜK RAPOR <span class="text-[10px]">▼</span>
             </button>
-            <div class="absolute left-0 top-full mt-1 hidden flex-col bg-bg2 border border-border rounded shadow-2xl min-w-[200px] w-full md:w-auto overflow-hidden">
+            <div class="absolute left-0 top-full mt-2 hidden flex-col bg-bg2/95 backdrop-blur-xl border border-border/80 rounded-xl shadow-2xl min-w-[220px] w-full md:w-auto overflow-hidden z-50">
                 <div onclick="swT('gunluk',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left nav-active">GÜNLÜK RAPOR</div>
                 <div onclick="swT('haftalik',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">HAFTALIK RAPOR</div>
                 <div onclick="swT('aylik',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">AYLIK RAPOR</div>
@@ -220,33 +231,33 @@
 
     <main class="flex-1 relative min-h-[500px]">
         <div class="panel active" id="panel-gunluk">
-            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 bg-bg2 border border-border p-2 rounded gap-2">
-                <button onclick="chD(-1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">◀ ÖNCEKİ</button>
-                <div class="flex items-center gap-3"><span id="c-day" class="font-bebas text-2xl tracking-wider text-accent"></span><input type="date" id="d-pick" class="bg-bg3 border border-border text-text2 text-xs rounded p-1.5 outline-none" onchange="pkD(this.value)"></div>
-                <button onclick="chD(1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">SONRAKİ ▶</button>
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 bg-bg2/80 backdrop-blur-md border border-border/50 p-2.5 rounded-xl shadow-sm gap-2">
+                <button onclick="chD(-1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">◀ ÖNCEKİ</button>
+                <div class="flex items-center gap-3"><span id="c-day" class="font-bebas text-2xl md:text-3xl tracking-wider text-accent drop-shadow-sm"></span><input type="date" id="d-pick" class="bg-bg3 border border-border text-text2 text-xs rounded-lg p-2 outline-none focus:border-accent transition-colors cursor-pointer" onchange="pkD(this.value)"></div>
+                <button onclick="chD(1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">SONRAKİ ▶</button>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4" id="g-kpi"></div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-5" id="g-kpi"></div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-                <div class="bg-bg2 border border-border rounded p-4 lg:col-span-2"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">GÜNLÜK PERFORMANS (Çubuklara Tıklayın)</div><div class="h-[240px] relative"><canvas id="c1"></canvas></div></div>
-                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base tracking-[2px] text-text2 mb-2">VARDİYA ORANI (Dilimlere Tıklayın)</div><div class="h-[240px] relative"><canvas id="c2"></canvas></div></div>
+                <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow lg:col-span-2"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span>GÜNLÜK PERFORMANS</div><div class="h-[260px] relative"><canvas id="c1"></canvas></div></div>
+                <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent4"></span>VARDİYA ORANI</div><div class="h-[260px] relative flex justify-center"><canvas id="c2"></canvas></div></div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                <div class="bg-bg2 border border-border rounded p-4">
-                    <div class="font-bebas text-base tracking-[2px] text-text2 mb-2">PRES KULLANIMI (Çubuklara Tıklayın)</div>
+                <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent3"></span>PRES KULLANIMI</div>
                     <div class="h-[240px] relative"><canvas id="c3"></canvas></div>
                 </div>
-                <div class="bg-bg2 border border-border rounded p-4">
-                    <div class="font-bebas text-base tracking-[2px] text-text2 mb-2">VARDİYA KIYASLAMASI (PRES BAZLI ÜRETİM)</div>
+                <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-border"></span>VARDİYA KIYASLAMASI</div>
                     <div class="h-[240px] relative"><canvas id="c4"></canvas></div>
                 </div>
             </div>
-            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col mb-4">
-                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-gun-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
-                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-gun-kiyas"><thead id="th-gun-kiyas"></thead><tbody id="tb-gun-kiyas"></tbody></table></div>
+            <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-sm flex flex-col mb-4">
+                <div class="p-4 border-b border-border/50 bg-bg3/30 flex flex-wrap justify-between items-center gap-3"><span class="font-sans font-semibold text-xs tracking-wider uppercase text-text2 flex items-center gap-2">📊 MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-gun-kiyas',this.value)" placeholder="Ara..." class="bg-bg2 border border-border/80 text-text2 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-accent w-full sm:w-48 transition-colors shadow-inner"></div>
+                <div class="overflow-auto max-h-[40vh] custom-scrollbar"><table class="w-full text-left border-collapse" id="t-gun-kiyas"><thead id="th-gun-kiyas"></thead><tbody id="tb-gun-kiyas"></tbody></table></div>
             </div>
-            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-border flex justify-between items-center"><span class="font-bebas text-base tracking-[2px] text-text2">GÜNLÜK LİSTE (KAFALARA GÖRE AYRILMIŞ)</span><input type="text" onkeyup="fT('tb-gun',this.value)" placeholder="Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-gun"><thead id="th-gun"></thead><tbody id="tb-gun"></tbody></table></div>
+            <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                <div class="p-4 border-b border-border/50 bg-bg3/30 flex flex-wrap justify-between items-center gap-3"><span class="font-sans font-semibold text-xs tracking-wider uppercase text-text2 flex items-center gap-2">📋 GÜNLÜK LİSTE</span><input type="text" onkeyup="fT('tb-gun',this.value)" placeholder="Ara..." class="bg-bg2 border border-border/80 text-text2 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-accent w-full sm:w-48 transition-colors shadow-inner"></div>
+                <div class="overflow-auto max-h-[60vh] custom-scrollbar"><table class="w-full text-left border-collapse" id="t-gun"><thead id="th-gun"></thead><tbody id="tb-gun"></tbody></table></div>
             </div>
         </div>
 
@@ -374,22 +385,22 @@
         </div>
 
         <div class="panel hidden" id="panel-form">
-            <div class="bg-bg2 border border-border rounded p-6 max-w-4xl mx-auto shadow-lg">
-                <h2 id="form-title" class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">YENİ ÜRETİM KAYDI GİRİŞİ</h2>
+            <div class="bg-bg2/80 backdrop-blur-md border border-border/50 rounded-2xl p-6 md:p-8 max-w-4xl mx-auto shadow-xl">
+                <h2 id="form-title" class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border/50 pb-3">YENİ ÜRETİM KAYDI GİRİŞİ</h2>
                 <form id="uretim-formu" onsubmit="submitForm(event)" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Tarih</label>
-                            <input type="date" id="f-tarih" required onchange="checkDuplicate()" class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors">
+                            <label class="block text-xs font-sans font-semibold text-text3 mb-1.5 uppercase tracking-wider">Tarih</label>
+                            <input type="date" id="f-tarih" required onchange="checkDuplicate()" class="w-full bg-bg3/50 border border-border/80 text-text rounded-xl p-3 outline-none focus:border-accent transition-all shadow-inner">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Çalışan</label>
-                            <input type="text" id="f-calisan" list="form-user-list" placeholder="İsim yazın veya seçin..." required autocomplete="off" onchange="checkDuplicate()" class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors">
+                            <label class="block text-xs font-sans font-semibold text-text3 mb-1.5 uppercase tracking-wider">Çalışan</label>
+                            <input type="text" id="f-calisan" list="form-user-list" placeholder="İsim yazın veya seçin..." required autocomplete="off" onchange="checkDuplicate()" class="w-full bg-bg3/50 border border-border/80 text-text rounded-xl p-3 outline-none focus:border-accent transition-all shadow-inner">
                             <datalist id="form-user-list"></datalist>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-mono text-text3 mb-1 uppercase tracking-wider">Vardiya</label>
-                            <select id="f-vardiya" required class="w-full bg-bg3 border border-border text-text rounded p-2.5 outline-none focus:border-accent transition-colors cursor-pointer">
+                            <label class="block text-xs font-sans font-semibold text-text3 mb-1.5 uppercase tracking-wider">Vardiya</label>
+                            <select id="f-vardiya" required class="w-full bg-bg3/50 border border-border/80 text-text rounded-xl p-3 outline-none focus:border-accent transition-all cursor-pointer shadow-inner">
                                 <option value="">Seçiniz...</option>
                                 <option value="08:00-16:00">08:00-16:00</option>
                                 <option value="16:00-24:00">16:00-24:00</option>
@@ -399,41 +410,41 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-bg3 border border-border rounded p-4">
-                            <h3 class="font-bebas text-lg text-accent4 mb-3 border-b border-border/50 pb-1 tracking-wider">BÖLÜM 1 (KAFA 1)</h3>
+                        <div class="bg-bg3/40 border border-border/50 rounded-xl p-5 shadow-sm">
+                            <h3 class="font-sans font-bold text-sm text-accent4 mb-4 border-b border-border/50 pb-2 tracking-wider flex items-center gap-2"><span class="w-2 h-2 bg-accent4 rounded-full"></span>BÖLÜM 1 (KAFA 1)</h3>
                             <div class="space-y-3">
                                 <div class="grid grid-cols-2 gap-2">
-                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres1" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Seçiniz...</option></select></div>
-                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Fason</label><select id="f-fason1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres1" required class="w-full bg-bg2/80 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"><option value="">Seçiniz...</option></select></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Fason</label><select id="f-fason1" class="w-full bg-bg2/80 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"><option value="">Yok/Seçiniz...</option></select></div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
-                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim1" required min="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus1" min="0" value="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim1" required min="0" class="w-full bg-bg2/80 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus1" min="0" value="0" class="w-full bg-bg2/80 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-bg3 border border-border rounded p-4 opacity-90 hover:opacity-100 transition-opacity">
-                            <h3 class="font-bebas text-lg text-accent2 mb-3 border-b border-border/50 pb-1 tracking-wider">BÖLÜM 2 (KAFA 2 - İsteğe Bağlı)</h3>
+                        <div class="bg-bg3/40 border border-border/50 rounded-xl p-5 shadow-sm opacity-90 hover:opacity-100 transition-opacity">
+                            <h3 class="font-sans font-bold text-sm text-accent2 mb-4 border-b border-border/50 pb-2 tracking-wider flex items-center gap-2"><span class="w-2 h-2 bg-accent2 rounded-full"></span>BÖLÜM 2 (KAFA 2 - İsteğe Bağlı)</h3>
                             <div class="space-y-3">
                                 <div class="grid grid-cols-2 gap-2">
-                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres2" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div>
-                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Fason</label><select id="f-fason2" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="">Yok/Seçiniz...</option></select></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres2" class="w-full bg-bg2/80 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"><option value="">Yok/Seçiniz...</option></select></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Fason</label><select id="f-fason2" class="w-full bg-bg2/80 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"><option value="">Yok/Seçiniz...</option></select></div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
-                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim2" min="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-                                    <div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus2" min="0" value="0" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim2" min="0" class="w-full bg-bg2/80 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus2" min="0" value="0" class="w-full bg-bg2/80 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div id="dup-warn" class="hidden bg-accent2/10 border border-accent2 text-accent2 p-3 rounded text-xs font-mono">
+                    <div id="dup-warn" class="hidden bg-accent2/10 border border-accent2/50 text-accent2 p-4 rounded-xl text-xs font-semibold shadow-sm">
                         <span id="dup-warn-text"></span>
                     </div>
 
                     <div class="flex justify-end border-t border-border pt-4 gap-3">
-                        <button type="button" id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-4 py-2.5 bg-bg3 hover:bg-border text-text2 font-bold font-mono rounded transition-all">İPTAL</button>
-                        <button type="submit" id="btn-submit-form" class="px-6 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg">💾 KAYDET VE GÖNDER</button>
+                        <button type="button" id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-5 py-2.5 bg-bg3/80 hover:bg-border text-text2 font-bold rounded-xl transition-all hover:shadow-md">İPTAL</button>
+                        <button type="submit" id="btn-submit-form" class="px-8 py-3 bg-accent hover:bg-accent/90 text-white font-bold tracking-wide rounded-xl transition-all transform hover:scale-105 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] flex items-center gap-2 shadow-lg">💾 KAYDET VE GÖNDER</button>
                     </div>
                 </form>
             </div>
@@ -564,13 +575,13 @@
     </main>
     </div>
 
-    <div id="generic-form-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-lg w-full shadow-2xl relative">
-            <button onclick="closeGenericFormModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
-            <h2 id="gen-form-title" class="font-bebas text-2xl tracking-[2px] text-accent mb-4 border-b border-border pb-2">KAYIT EKLE/DÜZENLE</h2>
+    <div id="generic-form-modal" class="fixed inset-0 bg-bg/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-all duration-300 backdrop-blur-md">
+        <div class="bg-bg2/90 border border-border/50 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative transform scale-95 transition-transform duration-300">
+            <button onclick="closeGenericFormModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-all hover:scale-110">&times;</button>
+            <h2 id="gen-form-title" class="font-sans font-bold text-xl tracking-wide text-accent mb-5 border-b border-border/50 pb-3">KAYIT EKLE/DÜZENLE</h2>
             <form id="generic-data-form" onsubmit="saveGenericForm(event)" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                 <div id="gen-form-fields" class="flex flex-col gap-3"></div>
-                <div class="flex gap-2 pt-4 border-t border-border mt-4"><button type="submit" class="flex-1 px-4 py-2.5 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all shadow-lg">💾 KAYDET</button></div>
+                <div class="flex gap-2 pt-4 border-t border-border/50 mt-4"><button type="submit" class="flex-1 px-4 py-3 bg-accent hover:bg-accent/90 text-white font-bold tracking-wide rounded-xl transition-all hover:scale-105 shadow-lg">💾 KAYDET</button></div>
             </form>
         </div>
     </div>
@@ -612,15 +623,15 @@
         </div>
     </div>
 
-    <div id="login-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-bg2 border border-border rounded-lg p-8 max-w-sm w-full shadow-2xl text-center">
+    <div id="login-modal" class="fixed inset-0 bg-bg/95 backdrop-blur-lg hidden items-center justify-center z-50 p-4 opacity-0 transition-all duration-500">
+        <div class="bg-bg2/80 border border-border/50 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center backdrop-blur-xl transform transition-transform scale-95">
             <h2 class="font-bebas text-2xl tracking-[2px] text-accent mb-2">SİSTEM GİRİŞİ</h2>
             <p class="text-text3 text-xs font-mono mb-6">Lütfen kullanıcı bilgilerinizi girin.</p>
             <form onsubmit="login(event)" class="space-y-4">
-                <input type="text" id="login-user" list="user-list" placeholder="İsim yazın veya seçin..." required autocomplete="off" class="w-full bg-bg3 border border-border text-text rounded p-3 outline-none focus:border-accent transition-colors text-center">
+                <input type="text" id="login-user" list="user-list" placeholder="İsim yazın veya seçin..." required autocomplete="off" class="w-full bg-bg3/50 border border-border/50 text-text rounded-xl p-3 outline-none focus:border-accent transition-all text-center shadow-inner">
                 <datalist id="user-list"></datalist>
                 <div class="relative">
-                    <input type="password" id="login-pass" placeholder="Şifre" required class="w-full bg-bg3 border border-border text-text rounded py-3 px-10 outline-none focus:border-accent transition-colors text-center">
+                    <input type="password" id="login-pass" placeholder="Şifre" required class="w-full bg-bg3/50 border border-border/50 text-text rounded-xl py-3 px-10 outline-none focus:border-accent transition-all text-center shadow-inner">
                     <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-text3 hover:text-accent transition-colors outline-none" tabindex="-1">
                         <!-- Açık Göz İkonu -->
                         <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -629,15 +640,15 @@
                     </button>
                 </div>
                 <p id="login-error" class="text-accent2 text-xs h-4"></p>
-                <button type="submit" class="w-full px-6 py-3 bg-accent hover:bg-accent/80 text-bg2 font-bold font-mono rounded transition-all transform hover:scale-105">GİRİŞ YAP</button>
+                <button type="submit" class="w-full px-6 py-3 bg-accent hover:bg-accent/80 text-white font-bold tracking-wider rounded-xl transition-all transform hover:scale-105 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]">GİRİŞ YAP</button>
             </form>
         </div>
     </div>
 
     <!-- YENİ: KULLANICI BİLDİRİM / SOHBET MODALI -->
-    <div id="notif-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-2 md:p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-bg2 border border-border rounded-lg max-w-5xl w-full h-[90vh] md:h-[85vh] shadow-2xl relative flex overflow-hidden">
-            <button onclick="closeNotifModal()" class="absolute top-3 right-4 md:right-6 text-text3 hover:text-accent2 text-3xl font-bold z-50 transition-colors bg-bg2 rounded-full w-8 h-8 flex items-center justify-center shadow-md">&times;</button>
+    <div id="notif-modal" class="fixed inset-0 bg-bg/90 hidden items-center justify-center z-50 p-2 md:p-4 opacity-0 transition-all duration-400 backdrop-blur-md">
+        <div class="bg-bg2/90 border border-border/50 rounded-2xl max-w-5xl w-full h-[90vh] md:h-[85vh] shadow-2xl relative flex overflow-hidden transform scale-95 transition-transform duration-400">
+            <button onclick="closeNotifModal()" class="absolute top-3 right-4 md:right-6 text-text3 hover:text-accent2 text-3xl font-bold z-50 transition-all hover:scale-110 bg-bg2 rounded-full w-8 h-8 flex items-center justify-center shadow-md">&times;</button>
 
             <!-- SOL PANEL: SOHBET LİSTESİ -->
             <div id="chat-list-view" class="w-full md:w-1/3 border-r border-border flex flex-col bg-bg2 relative h-full">
@@ -833,10 +844,10 @@ function toast(msg, type='ok') {
 
 // Renklendirilmiş & Sabit (Sticky) Tablo Başlıkları
 const thD=(cols)=>`<tr>${cols.map((c,i)=>{ let cls="sticky-th p-2 text-left font-mono text-[10px] border-b border-border uppercase whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1-th"; else if(i>=9&&i<=14) cls+=" kafa2-th"; else cls+=" text-text3 th-bg"; return `<th class="${cls}">${c}</th>`; }).join('')}</tr>`;
-const trD=(cols)=>`<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs">${cols.map((c,i)=>{ let cls="p-2 whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1"; else if(i>=9&&i<=14) cls+=" kafa2"; return `<td class="${cls}">${c}</td>`; }).join('')}</tr>`;
-const th=(cols)=>`<tr>${cols.map(c=>`<th class="sticky-th p-2 text-left font-mono text-[10px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg">${c}</th>`).join('')}</tr>`;
-const tr=(cols)=>`<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] md:text-xs">${cols.map(c=>`<td class="p-2 whitespace-nowrap">${c}</td>`).join('')}</tr>`;
-const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2 border border-border border-l-4 ${c} rounded p-3 ${clk?'cursor-pointer hover:bg-bg3 hover:shadow-lg transition-colors group':''}"><div class="font-bebas text-sm text-text2 ${clk?'group-hover:text-text':''}">${l}</div><div class="font-mono text-xl font-bold ${l.includes('Duruş') ? 'text-accent2' : 'text-text'} my-1">${v}</div><div class="text-[10px] text-text3">${s}</div></div>`;
+const trD=(cols)=>`<tr class="hover:bg-bg3/50 transition-colors border-b border-border/50 text-[11px] md:text-xs">${cols.map((c,i)=>{ let cls="p-2 whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1"; else if(i>=9&&i<=14) cls+=" kafa2"; return `<td class="${cls}">${c}</td>`; }).join('')}</tr>`;
+const th=(cols)=>`<tr>${cols.map(c=>`<th class="sticky-th p-3 text-left font-sans font-semibold text-[11px] tracking-wider text-text3 border-b border-border uppercase whitespace-nowrap th-bg bg-bg2/95 backdrop-blur">${c}</th>`).join('')}</tr>`;
+const tr=(cols)=>`<tr class="hover:bg-bg3/50 transition-colors border-b border-border/50 text-xs">${cols.map(c=>`<td class="p-3 whitespace-nowrap">${c}</td>`).join('')}</tr>`;
+const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2/80 backdrop-blur-sm border border-border/60 border-l-4 ${c} rounded-xl p-4 shadow-sm ${clk?'cursor-pointer hover:bg-bg3 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group':''}"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 ${clk?'group-hover:text-text':''}">${l}</div><div class="font-mono text-2xl font-bold ${l.includes('Duruş') ? 'text-accent2' : 'text-text'} my-1.5">${v}</div><div class="text-[10px] text-text3 font-medium">${s}</div></div>`;
 
 // Tıklanabilir Grafikler
 function mc(id,t,d,o={}){
@@ -845,7 +856,7 @@ function mc(id,t,d,o={}){
     // FIX #2 guard: canvas elementi yoksa hata fırlatma
     if(!el) { console.warn('mc(): canvas bulunamadı → id='+id); return; }
     const c={
-        responsive:true,maintainAspectRatio:false,
+        responsive:true,maintainAspectRatio:false, animation: { duration: 800, easing: 'easeOutQuart' },
                 onClick: (e, elements, chartInstance) => {
                     const chart = chartInstance || charts[id];
                     if(elements && elements.length > 0 && chart) { 
@@ -856,8 +867,8 @@ function mc(id,t,d,o={}){
                         }
                     }
                 },
-        plugins:{legend:{labels:{color:cR('text3'),font:{family:"'Fira Code'",size:10}}}},
-        scales:{x:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}},y:{grid:{color:cR('border',0.4)},ticks:{color:cR('text3'),font:{size:9}}}}
+        plugins:{legend:{labels:{color:cR('text3'),font:{family:"'Inter'",size:11, weight: '500'}}}},
+        scales:{x:{grid:{color:cR('border',0.4), drawBorder: false},ticks:{color:cR('text3'),font:{family:"'Inter'",size:10}}},y:{grid:{color:cR('border',0.4), drawBorder: false},ticks:{color:cR('text3'),font:{family:"'Inter'",size:10}}}}
     }; 
     if(o.y)c.scales.y=o.y; if(o.x)c.scales.x=o.x; if(o.idx)c.indexAxis=o.idx; 
     charts[id]=new Chart(el,{type:t,data:d,options:c});
@@ -1874,7 +1885,7 @@ function openNotifModal() {
     hideNewChatSelector();
     
     const el = $('notif-modal'); el.classList.remove('hidden'); el.classList.add('flex');
-    setTimeout(()=>el.classList.remove('opacity-0'),10);
+    setTimeout(()=>{ el.classList.remove('opacity-0'); el.querySelector('div').classList.remove('scale-95'); el.querySelector('div').classList.add('scale-100'); },10);
 }
 
 function renderChatList() {
@@ -2062,7 +2073,7 @@ function renderChatHistory() {
 }
 
 function closeNotifModal() {
-    const el = $('notif-modal'); el.classList.add('opacity-0');
+    const el = $('notif-modal'); el.classList.add('opacity-0'); el.querySelector('div').classList.remove('scale-100'); el.querySelector('div').classList.add('scale-95');
     setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
 }
 
@@ -2409,7 +2420,7 @@ function showLogin() {
     if($('app-main')) { $('app-main').classList.add('hidden'); $('app-main').classList.remove('flex'); }
     
     const el = $('login-modal'); el.classList.remove('hidden'); el.classList.add('flex'); 
-    setTimeout(()=>el.classList.remove('opacity-0'),10);
+    setTimeout(()=>{ el.classList.remove('opacity-0'); el.querySelector('div').classList.remove('scale-95'); el.querySelector('div').classList.add('scale-100'); },10);
     
     $('login-error').innerText = 'Kullanıcı listesi yükleniyor...';
     $('login-user').disabled = true;
@@ -2444,7 +2455,7 @@ function login(e) {
         LOGGED_IN_USER = { name: userKey, role: USER_DATA[userKey].role };
         localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
         errorEl.innerText = '';
-        const el = $('login-modal'); el.classList.add('opacity-0');
+        const el = $('login-modal'); el.classList.add('opacity-0'); el.querySelector('div').classList.remove('scale-100'); el.querySelector('div').classList.add('scale-95');
         setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
         
         const mc = document.querySelector('.main-content');
@@ -2855,7 +2866,7 @@ function openGenericFormModal(type, editIdx = null) {
         </div>`).join('');
     
     el.classList.remove('hidden'); el.classList.add('flex');
-    setTimeout(() => el.classList.remove('opacity-0'), 10);
+    setTimeout(() => { el.classList.remove('opacity-0'); el.querySelector('div').classList.remove('scale-95'); el.querySelector('div').classList.add('scale-100'); }, 10);
 }
 
 function replyTo(user) {
@@ -2882,7 +2893,7 @@ function replyTo(user) {
 
 function closeGenericFormModal() {
     const el = $('generic-form-modal');
-    el.classList.add('opacity-0');
+    el.classList.add('opacity-0'); el.querySelector('div').classList.remove('scale-100'); el.querySelector('div').classList.add('scale-95');
     setTimeout(() => { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
 }
 
