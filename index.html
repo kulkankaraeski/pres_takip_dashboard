@@ -178,28 +178,32 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap xl:flex-nowrap items-center justify-center gap-2 shrink-0 w-full xl:w-auto">
-            <div id="user-info" class="hidden items-center gap-2 font-mono text-xs bg-bg3/80 border border-border/50 rounded-xl p-1.5 md:pr-3 shadow-sm cursor-pointer hover:bg-border/80 transition-all hover:-translate-y-0.5 group" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
-                <!-- YENİ: KULLANICI AVATARI -->
-                <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-bg3 hidden border border-border">
-                <span id="user-name" class="text-text2 ml-1 group-hover:text-text transition-colors"></span>
-                <button onclick="event.stopPropagation(); logout()" class="px-2 py-1 bg-accent2/10 hover:bg-accent2/90 hover:text-white text-accent2 rounded text-[10px] font-bold transition-colors ml-2">ÇIKIŞ</button>
+        <div class="flex flex-wrap lg:flex-nowrap items-center justify-center gap-2 md:gap-3 shrink-0 w-full lg:w-auto">
+            <div id="user-info" class="hidden flex-row items-center justify-between w-full lg:w-auto gap-2 font-mono text-xs bg-bg3/80 border border-border/50 rounded-xl p-2 md:pr-3 shadow-sm cursor-pointer hover:bg-border/80 transition-all hover:-translate-y-0.5 group shrink-0" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <!-- YENİ: KULLANICI AVATARI -->
+                    <img id="user-avatar" src="" alt="Avatar" class="w-7 h-7 rounded-full object-cover bg-bg3 hidden border border-border shrink-0">
+                    <span id="user-name" class="text-text2 group-hover:text-text transition-colors flex items-center whitespace-nowrap shrink-0"></span>
+                </div>
+                <button onclick="event.stopPropagation(); logout()" class="px-3 py-1.5 bg-accent2/10 hover:bg-accent2/90 hover:text-white text-accent2 rounded-lg text-[10px] font-bold transition-colors shrink-0 ml-auto">ÇIKIŞ</button>
             </div>
             
-            <!-- YENİ: UYGULAMA İNDİRME BUTONU -->
-            <button id="btn-install" class="hidden px-3 py-2 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-xl font-mono text-[10px] items-center gap-1.5 transition-all hover:scale-105 hover:shadow-lg whitespace-nowrap animate-bounce">
-                📲 İNDİR
-            </button>
+            <div class="flex items-center justify-center gap-2 flex-wrap shrink-0">
+                <!-- YENİ: UYGULAMA İNDİRME BUTONU -->
+                <button id="btn-install" class="hidden px-3 py-2 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-xl font-mono text-[10px] items-center gap-1.5 transition-all hover:scale-105 hover:shadow-lg whitespace-nowrap animate-bounce">
+                    📲 İNDİR
+                </button>
 
-            <button onclick="toggleTheme()" class="px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
-                🌓 TEMA
-            </button>
-            <button onclick="exportToPDF()" class="px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
-                📥 PDF
-            </button>
-            <button onclick="fetchCSV(true)" id="btn-refresh" class="px-4 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-accent font-bold border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
-                ↻ GÜNCELLE
-            </button>
+                <button onclick="toggleTheme()" class="px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+                    🌓 TEMA
+                </button>
+                <button onclick="exportToPDF()" class="px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+                    📥 PDF
+                </button>
+                <button onclick="fetchCSV(true)" id="btn-refresh" class="px-4 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-accent font-bold border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+                    ↻ GÜNCELLE
+                </button>
+            </div>
         </div>
     </header>
 
