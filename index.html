@@ -3209,6 +3209,7 @@ function extractEntities(text) {
   }
   const allNames = [...new Set([...RAW.map(r => r.calisan), ...Object.keys(USER_DATA)])];
   entities.person = allNames.find(name => name.split(' ').some(part => part.length > 2 && text.includes(part.toLowerCase()))) || null;
+  entities.person = allNames.find(name => name.split(' ').some(part => part.length > 1 && text.includes(part.toLowerCase()))) || null;
   const presMatch = text.match(/pres\s*(\d+)/);
   if (presMatch) entities.machine = `PRES ${presMatch[1]}`;
   if (text.includes('sabah') || text.includes('08'))      entities.shift = '08:00-16:00';
@@ -3371,6 +3372,45 @@ const VOICE_COMMANDS = [
     handler(match, entities) { handleCrudCommand(match, entities); }
   },
   {
+    name: 'messaging',
+    patterns: [
+      { kw: ['mesaj gönder', 'bildirim gönder', 'yaz', 'söyle'] }
+    ],
+    handler(match, entities, transcript) {
+        let recipient = entities.person;
+        if (!recipient) {
+            if (transcript.includes('herkes') || transcript.includes('global')) {
+                recipient = 'GLOBAL';
+            }
+        }
+
+        let message = transcript;
+        match.kw.forEach(k => { message = message.replace(k, ''); });
+        if (recipient) {
+            message = message.replace(recipient.toLowerCase(), '');
+            message = message.replace(/(\s'e|\s'a|\s'ye|\s'ya)/, '');
+        }
+        message = message.replace(/\sdiye\s/g, ' ');
+        message = message.trim();
+
+        if (recipient && message) {
+            speakText(`${recipient === 'GLOBAL' ? 'Herkese' : recipient} kişisine "${message}" mesajı gönderiliyor.`);
+            openNotifModal();
+            setTimeout(() => { openChat(recipient); setTimeout(() => { sendChatMessage(message); }, 500); }, 200);
+        } else if (recipient && !message) {
+            voiceState = 'waiting_message_content';
+            tempVoiceData = { recipient };
+            speakText(`${recipient} için göndermek istediğiniz mesaj nedir?`);
+            showVoiceOverlay(transcript, 'ask_content', { person: recipient });
+        } else {
+            voiceState = 'waiting_message_recipient';
+            tempVoiceData = {};
+            speakText('Kime mesaj göndermek istersiniz?');
+            showVoiceOverlay(transcript, 'ask_recipient', {});
+        }
+    }
+  },
+  {
     name: 'system',
     patterns: [
       { kw: ['güncelle', 'yenile', 'tazele'],   fn: () => fetchCSV(true) },
@@ -3418,6 +3458,43 @@ function handleDialogState(text, entities) {
         $('admin-u-role').value = 'user';
         $('admin-u-photo').value = '';
         saveUserObj({ preventDefault: () => {} });
+        return;
+    }
+
+    if (voiceState === 'waiting_message_recipient') {
+        let recipient = entities.person;
+        if (!recipient) {
+            if (text.includes('herkes') || text.includes('global')) {
+                recipient = 'GLOBAL';
+            } else {
+                const allNames = [...new Set(Object.keys(USER_DATA))];
+                recipient = allNames.find(name => text.includes(name.toLowerCase()));
+            }
+        }
+
+        if (!recipient) {
+            speakText('Kullanıcı bulunamadı. İşlem iptal edildi.');
+            voiceState = 'idle';
+            tempVoiceData = {};
+            return;
+        }
+        
+        voiceState = 'waiting_message_content';
+        tempVoiceData = { recipient };
+        speakText(`${recipient} için göndermek istediğiniz mesaj nedir?`);
+        showVoiceOverlay(text, 'ask_content', { person: recipient });
+        return;
+    }
+
+    if (voiceState === 'waiting_message_content') {
+        const recipient = tempVoiceData.recipient;
+        const message = text;
+        voiceState = 'idle';
+        tempVoiceData = {};
+
+        speakText(`${recipient === 'GLOBAL' ? 'Herkese' : recipient} kişisine "${message}" mesajı gönderiliyor.`);
+        openNotifModal();
+        setTimeout(() => { openChat(recipient); setTimeout(() => { sendChatMessage(message); }, 500); }, 200);
         return;
     }
 }
