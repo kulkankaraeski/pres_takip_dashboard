@@ -787,6 +787,20 @@
         </svg>
     </button>
 
+    <div id="voice-overlay" class="fixed bottom-24 left-6 z-[8999] hidden max-w-xs w-72 bg-bg2/95 backdrop-blur-md border border-border/60 rounded-2xl p-4 shadow-2xl font-mono text-xs transition-all duration-300 opacity-0 translate-y-2 pointer-events-none">
+        <div class="flex items-center gap-2 mb-3">
+            <span id="vo-icon" class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+            <span id="vo-state" class="text-text3 uppercase tracking-wider text-[10px]">Dinleniyor</span>
+        </div>
+        <p id="vo-transcript" class="text-text mb-2 leading-relaxed min-h-[32px]"></p>
+        <div class="border-t border-border/50 pt-2 mt-2 space-y-1">
+            <div class="flex justify-between"><span class="text-text3">Niyet:</span><span id="vo-intent" class="text-accent font-bold">—</span></div>
+            <div class="flex justify-between"><span class="text-text3">Kişi:</span><span id="vo-person" class="text-accent4">—</span></div>
+            <div class="flex justify-between"><span class="text-text3">Makine:</span><span id="vo-machine" class="text-accent3">—</span></div>
+            <div class="flex justify-between"><span class="text-text3">Tarih:</span><span id="vo-date" class="text-text2">—</span></div>
+        </div>
+    </div>
+
 <script>
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
@@ -3148,20 +3162,257 @@ function speakText(text, onEndCallback = null) {
 let voiceState = 'idle';
 let tempVoiceData = {};
 
-function processVoiceCommand(command) {
+function applyVoiceFilter(tab, query) {
+    const pageDict = { 'malzeme': 'tb-malzeme', 'kaliphane': 'tb-kalip', 'fason': 'tb-fas', 'pres': 'tb-pre', 'calisan': 'tb-cal', 'aylik': 'tb-ay', 'haftalik': 'tb-haf', 'gunluk': 'tb-gun' };
+    if (tab === 'kayitlar') {
+        const sb = $('kayit-search');
+        if (sb) { sb.value = query; filterKayitlar(query); }
+    } else if (pageDict[tab]) {
+        const tb = pageDict[tab];
+        const inputEl = document.querySelector(`input[onkeyup*="'${tb}'"]`);
+        if (inputEl) { inputEl.value = query; }
+        fT(tb, query);
+    }
+}
+
+function handleCrudCommand(match, entities) {
+    if (match.action === 'add') {
+        speakText('Kayıt formu açılıyor.');
+        swT('form', document.querySelector(`.nav-tab[onclick*="'form'"]`));
+        setTimeout(() => {
+            popF();
+            if (entities.date) $('f-tarih').value = entities.date.split('.').reverse().join('-');
+            if (entities.person) $('f-calisan').value = entities.person;
+            if (entities.shift) $('f-vardiya').value = entities.shift;
+            if (entities.machine) {
+                const presSelect = $('f-pres1');
+                if (!Array.from(presSelect.options).some(o => o.value === entities.machine)) presSelect.add(new Option(entities.machine, entities.machine));
+                presSelect.value = entities.machine;
+            }
+            if (entities.number) $('f-uretim1').value = entities.number;
+            checkDuplicate();
+        }, 500);
+    } else if (match.action === 'edit' || match.action === 'delete') {
+        speakText('Bunun için tablodan işlem yapmak istediğiniz kaydı seçmelisiniz.');
+    }
+}
+
+function extractEntities(text) {
+  const entities = {};
+  if (text.includes('bugün'))                    entities.date = sD;
+  else if (text.includes('dün'))                 entities.date = DATES[DATES.indexOf(sD) - 1];
+  else if (text.includes('bu hafta'))            entities.date = sW;
+  else if (text.includes('bu ay'))               entities.date = sM;
+  else {
+    const dateMatch = text.match(/(\d{1,2}).\s-/);
+    if (dateMatch) entities.date = `${dateMatch[1].padStart(2,'0')}.${dateMatch[2].padStart(2,'0')}.${new Date().getFullYear()}`;
+  }
+  const allNames = [...new Set([...RAW.map(r => r.calisan), ...Object.keys(USER_DATA)])];
+  entities.person = allNames.find(name => name.split(' ').some(part => part.length > 2 && text.includes(part.toLowerCase()))) || null;
+  const presMatch = text.match(/pres\s*(\d+)/);
+  if (presMatch) entities.machine = `PRES ${presMatch[1]}`;
+  if (text.includes('sabah') || text.includes('08'))      entities.shift = '08:00-16:00';
+  else if (text.includes('akşam') || text.includes('16')) entities.shift = '16:00-24:00';
+  else if (text.includes('gece') || text.includes('00'))  entities.shift = '00:00-08:00';
+  const numMatch = text.match(/(\d+)\s*(bin)?(?:\s*adet)?/);
+  if (numMatch) entities.number = parseInt(numMatch[1]) * (numMatch[2] ? 1000 : 1);
+  return entities;
+}
+
+function answerDataQuery(text, entities) {
+  const scope = entities.date ? RAW.filter(r => r.tarih === entities.date || r.tarih.endsWith(entities.date)) 
+    : cTab === 'gunluk' ? RAW.filter(r => r.tarih === sD) 
+    : cTab === 'haftalik' ? RAW.filter(r => isoW(r.tarih) === sW)
+    : cTab === 'aylik'  ? RAW.filter(r => r.tarih.endsWith(sM)) 
+    : RAW;
+  const filtered = entities.person ? scope.filter(r => r.calisan === entities.person) : entities.machine ? scope.filter(r => r.pres1 === entities.machine || r.pres2 === entities.machine) : scope;
+  const s = calc(filtered);
+  if (text.includes('üret') || text.includes('adet')) {
+    speakText(`Toplam ${n(s.u)} adet üretim. ${filtered.length} kayıt.`);
+  } else if (text.includes('performans') || text.includes('yüzde')) {
+    speakText(`Ortalama performans yüzde ${s.p.toFixed(1)}.`);
+  } else if (text.includes('duruş')) {
+    speakText(`Toplam duruş süresi ${n(s.d)} dakika.`);
+  } else if (text.includes('en iyi') || text.includes('birinci')) {
+    const best = [...new Set(scope.map(r => r.calisan))].map(c => ({ c, ...calc(scope.filter(r => r.calisan === c)) })).sort((a, b) => b.u - a.u)[0];
+    if (best) speakText(`En yüksek üretim: ${best.c}, ${n(best.u)} adet, yüzde ${best.p.toFixed(1)} performans.`);
+  } else if (text.includes('alarm') || text.includes('sorun')) {
+    const lowPerf = [...new Set(scope.map(r => r.calisan))].map(c => ({ c, p: calc(scope.filter(r => r.calisan === c)).p })).filter(x => x.p > 0 && x.p < 80);
+    speakText(lowPerf.length ? `${lowPerf.length} kişinin performansı yüzde seksenin altında: ${lowPerf.map(x => x.c.split(' ')[0]).join(', ')}.` : 'Kritik alarm yok.');
+  } else {
+    speakText(`Seçili kriterlerde ${n(s.u)} adet üretim ve yüzde ${s.p.toFixed(1)} performans var.`);
+  }
+}
+
+function showVoiceOverlay(transcript, intent, entities) {
+  const el = $('voice-overlay');
+  if (!el) return;
+  $('vo-transcript').textContent = '"' + transcript + '"';
+  $('vo-intent').textContent     = intent;
+  $('vo-person').textContent     = entities.person  || '—';
+  $('vo-machine').textContent    = entities.machine || '—';
+  $('vo-date').textContent       = entities.date    || '—';
+  el.classList.remove('hidden', 'opacity-0', 'translate-y-2');
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => {
+    el.classList.add('opacity-0', 'translate-y-2');
+    setTimeout(() => el.classList.add('hidden'), 300);
+  }, 4000);
+}
+
+function openCommandPalette() {
+  const allCmds = VOICE_COMMANDS.flatMap(c =>
+    c.patterns.map(p => ({
+      category: c.name,
+      example: p.kw[0],
+      desc: p.kw.slice(1).join(' / ')
+    }))
+  );
+
+  $('gen-mdl-content').innerHTML = `
+    <input id="cmd-search" placeholder="Komut ara..." autocomplete="off"
+      class="w-full bg-bg border border-border text-text rounded-xl p-3 text-sm mb-4 outline-none focus:border-accent"
+      oninput="filterCmds(this.value)">
+    <div id="cmd-list" class="space-y-1 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+      ${allCmds.map(c => `
+        <div class="cmd-item flex items-center justify-between p-3 rounded-lg hover:bg-bg3 cursor-pointer
+          transition-colors border border-transparent hover:border-border/50"
+          onclick="closeGenericModal(); toggleVoiceAssistant(); setTimeout(()=>processVoiceCommand('${c.example}'),500)">
+          <div>
+            <span class="text-text font-bold text-sm">${c.example}</span>
+            ${c.desc ? `<span class="text-text3 text-xs ml-2">${c.desc}</span>` : ''}
+          </div>
+          <span class="text-[10px] text-text3 bg-bg3 px-2 py-0.5 rounded uppercase">${c.category}</span>
+        </div>`).join('')}
+    </div>`;
+  $('generic-modal').classList.remove('hidden');
+  $('generic-modal').classList.add('flex');
+  setTimeout(() => { 
+      $('generic-modal').classList.remove('opacity-0'); 
+      const inp = $('cmd-search');
+      if(inp) inp.focus();
+  }, 10);
+}
+
+function filterCmds(q) {
+  const f = q.toLowerCase();
+  document.querySelectorAll('.cmd-item').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(f) ? '' : 'none';
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    openCommandPalette();
+  }
+});
+
+const VOICE_COMMANDS = [
+  {
+    name: 'navigate',
+    patterns: [
+      { kw: ['günlük', 'bugün'],          tab: 'gunluk' },
+      { kw: ['haftalık', 'bu hafta'],     tab: 'haftalik' },
+      { kw: ['aylık', 'bu ay'],           tab: 'aylik' },
+      { kw: ['alarm', 'uyarı'],           tab: 'alarm' },
+      { kw: ['çalışan', 'personel'],      tab: 'calisan' },
+      { kw: ['pres', 'makine', 'tezgah'], tab: 'pres' },
+      { kw: ['fason'],                    tab: 'fason' },
+      { kw: ['form', 'kayıt gir'],        tab: 'form' },
+      { kw: ['plan', 'üretim planı'],     tab: 'plan' },
+      { kw: ['yönetim', 'admin'],         tab: 'admin',  adminOnly: true },
+      { kw: ['kalıphane', 'kalıp'],       tab: 'kaliphane' },
+      { kw: ['malzeme'],                  tab: 'malzeme' },
+      { kw: ['deneme', 'kayıtlar'],       tab: 'kayitlar' },
+      { kw: ['genel özet', 'tüm veriler'],tab: 'genel' }
+    ],
+    handler(match, entities) {
+      if (match.adminOnly && LOGGED_IN_USER?.role !== 'admin') {
+        return speakText('Bu sayfa sadece yöneticilere açık.');
+      }
+      const el = document.querySelector(`.nav-tab[onclick*="'${match.tab}'"]`);
+      if (el) swT(match.tab, el);
+      speakText(`${el ? el.innerText.replace(/[^a-zA-ZçğıöşüÇĞIÖŞÜ ]/g, '').trim() : match.tab} sayfası açıldı.`);
+      if (entities.person) setTimeout(() => applyVoiceFilter(match.tab, entities.person), 500);
+      if (entities.machine) setTimeout(() => applyVoiceFilter(match.tab, entities.machine), 500);
+    }
+  },
+  {
+    name: 'date_nav',
+    patterns: [
+      { kw: ['önceki gün', 'dün'],   fn: () => chD(-1) },
+      { kw: ['sonraki gün', 'yarın'], fn: () => chD(1) },
+      { kw: ['önceki hafta'],        fn: () => chW(-1) },
+      { kw: ['sonraki hafta'],        fn: () => chW(1) },
+      { kw: ['önceki ay'],           fn: () => chM(-1) },
+      { kw: ['sonraki ay'],          fn: () => chM(1) },
+    ],
+    handler(match) { match.fn(); speakText('Geçildi.'); }
+  },
+  {
+    name: 'data_query',
+    patterns: [
+      { kw: ['kaç üret', 'ne kadar üret', 'toplam üretim', 'ne yaptık'] },
+      { kw: ['en iyi', 'birinci', 'lider'] },
+      { kw: ['duruş', 'kaç dakika durdu'] },
+      { kw: ['performans', 'yüzde kaç'] },
+      { kw: ['alarm', 'sorun var mı', 'uyarı var mı'] },
+    ],
+    handler(match, entities, transcript) { answerDataQuery(transcript, entities); }
+  },
+  {
+    name: 'crud',
+    patterns: [
+      { kw: ['yeni kayıt', 'form doldur', 'giriş yap', 'ekle', 'veri gir', 'form aç'], action: 'add' },
+      { kw: ['düzenle', 'güncelle'],                                   action: 'edit' },
+      { kw: ['sil', 'kaldır'],                                         action: 'delete', confirm: true },
+    ],
+    handler(match, entities) { handleCrudCommand(match, entities); }
+  },
+  {
+    name: 'system',
+    patterns: [
+      { kw: ['güncelle', 'yenile', 'tazele'],   fn: () => fetchCSV(true) },
+      { kw: ['pdf', 'yazdır', 'dışa aktar'],    fn: () => exportToPDF() },
+      { kw: ['karanlık', 'koyu'],               fn: () => { if (!document.documentElement.classList.contains('light-mode')) toggleTheme(); } },
+      { kw: ['aydınlık', 'açık tema', 'ışık'],  fn: () => { if (document.documentElement.classList.contains('light-mode')) toggleTheme(); } },
+      { kw: ['çıkış yap', 'oturumu kapat', 'çıkış'], fn: () => { speakText('Çıkış yapılıyor. Görüşmek üzere.'); setTimeout(logout, 1500); } },
+    ],
+    handler(match) { match.fn(); if(!match.kw.includes('çıkış')) speakText('Tamam.'); }
+  },
+  {
+    name: 'help',
+    patterns: [{ kw: ['yardım', 'ne yapabilirsin', 'komutlar'] }],
+    handler() { openCommandPalette(); }
+  },
+  {
+    name: 'emp_detail',
+    patterns: [{ kw: ['göster', 'formunu', 'verisini', 'ne yapmış', 'detay'] }],
+    handler(match, entities) {
+        if (entities.person) {
+            speakText(`${entities.person} isimli çalışanın geçmiş formları ve performans detayları açılıyor.`);
+            openModal(entities.person);
+        } else {
+            speakText('Kimin detayını görmek istediğinizi anlayamadım.');
+        }
+    }
+  }
+];
+
+function handleDialogState(text, entities) {
     if (voiceState === 'waiting_emp_name') {
-        tempVoiceData.name = command.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        tempVoiceData.name = text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         voiceState = 'waiting_emp_pass';
         speakText(`${tempVoiceData.name} için bir şifre söyleyin.`);
         return;
     } else if (voiceState === 'waiting_emp_pass') {
-        let pass = command.replace(/[^0-9]/g, '');
-        if (!pass) pass = '1234'; // Anlaşılamazsa varsayılan
+        let pass = text.replace(/[^0-9]/g, '');
+        if (!pass) pass = '1234';
         tempVoiceData.pass = pass;
         voiceState = 'idle';
         speakText(`${tempVoiceData.name} isimli kullanıcı ${pass} şifresiyle kaydediliyor.`);
         
-        // Formu programatik olarak doldur ve arka planda gönder
         $('admin-u-name').value = tempVoiceData.name;
         $('admin-u-pass').value = tempVoiceData.pass;
         $('admin-u-role').value = 'user';
@@ -3169,214 +3420,51 @@ function processVoiceCommand(command) {
         saveUserObj({ preventDefault: () => {} });
         return;
     }
+}
 
-    if (command.includes('iptal') || command.includes('vazgeç') || command.includes('durdur')) {
-        if (voiceState !== 'idle') {
-            voiceState = 'idle';
-            tempVoiceData = {};
-            speakText('İşlem iptal edildi.');
-            return;
-        }
+function processVoiceCommand(command) {
+  const text = command.toLowerCase().trim();
+  const entities = extractEntities(text);
+
+  if (text.includes('iptal') || text.includes('vazgeç') || text.includes('durdur')) {
+      if (voiceState !== 'idle') {
+          voiceState = 'idle';
+          tempVoiceData = {};
+          speakText('İşlem iptal edildi.');
+          return;
+      }
+  }
+
+  if (text.includes('çalışan ekle') || text.includes('personel ekle') || text.includes('kullanıcı ekle')) {
+      if(!LOGGED_IN_USER || LOGGED_IN_USER.role !== 'admin') {
+          speakText('Kullanıcı eklemek için yönetici yetkisine sahip olmalısınız.');
+          return;
+      }
+      const navEl = document.querySelector(`.nav-tab[onclick*="'admin'"]`);
+      if(navEl) swT('admin', navEl);
+      voiceState = 'waiting_emp_name';
+      tempVoiceData = {};
+      speakText('Yeni çalışanın adını ve soyadını söyler misiniz?');
+      return;
+  }
+
+  if (voiceState !== 'idle') {
+    return handleDialogState(text, entities);
+  }
+
+  for (const cmd of VOICE_COMMANDS) {
+    for (const pattern of cmd.patterns) {
+      const matched = pattern.kw.some(k => text.includes(k));
+      if (matched) {
+        showVoiceOverlay(command, cmd.name, entities);
+        cmd.handler(pattern, entities, command);
+        return;
+      }
     }
+  }
 
-    let handled = false;
-
-    // 1. Durum ve Özet Komutu
-    if (command.includes('durum') || command.includes('özet') || command.includes('ne kadar üret') || command.includes('ne yaptık')) {
-        if(RAW.length === 0) { speakText('Sistemde henüz veri yok.'); } else {
-            const todayData = RAW.filter(r => r.tarih === sD); const s = calc(todayData);
-            speakText(`Bugün toplam ${n(s.u)} adet üretim yapıldı. Ortalama performans yüzde ${s.p.toFixed(1)} ve toplam duruş süresi ${n(s.d)} dakika.`);
-        }
-        handled = true;
-    }
-
-    // 2. Akıllı Sayfa Yönlendirmesi ve Tablo Filtreleme (NLP Mantığı)
-    // 2. Akıllı Form Doldurma (NLP ile Tek Cümlede Veri Girişi)
-    // Örn: "Ahmet dün sabah vardiyasında pres 1'de 5000 adet üretti ve 20 dakika duruş yaptı"
-    let isFormFill = command.includes('üretti') || command.includes('adet') || command.includes('duruş yaptı') || command.includes('formu doldur');
-    if (!handled && isFormFill) {
-        let formEmp = null, formShift = '', formPres = '', formUretim = '', formDurus = '', formTarih = '';
-        
-        // 1- Çalışan Çıkarımı
-        const users = Object.keys(USER_DATA);
-        formEmp = users.find(u => command.includes(u.toLowerCase())); // Tam isim eşleşmesi
-        if (!formEmp) formEmp = users.find(u => command.includes(u.toLowerCase().split(' ')[0])); // Sadece ilk isim
-        
-        // 2- Vardiya Çıkarımı
-        if (command.includes('sabah') || command.includes('08:00') || command.includes('sekiz')) formShift = '08:00-16:00';
-        else if (command.includes('akşam') || command.includes('16:00') || command.includes('on altı')) formShift = '16:00-24:00';
-        else if (command.includes('gece') || command.includes('00:00') || command.includes('sıfır')) formShift = '00:00-08:00';
-
-        // 3- Pres Makinesi Çıkarımı
-        let presMatch = command.match(/pres\s*(\d+)/);
-        if (presMatch) formPres = `PRES ${presMatch[1]}`;
-
-        // 4- Üretim Sayısı Çıkarımı (Örn: "5000 adet", "5 bin adet")
-        let uretimMatch = command.match(/(\d+)\s*(bin\s*)?(adet|tane|üretti|üretim)/);
-        if (uretimMatch) {
-            formUretim = uretimMatch[1];
-            if (uretimMatch[2]) formUretim += '000'; // "5 bin" dendiğinde sıfırları tamamla
-        } else {
-            let numbers = command.match(/\b\d{3,}\b/); // Başka kelime bulamazsa 3 haneden büyük ilk sayıyı al
-            if (numbers) formUretim = numbers[0];
-        }
-
-        // 5- Duruş Süresi Çıkarımı
-        let durusMatch = command.match(/(\d+)\s*(dakika|dk|duruş|durdu)/);
-        if (durusMatch) formDurus = durusMatch[1];
-
-        // 6- Tarih Çıkarımı (Dün)
-        if (command.includes('dün')) {
-            let d = new Date();
-            d.setDate(d.getDate() - 1);
-            formTarih = d.toISOString().split('T')[0];
-        } // "Bugün" demeye gerek yok, sistem otomatik bugünü atar
-
-        // Eğer yakalanan geçerli veriler varsa işlemi başlat
-        if (formEmp || formShift || formPres || formUretim) {
-            speakText('Anladığım veriler forma işleniyor. Lütfen kontrol edip kaydet butonuna basın.');
-            const navEl = document.querySelector(`.nav-tab[onclick*="'form'"]`);
-            if (navEl) swT('form', navEl);
-
-            setTimeout(() => {
-                popF(); // Form listelerini ve tarihini hazırla
-                if (formTarih) $('f-tarih').value = formTarih;
-                if (formEmp) $('f-calisan').value = formEmp;
-                if (formShift) $('f-vardiya').value = formShift;
-                if (formPres) {
-                    const presSelect = $('f-pres1');
-                    if (!Array.from(presSelect.options).some(o => o.value === formPres)) presSelect.add(new Option(formPres, formPres));
-                    presSelect.value = formPres;
-                }
-                if (formUretim) $('f-uretim1').value = formUretim;
-                if (formDurus) $('f-durus1').value = formDurus;
-                
-                checkDuplicate(); // Mükerrer kayıt var mı diye kontrol mekanizmasını tetikle
-            }, 600);
-            handled = true;
-        }
-    }
-
-    // 3. Akıllı Sayfa Yönlendirmesi ve Tablo Filtreleme (NLP Mantığı)
-    if (!handled) {
-        const pageDictionary = [
-            { tab: 'kayitlar', name: 'Üretim Takip Denemeleri', kw: ['üretim takip', 'deneme', 'kayıtlar'], isSpecial: true },
-            { tab: 'malzeme', name: 'Pres Malzeme Takip', kw: ['malzeme'], filterTb: 'tb-malzeme' },
-            { tab: 'kaliphane', name: 'Kalıphane', kw: ['kalıphane', 'kalıp'], filterTb: 'tb-kalip' },
-            { tab: 'fason', name: 'Fason Detay', kw: ['fason'], filterTb: 'tb-fas' },
-            { tab: 'pres', name: 'Pres Makineleri', kw: ['presler', 'makine', 'tezgah', 'pres'], filterTb: 'tb-pre' },
-            { tab: 'calisan', name: 'Çalışan Performansı', kw: ['personel', 'çalışanlar', 'işçi'], filterTb: 'tb-cal' },
-            { tab: 'plan', name: 'Üretim Planı', kw: ['üretim planı', 'plan'], filterTb: null },
-            { tab: 'alarm', name: 'Alarmlar', kw: ['alarm', 'uyarı', 'analiz'], filterTb: null },
-            { tab: 'genel', name: 'Genel Özet', kw: ['genel özet', 'tüm veriler'], filterTb: null },
-            { tab: 'aylik', name: 'Aylık Rapor', kw: ['aylık rapor', 'bu ay', 'aylık'], filterTb: 'tb-ay' },
-            { tab: 'haftalik', name: 'Haftalık Rapor', kw: ['haftalık rapor', 'bu hafta', 'haftalık'], filterTb: 'tb-haf' },
-            { tab: 'gunluk', name: 'Günlük Rapor', kw: ['günlük rapor', 'bugün', 'günlük'], filterTb: 'tb-gun' },
-            { tab: 'form', name: 'Veri Giriş Formu', kw: ['veri gir', 'form aç', 'kayıt gir', 'form'], filterTb: null },
-            { tab: 'admin', name: 'Yönetim Paneli', kw: ['yönetim', 'admin paneli', 'ayarlar'], filterTb: null }
-        ];
-
-        let matchedPage = null;
-        let strippedCommand = command;
-
-        for (let p of pageDictionary) {
-            const foundKw = p.kw.find(k => command.includes(k));
-            if (foundKw) {
-                matchedPage = p;
-                // Cümledeki sayfa kelimesini ve olası Türkçe eklerini (-ı, -lar, vb.) temizle
-                strippedCommand = strippedCommand.replace(new RegExp(foundKw + '[a-zçğıöşü]*', 'g'), '');
-                break;
-            }
-        }
-
-        if (matchedPage) {
-            // Doğal dildeki bağlaçları, fiilleri ve gereksiz kelimeleri ayıkla
-            const stopwords = ['bana','şu','bu','sayfa','sayfayı','sayfasına','sayfasında','sayfası','sayfada','git','aç','göster','ara','bul','filtrele','getir','için','hakkında','geçmiş','bütün','tüm','detaylarını','detayını','ve','de','da','listesi','verisi','verilerini','verisini','durumu'];
-            stopwords.forEach(sw => {
-                strippedCommand = strippedCommand.replace(new RegExp('(^|\\s)' + sw + '[a-zçğıöşü]*(\\s|$)', 'g'), ' ');
-            });
-            
-            // Çift boşlukları düzelt ve temizle
-            strippedCommand = strippedCommand.replace(/\s+/g, ' ').trim();
-            
-            // Geriye kalan kısımdan arama hedefini bozan tanımlayıcıları sil
-            let searchTerm = strippedCommand.replace(/\b(fason|kalıp|makine|pres|deneme|takip|rapor)[a-zçğıöşü]*\b/g, '').trim();
-            searchTerm = searchTerm.replace(/'[a-zçğıöşü]+/g, ''); // "18cp27'yi" -> "18cp27"
-
-            if (searchTerm && (matchedPage.filterTb || matchedPage.isSpecial)) {
-                speakText(`${matchedPage.name} sayfasında ${searchTerm} aranıyor.`);
-            } else {
-                speakText(`${matchedPage.name} sayfası açılıyor.`);
-            }
-
-            const navEl = document.querySelector(`.nav-tab[onclick*="'${matchedPage.tab}'"]`);
-            if (navEl) swT(matchedPage.tab, navEl);
-
-            if (searchTerm) {
-                setTimeout(() => {
-                    if (matchedPage.isSpecial) {
-                        const searchBox = $('kayit-search');
-                        if (searchBox) { searchBox.value = searchTerm; filterKayitlar(searchTerm); }
-                    } else if (matchedPage.filterTb) {
-                        const inputEl = document.querySelector(`input[onkeyup*="'${matchedPage.filterTb}'"]`);
-                        if (inputEl) { inputEl.value = searchTerm; }
-                        fT(matchedPage.filterTb, searchTerm);
-                    }
-                }, 600);
-            }
-            handled = true;
-        }
-    }
-
-    // 3. Çalışan / Form Detayı (Örn: "Ahmet in verisini göster")
-    // 4. Çalışan / Form Detayı (Örn: "Ahmet in verisini göster")
-    if (!handled) {
-        const users = Object.keys(USER_DATA);
-        let matchedUser = users.find(u => {
-            const firstName = u.toLowerCase().split(' ')[0];
-            return command.includes(firstName);
-        });
-
-        if (matchedUser && (command.includes('göster') || command.includes('formunu') || command.includes('verisini') || command.includes('ne yapmış') || command.includes('detay'))) {
-            // Söylenen çalışanın detay modalını aç (Geçmiş tüm formu/tarihleri içinde listelenir)
-            speakText(`${matchedUser} isimli çalışanın geçmiş formları ve performans detayları açılıyor.`);
-            openModal(matchedUser); 
-            handled = true;
-        }
-    }
-
-    // 5. Diğer Aksiyonlar (Çalışan Ekleme, Tema, Çıkış)
-    // 5. Sayfa Yönlendirmeleri ve Diğer Aksiyonlar (Çalışan Ekleme, Tema, Çıkış)
-    if (!handled) {
-        if (command.includes('çalışan ekle') || command.includes('personel ekle') || command.includes('kullanıcı ekle')) {
-            if(!LOGGED_IN_USER || LOGGED_IN_USER.role !== 'admin') {
-                speakText('Kullanıcı eklemek için yönetici yetkisine sahip olmalısınız.');
-                return;
-            }
-            const navEl = document.querySelector(`.nav-tab[onclick*="'admin'"]`);
-            if(navEl) swT('admin', navEl);
-            voiceState = 'waiting_emp_name';
-            tempVoiceData = {};
-            speakText('Yeni çalışanın adını ve soyadını söyler misiniz?');
-            handled = true;
-        } else if (command.includes('karanlık') || command.includes('koyu')) {
-            if(!document.documentElement.classList.contains('light-mode')) toggleTheme();
-            speakText('Karanlık moda geçildi.');
-            handled = true;
-        } else if (command.includes('aydınlık') || command.includes('ışık')) {
-            if(document.documentElement.classList.contains('light-mode')) toggleTheme();
-            speakText('Aydınlık moda geçildi.');
-            handled = true;
-        } else if (command.includes('çıkış')) { 
-            speakText('Çıkış yapılıyor. Görüşmek üzere.'); 
-            setTimeout(() => logout(), 2000); 
-            handled = true;
-        }
-    }
-    
-    if (!handled) {
-        speakText('Anlamadım, komutu tekrar edebilir veya daha belirgin kelimeler kullanabilirsiniz.');
-    }
+  speakText('Anlamadım. "Yardım" diyerek komut listesini görebilirsiniz.');
+  showVoiceOverlay(command, 'unknown', entities);
 }
 </script>
 </body>
