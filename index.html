@@ -736,6 +736,16 @@
                     <div id="active-chat-history" class="flex-1 overflow-y-auto p-3 md:p-5 bg-bg flex flex-col scroll-smooth gap-1"></div>
                     
                     <div class="p-3 md:p-4 border-t border-border bg-bg3 shrink-0 flex gap-2 items-end">
+                        <input type="file" id="chat-file-input" accept="image/*,audio/*" class="hidden" onchange="handleChatFileUpload(event)">
+                        <button type="button" id="btn-chat-mic"
+                            onpointerdown="startChatVoiceRecord(event)" 
+                            onpointerup="stopChatVoiceRecord(event)"
+                            onpointerleave="cancelChatVoiceRecord(event)"
+                            onclick="$('chat-file-input').click()"
+                            class="w-12 h-12 bg-bg2 hover:bg-bg3 text-text2 rounded-full flex items-center justify-center shrink-0 border border-border transition-colors touch-none"
+                            title="Basılı tut: Ses | Tıkla: Dosya">
+                            🎤
+                        </button>
                         <textarea id="chat-msg-input" rows="1" placeholder="Mesajınızı yazın..." class="flex-1 bg-bg border border-border text-text rounded-2xl p-3 md:p-4 text-sm md:text-base outline-none focus:border-accent resize-none max-h-32 min-h-[48px] shadow-inner transition-colors" oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault(); sendChatMessage();}"></textarea>
                         <button onclick="sendChatMessage()" class="w-12 h-12 md:w-14 md:h-14 bg-accent hover:bg-accent/80 text-white rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform transform hover:scale-105 border border-white/10">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 md:w-7 md:h-7 ml-1"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg>
@@ -914,7 +924,7 @@ function swT(t,el){
     const dropdownMenu = dropdownBtn?.nextElementSibling;
     if (dropdownMenu) { dropdownMenu.classList.add('hidden'); dropdownMenu.classList.remove('flex'); }
     if (dropdownBtn && el && el.closest('#nav-dropdown-raporlar')) {
-        dropdownBtn.innerHTML = '📊 ' + el.innerText + ' <span class="text-[10px]">▼</span>';
+        dropdownBtn.innerHTML = el.innerText.trim() + ' <span class="text-[10px]">▼</span>';
         dropdownBtn.classList.add('bg-accent/20', 'text-accent', 'border-accent');
         dropdownBtn.classList.remove('bg-bg3', 'text-text2', 'border-border');
     } else if (dropdownBtn) {
@@ -1580,7 +1590,7 @@ function openModal(emp) {
     
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
     $('mdl-th').innerHTML = th(['Tarih','Vardiya','Presler','Hedef','Üretim','Performans','Duruş', ...(isAdmin ? ['İşlem'] : [])]);
-    const monthData = data.filter(r => r.tarih.endsWith(sM));
+    const monthData = sM ? data.filter(r => r.tarih.endsWith(sM)) : data.slice(0, 30);
     $('mdl-history').innerHTML = monthData.map(r => { const topD = r.durus1 + r.durus2; return `
         <tr class="border-b border-border/50 hover:bg-bg2">
             <td class="p-3 font-mono">${r.tarih}</td>
@@ -1975,6 +1985,7 @@ function openNotifModal() {
     $('chat-list-view').classList.remove('hidden'); $('chat-list-view').classList.add('flex');
     if (window.innerWidth < 768 && currentChatPartner) {
         $('active-chat-view').classList.remove('hidden'); $('active-chat-view').classList.add('flex');
+        $('chat-list-view').classList.add('hidden'); $('chat-list-view').classList.remove('flex');
     } else if(window.innerWidth >= 768 && !currentChatPartner) {
         $('active-chat-view').classList.remove('hidden'); $('active-chat-view').classList.add('flex');
         $('chat-empty-state').classList.remove('hidden'); $('chat-empty-state').classList.add('flex');
@@ -2672,7 +2683,16 @@ function deleteUser(name) {
 }
 
 // Admin paneli yükleme iptal edildi (Artık okuma sohbet ekranından yapılıyor)
-function loadUserNotif(user) { $('admin-n-msg').value = ''; }
+function loadUserNotif(user) {
+    $('admin-n-msg').value = '';
+    if (!user || !MESAJ_RAW.r) return;
+    const last = MESAJ_RAW.r.slice().reverse()
+        .find(r => (r[1] === user && r[2] === LOGGED_IN_USER.name) || 
+                   (r[1] === LOGGED_IN_USER.name && r[2] === user));
+    if (last) {
+        $('admin-n-msg').placeholder = `Son mesaj (${last[0]}): "${last[3].substring(0,60)}..."`;
+    }
+}
 
 function sendNotif(e) {
     e.preventDefault();
@@ -2883,7 +2903,6 @@ if(savedUser && savedUser !== "undefined") {
                 if($('user-initials')) $('user-initials').classList.add('hidden');
             } else {
                 $('user-avatar').classList.add('hidden');
-                if($('user-initials')) { $('user-initials').innerText = LOGGED_IN_USER.name.slice(0,2).toUpperCase(); $('user-initials').classList.remove('hidden'); }
             }
             applyRoleRestrictions();
             checkNotifs();
@@ -2968,24 +2987,8 @@ function openGenericFormModal(type, editIdx = null) {
 
 function replyTo(user) {
     if (!user || user === 'SİSTEM' || user === 'GLOBAL') return;
-    const form = $('notif-send-form');
-    const content = $('notif-content');
-    const btn = $('btn-show-send-notif');
-    if (form.classList.contains('hidden')) {
-        form.classList.remove('hidden'); form.classList.add('flex');
-        content.classList.add('hidden');
-        if (btn) btn.innerText = 'GERİ DÖN';
-        const otherUsers = Object.keys(USER_DATA).filter(u => u !== LOGGED_IN_USER.name).sort();
-        $('modal-n-user').innerHTML = `<option value="">Kime Göndereceksiniz?</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + otherUsers.map(u => `<option value="${u}">${u}</option>`).join('');
-        if (Array.from($('modal-n-user').options).some(opt => opt.value === user)) {
-            $('modal-n-user').value = user;
-        }
-    } else {
-        if (Array.from($('modal-n-user').options).some(opt => opt.value === user)) {
-            $('modal-n-user').value = user;
-        }
-    }
-    setTimeout(() => $('modal-n-msg').focus(), 50);
+    openNotifModal();
+    setTimeout(() => openChat(user), 150);
 }
 
 function closeGenericFormModal() {
