@@ -209,28 +209,18 @@
     <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-x-hidden">
     <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2/80 backdrop-blur-md p-1.5 md:p-2 rounded-xl border border-border/50 shrink-0 shadow-md" id="main-nav">
         <!-- Raporlar Dropdown -->
-        <div class="relative flex-1 md:flex-none z-50" id="nav-dropdown-raporlar">
         <div class="relative flex-1 md:flex-none z-[9999]" id="nav-dropdown-raporlar">
             <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex');" class="nav-btn w-full bg-accent/20 text-accent border-accent flex justify-center items-center gap-2 outline-none shadow-sm">
                 📊 GÜNLÜK RAPOR <span class="text-[10px]">▼</span>
             </button>
-            <div class="absolute left-0 top-full mt-2 hidden flex-col bg-bg2/95 backdrop-blur-xl border border-border/80 rounded-xl shadow-2xl min-w-[220px] w-full md:w-auto overflow-hidden z-50">
-            <div class="absolute left-0 top-full mt-2 hidden flex-col bg-bg border border-border rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] min-w-[220px] w-full md:w-auto overflow-hidden z-[100]">
-                <div onclick="swT('gunluk',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left nav-active">GÜNLÜK RAPOR</div>
-                <div onclick="swT('haftalik',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">HAFTALIK RAPOR</div>
-                <div onclick="swT('aylik',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">AYLIK RAPOR</div>
-                <div onclick="swT('genel',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">GENEL ÖZET</div>
-                <div onclick="swT('calisan',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">ÇALIŞAN PERFORMANSI</div>
-                <div onclick="swT('pres',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">PRES MAKİNE</div>
-                <div onclick="swT('fason',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">FASON DETAY</div>
-            <div class="absolute left-0 top-full mt-2 hidden flex-col bg-bg2 border border-border/80 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.8)] min-w-[240px] w-full md:w-auto overflow-hidden z-[9999] divide-y divide-border/60">
-                <div onclick="swT('gunluk',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg3/50 text-text hover:bg-accent/20 hover:text-accent w-full text-left nav-active transition-colors font-semibold">📊 GÜNLÜK RAPOR</div>
-                <div onclick="swT('haftalik',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg2 text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">📅 HAFTALIK RAPOR</div>
-                <div onclick="swT('aylik',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg3/50 text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">🗓 AYLIK RAPOR</div>
-                <div onclick="swT('genel',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg2 text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">📈 GENEL ÖZET</div>
-                <div onclick="swT('calisan',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg3/50 text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">👥 ÇALIŞAN PERFORMANSI</div>
-                <div onclick="swT('pres',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg2 text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">⚙️ PRES MAKİNE</div>
-                <div onclick="swT('fason',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg3/50 text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">🏭 FASON DETAY</div>
+            <div class="absolute left-0 top-full mt-2 hidden flex-col bg-bg border border-border rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.9)] min-w-[240px] w-full md:w-auto overflow-hidden z-[9999] divide-y divide-border/50">
+                <div onclick="swT('gunluk',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg text-text hover:bg-accent/20 hover:text-accent w-full text-left nav-active transition-colors font-semibold">📊 GÜNLÜK RAPOR</div>
+                <div onclick="swT('haftalik',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">📅 HAFTALIK RAPOR</div>
+                <div onclick="swT('aylik',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">🗓 AYLIK RAPOR</div>
+                <div onclick="swT('genel',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">📈 GENEL ÖZET</div>
+                <div onclick="swT('calisan',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">👥 ÇALIŞAN PERFORMANSI</div>
+                <div onclick="swT('pres',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">⚙️ PRES MAKİNE</div>
+                <div onclick="swT('fason',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">🏭 FASON DETAY</div>
             </div>
         </div>
         <div onclick="swT('kaliphane',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">KALIPHANE</div>
@@ -1790,28 +1780,57 @@ async function submitForm(e){
 // showLogin ve login fonksiyonlarında document.querySelector('.main-content') kullanılıyor.
 
 function applyRoleRestrictions() {
-    document.querySelectorAll('.nav-tab, #nav-dropdown-raporlar').forEach(el => el.style.display = '');
+    // 1. Önce tüm sekmeleri ve menüleri görünür yap (Yönetici için tam erişim sıfırlaması)
+    document.querySelectorAll('.nav-tab, #nav-dropdown-raporlar').forEach(el => {
+        el.classList.remove('hidden');
+        el.style.display = '';
+    });
+    
     const adminBtn = $('nav-admin');
-    if(adminBtn) adminBtn.style.display = (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') ? '' : 'none';
+    if(adminBtn) {
+        if (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') {
+            adminBtn.classList.remove('hidden');
+            adminBtn.style.display = '';
+        } else {
+            adminBtn.classList.add('hidden');
+            adminBtn.style.display = 'none';
+        }
+    }
     
     document.querySelectorAll('.admin-only-btn').forEach(btn => {
         btn.classList.toggle('hidden', !(LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin'));
         btn.classList.toggle('flex', !!(LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin'));
     });
 
+    // 2. Eğer kullanıcı normal üye ise kısıtlamaları uygula
     if (LOGGED_IN_USER && LOGGED_IN_USER.role !== 'admin') {
         adminSettings.hiddenTabs.forEach(tab => {
             const navEl = document.querySelector(`.nav-tab[onclick*="'${tab}'"]`);
-            if(navEl) navEl.style.display = 'none';
+            if(navEl) {
+                navEl.classList.add('hidden');
+                navEl.style.display = 'none';
+            }
         });
         
-        if(adminSettings.hiddenTabs.includes(cTab)) {
-            const firstVisible = Array.from(document.querySelectorAll('.nav-tab')).find(el => el.style.display !== 'none' && el.id !== 'nav-admin');
+        // Raporlar menüsündeki tüm sekmeler gizliyse, ana "Raporlar" butonunu da komple gizle
+        const raporlarDropdown = $('nav-dropdown-raporlar');
+        if(raporlarDropdown) {
+            const visibleRapor = Array.from(raporlarDropdown.querySelectorAll('.nav-tab')).filter(el => !el.classList.contains('hidden'));
+            if(visibleRapor.length === 0) {
+                raporlarDropdown.classList.add('hidden');
+                raporlarDropdown.style.display = 'none';
+            }
+        }
+        
+        // Eğer üye, gizli olan veya erişimi olmayan (admin) bir sayfadaysa izin verilen ilk sayfaya yönlendir
+        if(adminSettings.hiddenTabs.includes(cTab) || cTab === 'admin') {
+            const firstVisible = Array.from(document.querySelectorAll('.nav-tab')).find(el => el.style.display !== 'none' && !el.classList.contains('hidden') && el.id !== 'nav-admin');
             if(firstVisible) {
-                const t = firstVisible.getAttribute('onclick').match(/'([^']+)'/)[1];
-                swT(t, firstVisible);
+                const match = firstVisible.getAttribute('onclick').match(/'([^']+)'/);
+                if(match) swT(match[1], firstVisible);
             } else {
-                swT('gunluk', document.querySelector(`.nav-tab[onclick*="'gunluk'"]`));
+                const def = document.querySelector(`.nav-tab[onclick*="'gunluk'"]`);
+                if(def) swT('gunluk', def);
             }
         }
     }
