@@ -1241,29 +1241,31 @@ function rKaliphane() {
         return;
     }
 
-    // Yalnızca istenen sütunları (Lokasyon, Raf no, Kalıplar) bul
-    const cols = [];
-    KALIP_RAW.h.forEach((h, i) => {
-        const hLow = h.toLowerCase();
-        if (hLow.includes('lokasyon') || hLow.includes('raf') || hLow.includes('kalıp') || hLow.includes('kalip')) {
-            cols.push({idx: i, name: h});
-        }
-    });
+    // Sütun başlıklarını ve renklerini tanımla
+    const headers = [
+        { name: 'LOKASYON', color: 'text-accent' },
+        { name: 'RAF NO', color: 'text-accent3' },
+        { name: 'KALIPLAR', color: 'text-accent4' }
+    ];
 
-    // İstenen sütunlar adından bulunamazsa fallback olarak ID hariç ilk 3 sütunu al
-    if (cols.length === 0) {
-        KALIP_RAW.h.forEach((h, i) => {
-            if (h.toLowerCase() !== 'id' && h.toLowerCase() !== 'ıd' && cols.length < 3) {
-                cols.push({idx: i, name: h});
-            }
-        });
-    }
+    // Sütun indekslerini bulmaya çalış
+    let lokasyonIdx = KALIP_RAW.h.findIndex(h => h.toLowerCase().includes('lokasyon'));
+    let rafIdx = KALIP_RAW.h.findIndex(h => h.toLowerCase().includes('raf'));
+    let kalipIdx = KALIP_RAW.h.findIndex(h => h.toLowerCase().includes('kalıp') || h.toLowerCase().includes('kalip'));
 
-    $('th-kalip').innerHTML = `<tr>${cols.map(c=>`<th class="sticky-th p-2 md:p-3 text-left font-sans font-semibold text-[11px] md:text-sm text-text3 border-b border-border uppercase th-bg leading-tight w-1/3">${escapeHTML(c.name)}</th>`).join('')}</tr>`;
+    // Bulunamazsa, ID olmayan ilk 3 sütunu varsay
+    const idIdx = KALIP_RAW.h.findIndex(h => h.toLowerCase() === 'id' || h.toLowerCase() === 'ıd');
+    const availableIndices = KALIP_RAW.h.map((_, i) => i).filter(i => i !== idIdx);
+    if (lokasyonIdx === -1) lokasyonIdx = availableIndices.shift();
+    if (rafIdx === -1) rafIdx = availableIndices.shift();
+    if (kalipIdx === -1) kalipIdx = availableIndices.shift();
+    const colIndices = [lokasyonIdx, rafIdx, kalipIdx].filter(i => i !== undefined);
+
+    $('th-kalip').innerHTML = `<tr>${headers.map((h, i) => `<th class="sticky-th p-2 md:p-3 text-left font-sans font-semibold text-[11px] md:text-sm ${h.color} border-b-2 border-border uppercase th-bg leading-tight w-1/3">${h.name}</th>`).join('')}</tr>`;
     $('tb-kalip').innerHTML = KALIP_RAW.r.map((row, idx) => {
         const bgClass = idx % 2 === 0 ? 'bg-bg2' : 'bg-bg3/50';
-        return `<tr class="${bgClass} hover:bg-border/50 border-b border-border/50 text-xs md:text-base cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'kalip')">
-            ${cols.map(c => `<td class="p-2 md:p-3 break-words align-top">${escapeHTML(row[c.idx] || '')}</td>`).join('')}
+        return `<tr class="${bgClass} hover:bg-border/50 border-b border-border/80 text-xs md:text-base cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'kalip')">
+            ${colIndices.map(colIdx => `<td class="p-2 md:p-3 break-words align-top">${escapeHTML(row[colIdx] || '')}</td>`).join('')}
         </tr>`;
     }).join('');
 }
