@@ -163,61 +163,64 @@
         </div>
     </div>
 
-    <header id="app-header" class="hidden flex-col xl:flex-row gap-4 justify-between items-center bg-bg2/90 backdrop-blur-md border border-border/50 p-4 md:p-5 rounded-2xl shadow-xl relative overflow-hidden">
+    <header id="app-header" class="hidden flex-col 2xl:flex-row gap-3 md:gap-4 justify-between items-center bg-bg2/90 backdrop-blur-md border border-border/50 p-3 md:p-5 rounded-2xl shadow-xl relative overflow-hidden w-full">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
         
-        <div class="flex flex-col items-center xl:items-start bg-bg3/80 border border-border/50 rounded-xl p-3 shadow-sm shrink-0 w-full xl:w-auto transition-transform hover:-translate-y-0.5">
-            <h1 class="font-bebas text-xl md:text-2xl tracking-[2px] text-accent leading-none">PRES ÜRETİM TAKİP</h1>
-            <div class="flex items-center gap-2 mt-2 text-[9px] md:text-[10px] font-mono text-text3">
+        <div class="flex flex-col items-center 2xl:items-start bg-bg3/80 border border-border/50 rounded-xl p-3 shadow-sm shrink-0 w-full sm:w-auto transition-transform hover:-translate-y-0.5">
+            <h1 class="font-bebas text-xl md:text-2xl tracking-[2px] text-accent leading-none text-center 2xl:text-left">PRES ÜRETİM TAKİP</h1>
+            <div class="flex items-center justify-center 2xl:justify-start gap-2 mt-2 text-[9px] md:text-[10px] font-mono text-text3">
                 <span id="src-status">● BAĞLANIYOR...</span>
                 <span class="w-1 h-1 bg-text3 rounded-full"></span>
                 <span id="src-info">Veri bekleniyor...</span>
             </div>
         </div>
         
-        <div class="flex flex-row flex-wrap xl:flex-nowrap items-center justify-center gap-2 md:gap-3 font-mono text-xs md:text-sm text-text2 flex-1 w-full xl:w-auto">
-            <div class="flex flex-col items-center bg-bg3/80 border border-border/50 rounded-xl px-4 py-2 shadow-sm flex-1 xl:flex-none xl:w-[120px] transition-transform hover:-translate-y-0.5"><span class="text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam Üretim</span><span id="hdr-total" class="text-xl font-bold text-text">-</span></div>
-            <div class="flex flex-col items-center bg-bg3/80 border border-border/50 rounded-xl px-4 py-2 shadow-sm flex-1 xl:flex-none xl:w-[120px] transition-transform hover:-translate-y-0.5"><span class="text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-xl font-bold text-accent4">-</span></div>
-            <div class="flex flex-col items-center bg-bg3/80 border border-border/50 rounded-xl px-4 py-2 shadow-sm flex-1 xl:flex-none xl:w-[120px] transition-transform hover:-translate-y-0.5"><span class="text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-xl font-bold text-text">-</span></div>
+        <div class="flex flex-row flex-wrap 2xl:flex-nowrap items-stretch justify-center gap-2 md:gap-3 font-mono text-xs md:text-sm text-text2 flex-1 w-full">
+            <div class="flex flex-col items-center justify-center bg-bg3/80 border border-border/50 rounded-xl p-2 md:px-4 md:py-2 shadow-sm flex-1 min-w-[30%] sm:min-w-[100px] 2xl:max-w-[140px] transition-transform hover:-translate-y-0.5"><span class="text-[9px] md:text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Toplam Üretim</span><span id="hdr-total" class="text-lg md:text-xl font-bold text-text">-</span></div>
+            <div class="flex flex-col items-center justify-center bg-bg3/80 border border-border/50 rounded-xl p-2 md:px-4 md:py-2 shadow-sm flex-1 min-w-[30%] sm:min-w-[100px] 2xl:max-w-[140px] transition-transform hover:-translate-y-0.5"><span class="text-[9px] md:text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-lg md:text-xl font-bold text-accent4">-</span></div>
+            <div class="flex flex-col items-center justify-center bg-bg3/80 border border-border/50 rounded-xl p-2 md:px-4 md:py-2 shadow-sm flex-1 min-w-[30%] sm:min-w-[100px] 2xl:max-w-[140px] transition-transform hover:-translate-y-0.5"><span class="text-[9px] md:text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-lg md:text-xl font-bold text-text">-</span></div>
             
-            <!-- FIX #3: onclick eklendi — cursor-pointer'ın arkasında handler yoktu -->
-            <div id="hdr-best" class="hidden flex-col items-center justify-center px-5 py-2 ayin-elemani-kutu rounded-xl bg-bg3/80 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 xl:flex-none xl:min-w-[180px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
-                <span class="text-[10px] tracking-wider text-accent3 font-bold uppercase mb-0.5">🏆 AYIN YILDIZI</span>
-                <span id="hdr-best-name" class="text-base md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight">YÜKLENİYOR...</span>
-                <span id="hdr-best-det" class="text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5">-</span>
+            <!-- AYIN YILDIZI -->
+            <div id="hdr-best" class="hidden flex-col items-center justify-center p-2 md:px-5 md:py-2 ayin-elemani-kutu rounded-xl bg-bg3/80 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 min-w-[45%] sm:min-w-[140px] 2xl:max-w-[220px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
+                <span class="text-[9px] md:text-[10px] tracking-wider text-accent3 font-bold uppercase mb-0.5 text-center">🏆 AYIN YILDIZI</span>
+                <span id="hdr-best-name" class="text-sm md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight text-center">YÜKLENİYOR...</span>
+                <span id="hdr-best-det" class="text-[8px] md:text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5 hidden sm:block">-</span>
             </div>
             
             <!-- YENİ: BİLDİRİM KUTUSU -->
-            <div id="hdr-notif" class="flex flex-col justify-center px-4 py-2 rounded-xl bg-bg3/80 border border-border/50 cursor-pointer transition-transform hover:scale-105 hover:shadow-md flex-1 xl:flex-none xl:w-[160px] relative" onclick="openNotifModal()">
-                <span id="hdr-notif-title" class="text-[9px] tracking-wider text-text3 font-bold uppercase mb-0.5 flex items-center gap-1">🔔 BİLDİRİM</span>
-                <span id="hdr-notif-text" class="text-[10px] font-mono text-text2 truncate leading-tight">Bildirim Yok</span>
+            <div id="hdr-notif" class="flex flex-col items-center sm:items-start justify-center p-2 md:px-4 md:py-2 rounded-xl bg-bg3/80 border border-border/50 cursor-pointer transition-transform hover:scale-105 hover:shadow-md flex-1 min-w-[45%] sm:min-w-[110px] 2xl:max-w-[160px] relative" onclick="openNotifModal()">
+                <span id="hdr-notif-title" class="text-[9px] md:text-[10px] tracking-wider text-text3 font-bold uppercase mb-0.5 flex items-center justify-center sm:justify-start gap-1 w-full">🔔 BİLDİRİM</span>
+                <span id="hdr-notif-text" class="text-[9px] md:text-[10px] font-mono text-text2 truncate leading-tight text-center sm:text-left w-full">Bildirim Yok</span>
                 <span id="notif-badge" class="absolute -top-1.5 -right-1.5 bg-accent2 text-white rounded-full w-4 h-4 hidden items-center justify-center text-[8px] font-bold shadow-sm">1</span>
             </div>
         </div>
 
-        <div class="flex flex-wrap lg:flex-nowrap items-center justify-center gap-2 md:gap-3 shrink-0 w-full lg:w-auto">
-            <div id="user-info" class="hidden flex-row items-center justify-between w-full lg:w-auto gap-2 font-mono text-xs bg-bg3/80 border border-border/50 rounded-xl p-2 md:pr-3 shadow-sm cursor-pointer hover:bg-border/80 transition-all hover:-translate-y-0.5 group shrink-0" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
-                <div class="flex items-center gap-2 overflow-hidden">
+        <div class="flex flex-col sm:flex-row flex-wrap 2xl:flex-nowrap items-center justify-center gap-2 md:gap-3 w-full 2xl:w-auto shrink-0">
+            <div id="user-info" class="hidden flex-row items-center justify-between w-full sm:w-auto gap-2 font-mono text-xs bg-bg3/80 border border-border/50 rounded-xl p-2 md:pr-3 shadow-sm cursor-pointer hover:bg-border/80 transition-all hover:-translate-y-0.5 group shrink-0" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
+                <div class="flex items-center justify-center sm:justify-start gap-2 overflow-hidden w-full sm:w-auto">
                     <!-- YENİ: KULLANICI AVATARI -->
-                    <img id="user-avatar" src="" alt="Avatar" class="w-7 h-7 rounded-full object-cover bg-bg3 hidden border border-border shrink-0">
-                    <span id="user-name" class="text-text2 group-hover:text-text transition-colors flex items-center whitespace-nowrap shrink-0"></span>
+                    <div class="relative w-8 h-8 shrink-0 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 p-[2px] shadow-sm">
+                        <img id="user-avatar" src="" alt="Avatar" class="w-full h-full rounded-full object-cover hidden border border-bg2 bg-bg2">
+                        <div id="user-initials" class="w-full h-full rounded-full flex items-center justify-center font-bold text-white text-[10px] hidden border border-bg2 bg-transparent tracking-wider"></div>
+                    </div>
+                    <span id="user-name" class="text-text2 group-hover:text-text transition-colors flex items-center whitespace-nowrap shrink-0 justify-center font-semibold"></span>
                 </div>
-                <button onclick="event.stopPropagation(); logout()" class="px-3 py-1.5 bg-accent2/10 hover:bg-accent2/90 hover:text-white text-accent2 rounded-lg text-[10px] font-bold transition-colors shrink-0 ml-auto">ÇIKIŞ</button>
+                <button onclick="event.stopPropagation(); logout()" class="px-3 py-1.5 bg-accent2/10 hover:bg-accent2/90 hover:text-white text-accent2 rounded-lg text-[10px] font-bold transition-colors shrink-0 sm:ml-auto w-full sm:w-auto mt-2 sm:mt-0">ÇIKIŞ</button>
             </div>
             
-            <div class="flex items-center justify-center gap-2 flex-wrap shrink-0">
+            <div class="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 w-full sm:w-auto">
                 <!-- YENİ: UYGULAMA İNDİRME BUTONU -->
-                <button id="btn-install" class="hidden px-3 py-2 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-xl font-mono text-[10px] items-center gap-1.5 transition-all hover:scale-105 hover:shadow-lg whitespace-nowrap animate-bounce">
+                <button id="btn-install" class="hidden flex-1 sm:flex-none px-2 md:px-3 py-2 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-xl font-mono text-[9px] md:text-[10px] items-center justify-center gap-1.5 transition-all hover:scale-105 hover:shadow-lg whitespace-nowrap animate-bounce">
                     📲 İNDİR
                 </button>
 
-                <button onclick="toggleTheme()" class="px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+                <button onclick="toggleTheme()" class="flex-1 sm:flex-none px-2 md:px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[9px] md:text-[10px] flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
                     🌓 TEMA
                 </button>
-                <button onclick="exportToPDF()" class="px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+                <button onclick="exportToPDF()" class="flex-1 sm:flex-none px-2 md:px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[9px] md:text-[10px] flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
                     📥 PDF
                 </button>
-                <button onclick="fetchCSV(true)" id="btn-refresh" class="px-4 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-accent font-bold border border-border/50 rounded-xl font-mono text-[10px] flex items-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+                <button onclick="fetchCSV(true)" id="btn-refresh" class="flex-1 sm:flex-none min-w-[100px] px-3 md:px-4 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-accent font-bold border border-border/50 rounded-xl font-mono text-[9px] md:text-[10px] flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
                     ↻ GÜNCELLE
                 </button>
             </div>
@@ -680,8 +683,8 @@
                 <!-- Üst Bar -->
                 <div class="p-4 border-b border-border flex items-center justify-between bg-bg3 shrink-0">
                     <div class="flex items-center gap-3">
-                        <img id="chat-my-avatar" src="" class="w-10 h-10 rounded-full border border-border object-cover hidden">
-                        <div id="chat-my-ini" class="w-10 h-10 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-base hidden shadow-inner"></div>
+                        <img id="chat-my-avatar" src="" class="w-10 h-10 rounded-full border-2 border-bg2 shadow-sm object-cover hidden">
+                        <div id="chat-my-ini" class="w-10 h-10 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 flex items-center justify-center font-bold text-white text-base hidden shadow-md border-2 border-bg2"></div>
                         <span class="font-bebas text-xl tracking-[1.5px] text-accent2">MESAJLAR</span>
                     </div>
                     <div class="flex items-center gap-2 pr-6 md:pr-0">
@@ -722,9 +725,9 @@
                     <div class="p-3 md:p-4 border-b border-border bg-bg3 flex items-center justify-between shrink-0 shadow-sm z-10 pr-12 md:pr-4">
                         <div class="flex items-center gap-3">
                             <button onclick="backToChatList()" class="md:hidden text-text2 hover:text-text font-bold px-2 text-xl">←</button>
-                            <div id="active-chat-avatar" class="w-10 h-10 md:w-12 md:h-12 rounded-full border border-border shrink-0 overflow-hidden shadow-inner flex items-center justify-center bg-bg3">
-                                <img id="active-chat-img" src="" class="w-full h-full object-cover hidden">
-                                <span id="active-chat-ini" class="font-bold text-text3 text-lg hidden"></span>
+                            <div id="active-chat-avatar" class="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-bg2 shrink-0 overflow-hidden shadow-md flex items-center justify-center bg-gradient-to-br from-accent via-accent/80 to-accent4">
+                                <img id="active-chat-img" src="" class="w-full h-full object-cover hidden bg-bg2">
+                                <span id="active-chat-ini" class="font-bold text-white text-lg hidden"></span>
                             </div>
                             <span id="active-chat-name" class="font-bold text-base md:text-lg text-text uppercase"></span>
                         </div>
@@ -764,8 +767,8 @@
             <h2 class="font-bebas text-2xl tracking-[2px] text-accent mb-4 border-b border-border pb-2">PROFİL DÜZENLE</h2>
             <form onsubmit="saveProfileFromModal(event)" class="space-y-4">
                 <div class="flex justify-center mb-4">
-                    <img id="profile-preview" src="" class="w-24 h-24 rounded-full object-cover border-2 border-accent hidden shadow-lg">
-                    <div id="profile-initials" class="w-24 h-24 rounded-full bg-bg3 border-2 border-border flex items-center justify-center font-bold text-text3 text-3xl shadow-inner"></div>
+                    <img id="profile-preview" src="" class="w-24 h-24 rounded-full object-cover border-4 border-bg2 hidden shadow-lg">
+                    <div id="profile-initials" class="w-24 h-24 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 border-4 border-bg2 flex items-center justify-center font-bold text-white text-3xl shadow-lg tracking-wider"></div>
                 </div>
                 <div>
                     <label class="block text-[10px] font-mono text-text3 mb-1 uppercase">Fotoğraf Seç / Çek</label>
@@ -896,7 +899,7 @@ const thD=(cols)=>`<tr>${cols.map((c,i)=>{ let cls="sticky-th p-2 text-left font
 const trD=(cols)=>`<tr class="hover:bg-bg3/50 transition-colors border-b border-border/50 text-[11px] md:text-xs">${cols.map((c,i)=>{ let cls="p-2 whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1"; else if(i>=9&&i<=14) cls+=" kafa2"; return `<td class="${cls}">${c}</td>`; }).join('')}</tr>`;
 const th=(cols)=>`<tr>${cols.map(c=>`<th class="sticky-th p-3 text-left font-sans font-semibold text-[11px] tracking-wider text-text3 border-b border-border uppercase whitespace-nowrap th-bg bg-bg2/95 backdrop-blur">${c}</th>`).join('')}</tr>`;
 const tr=(cols)=>`<tr class="hover:bg-bg3/50 transition-colors border-b border-border/50 text-xs">${cols.map(c=>`<td class="p-3 whitespace-nowrap">${c}</td>`).join('')}</tr>`;
-const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2/80 backdrop-blur-sm border border-border/60 border-l-4 ${c} rounded-xl p-4 shadow-sm ${clk?'cursor-pointer hover:bg-bg3 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group':''}"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 ${clk?'group-hover:text-text':''}">${l}</div><div class="font-mono text-2xl font-bold ${l.includes('Duruş') ? 'text-accent2' : 'text-text'} my-1.5">${v}</div><div class="text-[10px] text-text3 font-medium">${s}</div></div>`;
+const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2/80 backdrop-blur-sm border border-border/60 border-l-4 ${c} rounded-2xl p-5 shadow-md ${clk?'cursor-pointer hover:bg-bg3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group':''}"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 ${clk?'group-hover:text-text':''}">${l}</div><div class="font-mono text-2xl md:text-3xl font-bold ${l.includes('Duruş') ? 'text-accent2' : 'text-text'} my-1.5">${v}</div><div class="text-[10px] text-text3 font-medium">${s}</div></div>`;
 
 // Tıklanabilir Grafikler
 function mc(id,t,d,o={}){
@@ -1415,7 +1418,7 @@ function rKayitlar() {
                 </div>` : '';
 
             return `
-            <div class="kayit-card group bg-bg2/90 backdrop-blur-sm border border-border/60 rounded-xl overflow-hidden shadow-sm hover:shadow-lg hover:border-accent/40 transition-all duration-300" data-idx="${rowIdx}">
+        <div class="kayit-card group bg-bg2/90 backdrop-blur-sm border border-border/60 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:border-accent/40 transition-all duration-300" data-idx="${rowIdx}">
                 <!-- ÖZET SATIR (tıklanabilir) -->
                 <div class="flex items-center justify-between px-4 py-3 md:py-4 cursor-pointer hover:bg-bg3/60 transition-colors select-none"
                      onclick="toggleKayitCard(this)">
@@ -2039,7 +2042,7 @@ function renderChatList() {
         sortedChats.forEach(c => {
             const uInfo = USER_DATA[c.partner] || {}; const isGlobal = c.partner === 'GLOBAL';
             const avatarHtml = isGlobal ? `<div class="w-12 h-12 rounded-full bg-accent3/20 flex items-center justify-center font-bold text-accent3 text-xl shrink-0 border border-accent3/50 shadow-inner">🌟</div>` : 
-                               (uInfo.photo ? `<img src="${uInfo.photo}" class="w-12 h-12 rounded-full object-cover shrink-0 border border-border">` : `<div class="w-12 h-12 rounded-full bg-bg3 border border-border flex items-center justify-center font-bold text-text3 text-lg shrink-0">${c.partner.slice(0,2).toUpperCase()}</div>`);
+                               (uInfo.photo ? `<img src="${uInfo.photo}" class="w-12 h-12 rounded-full object-cover shrink-0 border-2 border-bg2 shadow-sm">` : `<div class="w-12 h-12 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 border-2 border-bg2 flex items-center justify-center font-bold text-white text-lg shrink-0 shadow-sm">${c.partner.slice(0,2).toUpperCase()}</div>`);
             
             const nameColor = isGlobal ? 'text-accent3' : 'text-text';
             const nameDisp = isGlobal ? '🌟 HERKESE (DUYURU)' : c.partner;
@@ -2085,9 +2088,9 @@ function openChat(partner) {
     if(isGlobal) {
         img.classList.add('hidden'); ini.classList.remove('hidden'); ini.innerHTML = '🌟'; av.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl bg-accent3/20 text-accent3 shrink-0 shadow-inner border border-accent3/50';
     } else if(uInfo.photo) {
-        img.src = uInfo.photo; img.classList.remove('hidden'); ini.classList.add('hidden'); av.className = 'w-10 h-10 rounded-full border border-border shrink-0 overflow-hidden shadow-inner';
+        img.src = uInfo.photo; img.classList.remove('hidden'); ini.classList.add('hidden'); av.className = 'w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-bg2 shrink-0 overflow-hidden shadow-md bg-bg2';
     } else {
-        img.classList.add('hidden'); ini.classList.remove('hidden'); ini.innerText = partner.slice(0,2).toUpperCase(); av.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-text3 text-sm bg-bg3 border border-border shrink-0 shadow-inner';
+        img.classList.add('hidden'); ini.classList.remove('hidden'); ini.innerText = partner.slice(0,2).toUpperCase(); av.className = 'w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-white text-sm bg-gradient-to-br from-accent via-accent/80 to-accent4 shrink-0 shadow-md border-2 border-bg2';
     }
 
     $('chat-empty-state').classList.add('hidden'); $('chat-empty-state').classList.remove('flex');
@@ -2357,7 +2360,7 @@ function renderContacts(filter) {
 
     users.sort().forEach(u => {
         const uInfo = USER_DATA[u];
-        const avatar = uInfo.photo ? `<img src="${uInfo.photo}" class="w-10 h-10 rounded-full object-cover shrink-0 border border-border">` : `<div class="w-10 h-10 rounded-full bg-bg3 border border-border flex items-center justify-center font-bold text-text3 text-sm shrink-0">${u.slice(0,2).toUpperCase()}</div>`;
+        const avatar = uInfo.photo ? `<img src="${uInfo.photo}" class="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-bg2 shadow-sm">` : `<div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 border-2 border-bg2 flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm">${u.slice(0,2).toUpperCase()}</div>`;
         html += `<div class="flex items-center gap-3 p-3 hover:bg-bg3 cursor-pointer border-b border-border/50" onclick="hideNewChatSelector(); openChat('${safeAttr(u)}');">${avatar}<div class="flex flex-col"><span class="font-bold text-sm text-text">${u}</span><span class="text-[10px] text-text3 capitalize">${uInfo.role === 'admin' ? 'Yönetici' : 'Üye'}</span></div></div>`;
     });
     $('new-chat-contacts').innerHTML = html;
@@ -2631,7 +2634,7 @@ function rAdmin() {
         const notifMsg = MESAJ_RAW.r ? MESAJ_RAW.r.slice().reverse().find(r => r[1] === u && (r[2] === LOGGED_IN_USER.name || r[2] === 'GLOBAL')) : null;
         const hasNotif = notifMsg ? `<span class="px-1.5 py-0.5 bg-accent/20 text-accent rounded text-[9px] ml-2 cursor-help border border-accent/50" title="Son Mesajı: ${escapeHTML(notifMsg[3])}">💬 MESAJ</span>` : '';
         
-        const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border border-border">` : `<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-text3 text-[10px]">${u.slice(0,2).toUpperCase()}</div>`;
+        const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border-2 border-bg2 shadow-sm">` : `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 flex items-center justify-center font-bold text-white text-[10px] shadow-sm border border-bg2">${u.slice(0,2).toUpperCase()}</div>`;
         const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px] cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
         return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3"><div class="flex items-center gap-2"><span class="font-bold text-text">${u}</span>${hasNotif}</div></td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
     }).join('');
@@ -2662,12 +2665,17 @@ async function saveUserObj(e) {
         LOGGED_IN_USER.role = role;
         localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
         const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
-        $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
+        $('user-name').innerHTML = `${LOGGED_IN_USER.name} ${roleBadge}`;
         if (photo) {
             $('user-avatar').src = photo;
             $('user-avatar').classList.remove('hidden');
+            if($('user-initials')) $('user-initials').classList.add('hidden');
         } else {
             $('user-avatar').classList.add('hidden');
+            if($('user-initials')) {
+                $('user-initials').innerText = name.slice(0,2).toUpperCase();
+                $('user-initials').classList.remove('hidden');
+            }
         }
         applyRoleRestrictions();
     }
@@ -2908,7 +2916,7 @@ if(savedUser && savedUser !== "undefined") {
         $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
         
         const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
-            $('user-name').innerHTML = `👤 ${LOGGED_IN_USER.name} ${roleBadge}`;
+        $('user-name').innerHTML = `${LOGGED_IN_USER.name} ${roleBadge}`;
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         fetchUsers().then(() => {
             if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
@@ -2917,6 +2925,10 @@ if(savedUser && savedUser !== "undefined") {
                 if($('user-initials')) $('user-initials').classList.add('hidden');
             } else {
                 $('user-avatar').classList.add('hidden');
+                if($('user-initials')) {
+                    $('user-initials').innerText = LOGGED_IN_USER.name.slice(0,2).toUpperCase();
+                    $('user-initials').classList.remove('hidden');
+                }
             }
             applyRoleRestrictions();
             checkNotifs();
@@ -3543,6 +3555,9 @@ function processVoiceCommand(command) {
   speakText('Anlamadım. "Yardım" diyerek komut listesini görebilirsiniz.');
   showVoiceOverlay(command, 'unknown', entities);
 }
+</script>
+</body>
+</html>
 </script>
 </body>
 </html>
