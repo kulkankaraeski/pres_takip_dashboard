@@ -213,6 +213,7 @@
             <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex');" class="nav-btn w-full bg-accent/20 text-accent border-accent flex justify-center items-center gap-2 outline-none shadow-sm">
                 📊 GÜNLÜK RAPOR <span class="text-[10px]">▼</span>
             </button>
+            <div class="absolute left-0 top-full mt-2 hidden flex-col bg-bg2/95 backdrop-blur-xl border border-border/80 rounded-xl shadow-2xl min-w-[220px] w-full md:w-auto overflow-hidden z-50">
             <div class="absolute left-0 top-full mt-2 hidden flex-col bg-bg border border-border rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] min-w-[220px] w-full md:w-auto overflow-hidden z-[100]">
                 <div onclick="swT('gunluk',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left nav-active">GÜNLÜK RAPOR</div>
                 <div onclick="swT('haftalik',this)" class="nav-tab nav-btn border-x-0 border-t-0 border-b border-border rounded-none bg-bg3 text-text2 hover:bg-border hover:text-text w-full text-left">HAFTALIK RAPOR</div>
@@ -504,16 +505,20 @@
         </div>
 
         <div class="panel hidden" id="panel-plan">
-            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col h-[80vh] shadow-sm relative" id="plan-container">
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col h-[calc(100vh-100px)] md:h-[calc(100vh-130px)] shadow-sm relative" id="plan-container">
                 <div class="p-3 md:p-4 border-b border-border flex justify-between items-center bg-bg3 shrink-0">
                     <span class="font-bebas text-base tracking-[2px] text-text2">ÜRETİM PLANI</span>
-                    <div class="flex items-center gap-2 md:gap-3">
+                    <div class="flex items-center gap-1 md:gap-3">
+                        <button onclick="zoomPlan(0.1)" class="px-2 md:px-3 py-1.5 bg-bg hover:bg-border text-text2 rounded font-mono text-[10px] md:text-xs transition-colors border border-border flex items-center" title="Yakınlaştır">🔍+</button>
+                        <button onclick="zoomPlan(-0.1)" class="px-2 md:px-3 py-1.5 bg-bg hover:bg-border text-text2 rounded font-mono text-[10px] md:text-xs transition-colors border border-border flex items-center" title="Uzaklaştır">🔍-</button>
                         <button id="fs-btn" onclick="toggleFullScreen('plan-container')" class="px-3 py-1.5 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">⛶ TAM EKRAN</button>
                         <a href="https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?usp=sharing" target="_blank" class="px-3 py-1.5 bg-accent/20 text-accent hover:bg-accent hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">🔗 YENİ SEKMEDE AÇ</a>
                     </div>
                 </div>
-                <!-- Iframe arka planı E-Tablo renkleri bozulmasın diye bg-white (beyaz) ayarlandı -->
-                <iframe id="plan-frame" src="" class="w-full flex-1 border-none bg-white"></iframe>
+                <div class="flex-1 w-full bg-white relative overflow-hidden">
+                    <!-- Iframe arka planı E-Tablo renkleri bozulmasın diye bg-white (beyaz) ayarlandı -->
+                    <iframe id="plan-frame" src="" class="absolute top-0 left-0 w-full h-full border-none bg-white origin-top-left transition-transform duration-200"></iframe>
+                </div>
             </div>
         </div>
 
@@ -1467,6 +1472,20 @@ function toggleFullScreen(id) {
 }
 
 document.addEventListener('fullscreenchange', () => { const btn = $('fs-btn'); if(btn) btn.innerHTML = document.fullscreenElement ? '✖ ÇIKIŞ' : '⛶ TAM EKRAN'; });
+
+let currentPlanZoom = 1;
+function zoomPlan(delta) {
+    currentPlanZoom += delta;
+    if (currentPlanZoom < 0.4) currentPlanZoom = 0.4;
+    if (currentPlanZoom > 3) currentPlanZoom = 3;
+    
+    const frame = $('plan-frame');
+    if (frame) {
+        frame.style.transform = `scale(${currentPlanZoom})`;
+        frame.style.width = `${100 / currentPlanZoom}%`;
+        frame.style.height = `${100 / currentPlanZoom}%`;
+    }
+}
 
 // ETKİLEŞİM & MODALLAR
 function showKpiDet(tab, type) {
