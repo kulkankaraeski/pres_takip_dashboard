@@ -117,6 +117,24 @@
         button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         button:active { transform: scale(0.95); }
         .glass-panel { background: rgba(var(--c-bg2), 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(var(--c-border), 0.5); }
+        
+        /* Mobil Yan Ekran (Landscape) Optimizasyonları */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body { padding: 8px !important; gap: 8px !important; }
+            #app-header { flex-direction: row !important; flex-wrap: wrap !important; padding: 8px 12px !important; gap: 8px !important; border-radius: 12px !important; }
+            #app-header > div:first-child { flex-direction: row !important; width: auto !important; padding: 6px 12px !important; align-items: center !important; gap: 10px !important; }
+            #app-header > div:first-child h1 { font-size: 18px !important; margin: 0 !important; }
+            #app-header > div:first-child div { margin-top: 0 !important; }
+            #app-header > div:nth-child(2) { flex-wrap: nowrap !important; overflow-x: auto !important; justify-content: flex-start !important; padding-bottom: 2px; }
+            #app-header > div:nth-child(2)::-webkit-scrollbar { display: none; }
+            #app-header > div:nth-child(2) > div { padding: 4px 10px !important; flex-direction: row !important; gap: 8px !important; width: auto !important; flex: 0 0 auto !important; }
+            #app-header > div:nth-child(2) span.text-xl { font-size: 16px !important; line-height: 1 !important; }
+            #main-nav { flex-wrap: nowrap !important; overflow-x: auto !important; overflow-y: hidden !important; padding: 6px !important; border-radius: 12px !important; }
+            #main-nav::-webkit-scrollbar { display: none; }
+            .nav-btn { padding: 6px 14px !important; font-size: 11px !important; flex: 0 0 auto !important; }
+            .h-\\[240px\\], .h-\\[260px\\], .h-\\[320px\\] { height: 180px !important; }
+            #user-info { flex-direction: row !important; flex-wrap: nowrap !important; flex: 0 0 auto !important; }
+        }
     </style>
 </head>
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
