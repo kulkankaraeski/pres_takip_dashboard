@@ -31,6 +31,11 @@ self.addEventListener('fetch', event => {
     if (event.request.url.includes('google') || event.request.url.includes('script.google.com') || event.request.url.includes('allorigins')) {
         return; // event.respondWith ÇAĞRILMAZ, tarayıcı isteği normal şekilde yapar ve CORS hataları index.html'de yakalanır.
     }
+
+    // 'chrome-extension' gibi HTTP olmayan protokolleri yoksay
+    if (!event.request.url.startsWith('http')) {
+        return;
+    }
     
     // Diğer statik dosyalar için "Ağ Öncelikli (Network First)" stratejisi.
     // Bu sayede uygulama dosyaları önbelleğe alınır, açılış hızı ciddi oranda artar.
