@@ -1351,8 +1351,16 @@ function rKayitlar() {
         return acc;
     }, []);
 
+    const aciklamaIdxs = basicIdxs.filter(i => {
+        const l = headers[i].toLowerCase();
+        return l.includes('açıklama') || l.includes('aciklama') || l.includes('sonuç') || l.includes('sonuc') || l.includes('not');
+    });
+    
+    const temelIdxs = basicIdxs.filter(i => !aciklamaIdxs.includes(i));
+
     // Özet gösterim için ilk 4 temel sütun
     const summaryIdxs = basicIdxs.slice(0, 4);
+    const summaryIdxs = temelIdxs.slice(0, 4);
 
             if (!items.length) {
         container.innerHTML = '<div class="p-8 text-center text-text3 font-mono text-xs">Arama sonucu bulunamadı.</div>';
@@ -1385,18 +1393,34 @@ function rKayitlar() {
             // Detay paneli: 3 renk grubu
             const makeGroup = (idxArr, label, colorCls, borderCls, textCls, bgCls) => {
                 if (!idxArr.length) return '';
+            // Detay paneli: 4 renk grubu, grid tasarımı
+            const makeGroup = (idxArr, label, colorCls, borderCls, textCls, bgCls, flexCol = false) => {
+                if (!idxArr.length) return `
+                <div class="flex flex-col h-full bg-bg3/20 rounded-xl border border-border/50 p-4 shadow-inner opacity-60">
+                    <div class="text-[10px] font-sans font-bold ${textCls} uppercase tracking-[2px] mb-3 flex items-center gap-2 border-b border-border/50 pb-2">
+                        <span class="flex items-center justify-center w-4 h-4 rounded-full ${colorCls} text-bg2 text-[8px] shadow-sm shrink-0">✓</span>${label}
+                    </div>
+                    <div class="flex-1 flex items-center justify-center text-text3 text-xs font-mono">Veri Bulunmuyor</div>
+                </div>`;
                 const fields = idxArr.map(i => {
                     const val = row[i] || '-';
                     return `<div class="flex flex-col p-3 rounded-xl border ${borderCls} ${bgCls} min-w-[120px] flex-1 hover:-translate-y-0.5 transition-transform shadow-sm">
+                    return `<div class="flex flex-col p-2.5 rounded-lg border ${borderCls} ${bgCls} ${flexCol ? 'w-full' : 'flex-1 min-w-[100px] sm:min-w-[120px]'} hover:-translate-y-0.5 transition-transform shadow-sm">
                         <span class="text-[9px] font-sans font-semibold ${textCls} uppercase tracking-wider mb-1 truncate" title="${escapeHTML(headers[i])}">${escapeHTML(headers[i])}</span>
                         <span class="text-[13px] font-bold text-text break-words leading-tight">${escapeHTML(val)}</span>
+                        <span class="text-[12px] md:text-[13px] font-bold text-text break-words leading-tight">${escapeHTML(val)}</span>
                     </div>`;
                 }).join('');
                 return `<div class="mb-4 last:mb-0">
                     <div class="text-[10px] font-sans font-bold ${textCls} uppercase tracking-[2px] mb-2.5 flex items-center gap-2">
                         <span class="flex items-center justify-center w-4 h-4 rounded-full ${colorCls} text-bg2 text-[8px] shadow-sm">✓</span>${label}
+                return `
+                <div class="flex flex-col h-full bg-bg3/20 rounded-xl border border-border/50 p-4 shadow-inner">
+                    <div class="text-[10px] font-sans font-bold ${textCls} uppercase tracking-[2px] mb-3 flex items-center gap-2 border-b border-border/50 pb-2">
+                        <span class="flex items-center justify-center w-4 h-4 rounded-full ${colorCls} text-bg2 text-[8px] shadow-sm shrink-0">✓</span>${label}
                     </div>
                     <div class="flex flex-wrap gap-2 md:gap-3">${fields}</div>
+                    <div class="flex ${flexCol ? 'flex-col' : 'flex-wrap'} gap-2 md:gap-3 items-start content-start flex-1">${fields}</div>
                 </div>`;
             };
 
@@ -1404,6 +1428,14 @@ function rKayitlar() {
                 makeGroup(basicIdxs,  'TEMEL BİLGİLER', 'bg-accent',  'border-accent/20',  'text-accent',  'bg-accent/5')  +
                 makeGroup(kriterIdxs, 'KRİTERLER',      'bg-accent3', 'border-accent3/20', 'text-accent3', 'bg-accent3/5') +
                 makeGroup(olcumIdxs,  'ÖLÇÜMLER',       'bg-accent4', 'border-accent4/20', 'text-accent4', 'bg-accent4/5');
+            const detailHtml = `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    ${makeGroup(temelIdxs,  'TEMEL BİLGİLER', 'bg-accent',  'border-accent/20',  'text-accent',  'bg-accent/5')}
+                    ${makeGroup(aciklamaIdxs, 'AÇIKLAMA VE SONUÇ', 'bg-accent2', 'border-accent2/20', 'text-accent2', 'bg-accent2/5', true)}
+                    ${makeGroup(kriterIdxs, 'KRİTERLER',      'bg-accent3', 'border-accent3/20', 'text-accent3', 'bg-accent3/5')}
+                    ${makeGroup(olcumIdxs,  'ÖLÇÜMLER',       'bg-accent4', 'border-accent4/20', 'text-accent4', 'bg-accent4/5')}
+                </div>
+            `;
 
             const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
             const adminBtns = isAdmin ? `
