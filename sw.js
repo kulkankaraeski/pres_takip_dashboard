@@ -43,9 +43,9 @@ self.addEventListener('fetch', event => {
     if (url.hostname.includes('cdn.tailwindcss.com') || url.hostname.includes('cdn.jsdelivr.net') || url.hostname.includes('cdnjs.cloudflare.com') || url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
         event.respondWith(
             (async () => {
-                const cachedResponse = await caches.match(event.request);
-                if (cachedResponse) return cachedResponse;
                 try {
+                    const cachedResponse = await caches.match(event.request);
+                    if (cachedResponse) return cachedResponse;
                     const networkResponse = await fetch(event.request);
                     const cache = await caches.open(CACHE_NAME);
                     // Caching işleminin bitmesini bekle (await)
@@ -75,8 +75,13 @@ self.addEventListener('fetch', event => {
                 return networkResponse;
             } catch (error) {
                 console.warn('SW: Ağ isteği başarısız, önbellek deneniyor.', event.request.url);
-                const cachedResponse = await caches.match(event.request);
-                return cachedResponse || new Response('Çevrimdışısınız ve bu sayfa önbellekte bulunamadı.', {
+                try {
+                    const cachedResponse = await caches.match(event.request);
+                    if (cachedResponse) return cachedResponse;
+                } catch (e) {
+                    console.error('SW: Cache match hatası', e);
+                }
+                return new Response('Çevrimdışısınız ve bu sayfa önbellekte bulunamadı.', {
                     status: 503,
                     statusText: 'Service Unavailable',
                     headers: new Headers({ 'Content-Type': 'text/plain;charset=utf-8' })

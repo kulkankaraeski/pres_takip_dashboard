@@ -814,6 +814,13 @@
     </div>
 
 <script>
+// Chrome Eklentilerinden veya üçüncü parti araçlardan (örn: content.js) kaynaklanan Promise hatalarını konsolda gizle.
+window.addEventListener('unhandledrejection', function(event) {
+    if (event.reason && (String(event.reason.stack || event.reason).includes('content.js') || String(event.reason) === '[object Object]')) {
+        event.preventDefault();
+    }
+});
+
 if (localStorage.getItem('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
 }
@@ -875,10 +882,14 @@ async function getCSV(url) {
         if(t.match(/<html/i) || t.match(/<!DOCTYPE/i)) throw new Error('HTML Redirect');
         return t;
     } catch(e) {
-        let r = await fetch(proxyUrl, {cache: 'no-store'});
-        let t = await r.text();
-        if(t.match(/<html/i) || t.match(/<!DOCTYPE/i)) throw new Error('Proxy HTML Redirect');
-        return t;
+        try {
+            let r = await fetch(proxyUrl, {cache: 'no-store'});
+            let t = await r.text();
+            if(t.match(/<html/i) || t.match(/<!DOCTYPE/i)) throw new Error('Proxy HTML Redirect');
+            return t;
+        } catch(finalErr) {
+            throw new Error('Ağ hatası veya proxy erişimi sağlanamadı.');
+        }
     }
 }
 
@@ -2456,17 +2467,22 @@ function removeProfilePhoto() {
 
 async function saveProfileFromModal(e) {
     e.preventDefault();
-    const photo = $('profile-photo-b64').value.trim();
-    const name = LOGGED_IN_USER.name;
-    const pass = USER_DATA[name].pass;
-    const role = USER_DATA[name].role;
-    const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
-    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.error(err));
-    USER_DATA[name].photo = photo;
-    let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
-    if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
-    if (photo) { $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); } else { $('user-avatar').classList.add('hidden'); }
-    toast('Profil fotoğrafı güncellendi.', 'ok'); closeProfileModal(); if(cTab==='admin') rAdmin();
+    try {
+        const photo = $('profile-photo-b64').value.trim();
+        const name = LOGGED_IN_USER.name;
+        const pass = USER_DATA[name]?.pass || '1234';
+        const role = USER_DATA[name]?.role || 'user';
+        const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
+        fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.error(err));
+        
+        if (USER_DATA[name]) USER_DATA[name].photo = photo;
+        let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+        if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
+        if (photo) { $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); } else { $('user-avatar').classList.add('hidden'); }
+        toast('Profil fotoğrafı güncellendi.', 'ok'); closeProfileModal(); if(cTab==='admin') rAdmin();
+    } catch(err) {
+        toast('Profil kaydedilirken hata oluştu.', 'err');
+    }
 }
 
 async function fetchUsers() {
