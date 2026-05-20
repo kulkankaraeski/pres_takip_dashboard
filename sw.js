@@ -37,8 +37,23 @@ self.addEventListener('fetch', event => {
         return;
     }
     
-    // Diğer statik dosyalar için "Ağ Öncelikli (Network First)" stratejisi.
-    // Bu sayede uygulama dosyaları önbelleğe alınır, açılış hızı ciddi oranda artar.
+    const url = new URL(event.request.url);
+    
+    // Sabit dış kütüphaneler ve fontlar için "Önce Önbellek (Cache First)" stratejisi
+    if (url.hostname.includes('cdn.tailwindcss.com') || url.hostname.includes('cdn.jsdelivr.net') || url.hostname.includes('cdnjs.cloudflare.com') || url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
+        event.respondWith(
+            caches.match(event.request).then(cachedResponse => {
+                if (cachedResponse) return cachedResponse;
+                return fetch(event.request).then(networkResponse => {
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse.clone()));
+                    return networkResponse;
+                });
+            })
+        );
+        return;
+    }
+    
+    // Kendi uygulama dosyalarınız (index.html, vs.) için "Ağ Öncelikli (Network First)" stratejisi.
     event.respondWith(
         (async () => {
             if (event.preloadResponse) {

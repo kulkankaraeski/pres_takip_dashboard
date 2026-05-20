@@ -16,8 +16,10 @@
         console.warn = (...args) => { if(typeof args[0]==='string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) return; originalWarn(...args); };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
         tailwind.config={theme:{extend:{colors:{bg:'var(--bg)',bg2:'var(--bg2)',bg3:'var(--bg3)',border:'var(--border)',text:'var(--text)',text2:'var(--text2)',text3:'var(--text3)',accent:'var(--accent)',accent2:'var(--accent2)',accent3:'var(--accent3)',accent4:'var(--accent4)'},fontFamily:{sans:['Inter','sans-serif'],mono:['Fira Code','monospace'],bebas:['Poppins','sans-serif']}}}}
@@ -449,7 +451,6 @@
                         </div>
                         <div class="bg-bg3/40 border border-border/50 rounded-xl p-5 shadow-sm opacity-90 hover:opacity-100 transition-opacity">
                             <h3 class="font-sans font-bold text-sm text-accent2 mb-4 border-b border-border/50 pb-2 tracking-wider flex items-center gap-2"><span class="w-2 h-2 bg-accent2 rounded-full"></span>BÖLÜM 2 (KAFA 2 - İsteğe Bağlı)</h3>
-                            <h3 class="font-sans font-bold text-sm text-accent2 mb-4 border-b border-border/50 pb-2 tracking-wider flex items-center gap-2"><span class="w-2 h-2 bg-accent2 rounded-full"></span>BÖLÜM 2 (KAFA 2)</h3>
                             <div class="space-y-3">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Pres Makinesi</label><select id="f-pres2" class="w-full bg-bg2/80 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"><option value="">Yok/Seçiniz...</option></select></div>
@@ -1359,7 +1360,6 @@ function rKayitlar() {
     const temelIdxs = basicIdxs.filter(i => !aciklamaIdxs.includes(i));
 
     // Özet gösterim için ilk 4 temel sütun
-    const summaryIdxs = basicIdxs.slice(0, 4);
     const summaryIdxs = temelIdxs.slice(0, 4);
 
             if (!items.length) {
@@ -1390,9 +1390,6 @@ function rKayitlar() {
                 olcumIdxs.length  ? `<span class="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold bg-accent4/10 text-accent4 border border-accent4/30"><span class="w-1.5 h-1.5 rounded-full bg-accent4 animate-pulse"></span>${olcumDolu}/${olcumIdxs.length} Ölçüm</span>` : ''
             ].filter(Boolean).join('');
 
-            // Detay paneli: 3 renk grubu
-            const makeGroup = (idxArr, label, colorCls, borderCls, textCls, bgCls) => {
-                if (!idxArr.length) return '';
             // Detay paneli: 4 renk grubu, grid tasarımı
             const makeGroup = (idxArr, label, colorCls, borderCls, textCls, bgCls, flexCol = false) => {
                 if (!idxArr.length) return `
@@ -1404,30 +1401,20 @@ function rKayitlar() {
                 </div>`;
                 const fields = idxArr.map(i => {
                     const val = row[i] || '-';
-                    return `<div class="flex flex-col p-3 rounded-xl border ${borderCls} ${bgCls} min-w-[120px] flex-1 hover:-translate-y-0.5 transition-transform shadow-sm">
                     return `<div class="flex flex-col p-2.5 rounded-lg border ${borderCls} ${bgCls} ${flexCol ? 'w-full' : 'flex-1 min-w-[100px] sm:min-w-[120px]'} hover:-translate-y-0.5 transition-transform shadow-sm">
                         <span class="text-[9px] font-sans font-semibold ${textCls} uppercase tracking-wider mb-1 truncate" title="${escapeHTML(headers[i])}">${escapeHTML(headers[i])}</span>
-                        <span class="text-[13px] font-bold text-text break-words leading-tight">${escapeHTML(val)}</span>
                         <span class="text-[12px] md:text-[13px] font-bold text-text break-words leading-tight">${escapeHTML(val)}</span>
                     </div>`;
                 }).join('');
-                return `<div class="mb-4 last:mb-0">
-                    <div class="text-[10px] font-sans font-bold ${textCls} uppercase tracking-[2px] mb-2.5 flex items-center gap-2">
-                        <span class="flex items-center justify-center w-4 h-4 rounded-full ${colorCls} text-bg2 text-[8px] shadow-sm">✓</span>${label}
                 return `
                 <div class="flex flex-col h-full bg-bg3/20 rounded-xl border border-border/50 p-4 shadow-inner">
                     <div class="text-[10px] font-sans font-bold ${textCls} uppercase tracking-[2px] mb-3 flex items-center gap-2 border-b border-border/50 pb-2">
                         <span class="flex items-center justify-center w-4 h-4 rounded-full ${colorCls} text-bg2 text-[8px] shadow-sm shrink-0">✓</span>${label}
                     </div>
-                    <div class="flex flex-wrap gap-2 md:gap-3">${fields}</div>
                     <div class="flex ${flexCol ? 'flex-col' : 'flex-wrap'} gap-2 md:gap-3 items-start content-start flex-1">${fields}</div>
                 </div>`;
             };
 
-            const detailHtml =
-                makeGroup(basicIdxs,  'TEMEL BİLGİLER', 'bg-accent',  'border-accent/20',  'text-accent',  'bg-accent/5')  +
-                makeGroup(kriterIdxs, 'KRİTERLER',      'bg-accent3', 'border-accent3/20', 'text-accent3', 'bg-accent3/5') +
-                makeGroup(olcumIdxs,  'ÖLÇÜMLER',       'bg-accent4', 'border-accent4/20', 'text-accent4', 'bg-accent4/5');
             const detailHtml = `
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     ${makeGroup(temelIdxs,  'TEMEL BİLGİLER', 'bg-accent',  'border-accent/20',  'text-accent',  'bg-accent/5')}
@@ -3234,7 +3221,6 @@ function extractEntities(text) {
     if (dateMatch) entities.date = `${dateMatch[1].padStart(2,'0')}.${dateMatch[2].padStart(2,'0')}.${new Date().getFullYear()}`;
   }
   const allNames = [...new Set([...RAW.map(r => r.calisan), ...Object.keys(USER_DATA)])];
-  entities.person = allNames.find(name => name.split(' ').some(part => part.length > 2 && text.includes(part.toLowerCase()))) || null;
   entities.person = allNames.find(name => name.split(' ').some(part => part.length > 1 && text.includes(part.toLowerCase()))) || null;
   const presMatch = text.match(/pres\s*(\d+)/);
   if (presMatch) entities.machine = `PRES ${presMatch[1]}`;
@@ -3569,9 +3555,6 @@ function processVoiceCommand(command) {
   speakText('Anlamadım. "Yardım" diyerek komut listesini görebilirsiniz.');
   showVoiceOverlay(command, 'unknown', entities);
 }
-</script>
-</body>
-</html>
 </script>
 </body>
 </html>
