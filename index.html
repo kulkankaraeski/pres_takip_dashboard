@@ -931,6 +931,7 @@ function swT(t,el){
     
     document.querySelectorAll('.panel').forEach(e=>{e.classList.remove('active','block');e.classList.add('hidden');});
     document.querySelectorAll('.nav-tab').forEach(e => e.classList.remove('nav-active'));
+    if(!el) el = document.querySelector(`.nav-tab[onclick*="'${t}'"]`);
     if(el) el.classList.add('nav-active');
     
     const dropdownBtn = $('raporlar-btn');
