@@ -42,13 +42,21 @@ self.addEventListener('fetch', event => {
     // Sabit dış kütüphaneler ve fontlar için "Önce Önbellek (Cache First)" stratejisi
     if (url.hostname.includes('cdn.tailwindcss.com') || url.hostname.includes('cdn.jsdelivr.net') || url.hostname.includes('cdnjs.cloudflare.com') || url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
         event.respondWith(
-            caches.match(event.request).then(cachedResponse => {
+            (async () => {
+                const cachedResponse = await caches.match(event.request);
                 if (cachedResponse) return cachedResponse;
-                return fetch(event.request).then(networkResponse => {
-                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse.clone()));
+                try {
+                    const networkResponse = await fetch(event.request);
+                    const cache = await caches.open(CACHE_NAME);
+                    // Caching işleminin bitmesini bekle (await)
+                    await cache.put(event.request, networkResponse.clone());
                     return networkResponse;
-                });
-            })
+                } catch (error) {
+                    console.error('SW: Harici kütüphane çekilemedi ve önbellekte yoktu.', error);
+                    // Önbellekte olmayan ve çekilemeyen bir kütüphane için hata döndür
+                    return new Response(`Kaynak yüklenemedi: ${event.request.url}`, { status: 500 });
+                }
+            })()
         );
         return;
     }
@@ -56,15 +64,24 @@ self.addEventListener('fetch', event => {
     // Kendi uygulama dosyalarınız (index.html, vs.) için "Ağ Öncelikli (Network First)" stratejisi.
     event.respondWith(
         (async () => {
-            if (event.preloadResponse) {
-                const preloadRes = await event.preloadResponse;
-                if (preloadRes) return preloadRes;
+            try {
+                const preloadResponse = await event.preloadResponse;
+                if (preloadResponse) {
+                    return preloadResponse;
+                }
+                const networkResponse = await fetch(event.request);
+                const cache = await caches.open(CACHE_NAME);
+                await cache.put(event.request, networkResponse.clone());
+                return networkResponse;
+            } catch (error) {
+                console.warn('SW: Ağ isteği başarısız, önbellek deneniyor.', event.request.url);
+                const cachedResponse = await caches.match(event.request);
+                return cachedResponse || new Response('Çevrimdışısınız ve bu sayfa önbellekte bulunamadı.', {
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                    headers: new Headers({ 'Content-Type': 'text/plain;charset=utf-8' })
+                });
             }
-            return fetch(event.request).then(response => {
-                const responseClone = response.clone();
-                caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
-                return response;
-            }).catch(() => caches.match(event.request).then(res => res || new Response('Çevrimdışısınız. Bağlantınızı kontrol edin.')));
         })()
     );
 });
