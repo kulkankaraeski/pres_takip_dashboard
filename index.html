@@ -197,15 +197,15 @@
 
         <div class="flex flex-col sm:flex-row flex-wrap 2xl:flex-nowrap items-center justify-center gap-2 md:gap-3 w-full 2xl:w-auto shrink-0">
             <div id="user-info" class="hidden flex-row items-center justify-between w-full sm:w-auto gap-2 font-mono text-xs bg-bg3/80 border border-border/50 rounded-xl p-2 md:pr-3 shadow-sm cursor-pointer hover:bg-border/80 transition-all hover:-translate-y-0.5 group shrink-0" onclick="openProfileModal()" title="Profil Fotoğrafını Değiştir">
-                <div class="flex items-center justify-center sm:justify-start gap-2 overflow-hidden w-full sm:w-auto">
+                <div class="flex items-center justify-start gap-2 overflow-hidden flex-1">
                     <!-- YENİ: KULLANICI AVATARI -->
                     <div class="relative w-8 h-8 shrink-0 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 p-[2px] shadow-sm">
                         <img id="user-avatar" src="" alt="Avatar" class="w-full h-full rounded-full object-cover hidden border border-bg2 bg-bg2">
                         <div id="user-initials" class="w-full h-full rounded-full flex items-center justify-center font-bold text-white text-[10px] hidden border border-bg2 bg-transparent tracking-wider"></div>
                     </div>
-                    <span id="user-name" class="text-text2 group-hover:text-text transition-colors flex items-center whitespace-nowrap shrink-0 justify-center font-semibold"></span>
+                    <span id="user-name" class="text-text2 group-hover:text-text transition-colors flex items-center whitespace-nowrap justify-start font-semibold"></span>
                 </div>
-                <button onclick="event.stopPropagation(); logout()" class="px-3 py-1.5 bg-accent2/10 hover:bg-accent2/90 hover:text-white text-accent2 rounded-lg text-[10px] font-bold transition-colors shrink-0 sm:ml-auto w-full sm:w-auto mt-2 sm:mt-0">ÇIKIŞ</button>
+                <button onclick="event.stopPropagation(); logout()" class="px-3 py-1.5 bg-accent2/10 hover:bg-accent2/90 hover:text-white text-accent2 rounded-lg text-[10px] font-bold transition-colors shrink-0 ml-auto">ÇIKIŞ</button>
             </div>
             
             <div class="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 w-full sm:w-auto">
