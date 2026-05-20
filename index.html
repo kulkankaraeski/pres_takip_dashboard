@@ -16,8 +16,8 @@
         console.warn = (...args) => { if(typeof args[0]==='string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) return; originalWarn(...args); };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1212,9 +1212,9 @@ function rAlarm() {
     const badFasons = Object.entries(fasonPerf).map(([k,v])=>({k, v:v.p/v.c})).filter(x=>x.v>0 && x.v<80).sort((a,b)=>a.v-b.v);
 
     $('alarm-kpis').innerHTML =
-        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Sorunlu Çalışanlar', badEmps.length, 'Ort. Perf < %80', "swT('calisan', document.querySelector('.nav-tab[onclick*=\\'calisan\\']'))") +
-        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Kritik Makine Duruşları', badPresses.length, 'Son 14 Gün > 60 dk', "swT('pres', document.querySelector('.nav-tab[onclick*=\\'pres\\']'))") +
-        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Sorunlu Fasonlar', badFasons.length, 'Ort. Perf < %80', "swT('fason', document.querySelector('.nav-tab[onclick*=\\'fason\\']'))");
+        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Sorunlu Çalışanlar', badEmps.length, 'Ort. Perf < %80', "swT('calisan')") +
+        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Kritik Makine Duruşları', badPresses.length, 'Son 14 Gün > 60 dk', "swT('pres')") +
+        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Sorunlu Fasonlar', badFasons.length, 'Ort. Perf < %80', "swT('fason')");
 
     let kiyasHtml = '';
     Object.keys(makineKiyas).sort().forEach(pr => {
