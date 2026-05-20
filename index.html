@@ -1494,6 +1494,9 @@ function rPlan() {
     if(frame && !frame.getAttribute('src')) {
         // rm=minimal parametresi Google E-Tabloların üst menülerini gizler, daha profesyonel görünür.
         frame.setAttribute('src', "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?rm=minimal");
+        // Google E-Tablolar /edit ucu iframe içinde engellendiğinden resmi embed ucu (/htmlembed) kullanıyoruz.
+        // NOT: İframe'in çalışması için tablonun paylaşım ayarlarından "Bağlantıya sahip herkes görüntüleyebilir" seçili olmalıdır.
+        frame.setAttribute('src', "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/htmlembed?widget=true&chrome=false");
     }
 }
 
