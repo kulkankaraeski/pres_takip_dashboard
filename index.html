@@ -2361,22 +2361,6 @@ function renderContacts(filter) {
 }
 function filterContacts(v) { renderContacts(v); }
 
-function clearCurrentChat() {
-    if(!currentChatPartner) return;
-    if(currentChatPartner === 'GLOBAL' && LOGGED_IN_USER.role !== 'admin') return toast('Sadece yöneticiler duyuru geçmişini silebilir.', 'err');
-    if(!confirm(`${currentChatPartner} ile olan sohbet geçmişinizi GİZLEMEK istediğinize emin misiniz?\n(Bu işlem mesajları karşı taraftan veya asıl listeden silmez, sadece sizin ekranınızda temizler.)`)) return;
-    
-    const deletedStates = safeJSON(localStorage.getItem('chatDeletedStates_' + LOGGED_IN_USER.name), {});
-    deletedStates[currentChatPartner] = MESAJ_RAW.r ? MESAJ_RAW.r.length : 0;
-    localStorage.setItem('chatDeletedStates_' + LOGGED_IN_USER.name, JSON.stringify(deletedStates));
-    
-    toast('Sohbet geçmişi gizlendi.', 'ok'); renderChatHistory(); renderChatList();
-}
-
-// Geriye dönük uyumluluk (eski butonlar/fonksiyon referansları için yönlendirme)
-function toggleNotifForm() { showNewChatSelector(); }
-function sendNotifFromModal(e) { if(e) e.preventDefault(); sendChatMessage(); }
-
 // KULLANICI PROFİL FOTOĞRAFI YÖNETİMİ
 function openProfileModal() {
     if(!LOGGED_IN_USER) return;
