@@ -2503,38 +2503,14 @@ async function fetchUsers() {
                 if (name) USER_DATA[name] = { pass: String(pass), role: role, photo: photo };
             }
             
-            // Uygulama içinden eklenen veya düzenlenen kullanıcıları yerel bellekten yükle (Senkronize et)
-            let lu = safeJSON(localStorage.getItem('localUsers'), {});
-            Object.keys(lu).forEach(k => {
-                if (lu[k].deleted) {
-                    delete USER_DATA[k];
-                } else {
-                    const sheetsPhoto = USER_DATA[k]?.photo; // Sheets'ten gelen fotoğrafı sakla
-                    USER_DATA[k] = { ...USER_DATA[k], ...lu[k] };
-                    if (sheetsPhoto) USER_DATA[k].photo = sheetsPhoto; // Sheets fotoğrafı her zaman kazanır
-                    if (USER_DATA[k].photo && !USER_DATA[k].photo.startsWith('http') && !USER_DATA[k].photo.startsWith('data:')) USER_DATA[k].photo = '';
-                }
-            });
-            
             if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
             
             localStorage.setItem('cachedUsers', JSON.stringify(USER_DATA));
         }
     } catch(e) {
-        console.error("Kullanıcı listesi çekilemedi", e);
+        console.error("Kullanıcı listesi çekilemedi, önbellek kullanılıyor.", e);
         // Offline durumunda önbellekten al
         USER_DATA = safeJSON(localStorage.getItem('cachedUsers'), {});
-        let lu = safeJSON(localStorage.getItem('localUsers'), {});
-        Object.keys(lu).forEach(k => {
-            if (lu[k].deleted) {
-                delete USER_DATA[k];
-            } else {
-                const sheetsPhoto = USER_DATA[k]?.photo; // Sheets'ten gelen fotoğrafı sakla
-                USER_DATA[k] = { ...USER_DATA[k], ...lu[k] };
-                if (sheetsPhoto) USER_DATA[k].photo = sheetsPhoto; // Sheets fotoğrafı her zaman kazanır
-                if (USER_DATA[k].photo && !USER_DATA[k].photo.startsWith('http') && !USER_DATA[k].photo.startsWith('data:')) USER_DATA[k].photo = '';
-            }
-        });
         if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin";
     }
 }
@@ -2665,37 +2641,42 @@ async function saveUserObj(e) {
     const role = $('admin-u-role').value;
     const photo = $('admin-u-photo').value.trim();
     
-    // Yeni Eklenen: Google Sheets'e Kayıt Gönderme
     const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
     try {
-                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-    } catch(err) { console.error('Kullanıcı Google Sheets\'e kaydedilirken hata oluştu:', err); }
+        toast('Kullanıcı kaydediliyor...', 'warn');
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        toast('Kayıt isteği gönderildi. Liste 2 saniye içinde güncellenecek.', 'ok');
+        
+        $('admin-u-form').reset();
 
-    USER_DATA[name] = { pass, role, photo };
-    let lu = safeJSON(localStorage.getItem('localUsers'), {});
-    lu[name] = { pass, role, photo, deleted: false };
-    localStorage.setItem('localUsers', JSON.stringify(lu));
-    
-    if (LOGGED_IN_USER && LOGGED_IN_USER.name === name) {
-        LOGGED_IN_USER.role = role;
-        localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
-        const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
-        $('user-name').innerHTML = `${LOGGED_IN_USER.name} ${roleBadge}`;
-        if (photo) {
-            $('user-avatar').src = photo;
-            $('user-avatar').classList.remove('hidden');
-            if($('user-initials')) $('user-initials').classList.add('hidden');
-        } else {
-            $('user-avatar').classList.add('hidden');
-            if($('user-initials')) {
-                $('user-initials').innerText = name.slice(0,2).toUpperCase();
-                $('user-initials').classList.remove('hidden');
+        setTimeout(async () => {
+            await fetchUsers();
+            rAdmin();
+            
+            if (LOGGED_IN_USER && LOGGED_IN_USER.name === name) {
+                LOGGED_IN_USER.role = role;
+                localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
+                const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle">YÖNETİCİ</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar">ÜYE</span>';
+                $('user-name').innerHTML = `${LOGGED_IN_USER.name} ${roleBadge}`;
+                if (photo) {
+                    $('user-avatar').src = photo;
+                    $('user-avatar').classList.remove('hidden');
+                    if($('user-initials')) $('user-initials').classList.add('hidden');
+                } else {
+                    $('user-avatar').classList.add('hidden');
+                    if($('user-initials')) {
+                        $('user-initials').innerText = name.slice(0,2).toUpperCase();
+                        $('user-initials').classList.remove('hidden');
+                    }
+                }
+                applyRoleRestrictions();
             }
-        }
-        applyRoleRestrictions();
+        }, 2000);
+
+    } catch(err) { 
+        console.error('Kullanıcı Google Sheets\'e kaydedilirken hata oluştu:', err); 
+        toast('Kullanıcı kaydedilemedi. Bağlantı hatası.', 'err');
     }
-    
-    rAdmin(); $('admin-u-form').reset(); toast('Kullanıcı bilgileri kaydedildi.', 'ok');
 }
 
 function editUser(name) {
@@ -2708,14 +2689,24 @@ function editUser(name) {
     $('admin-u-name').focus();
 }
 
-function deleteUser(name) {
+async function deleteUser(name) {
     if(name === 'Yusuf Yalçıntaş') return toast('Ana yönetici silinemez!', 'err');
-    if(confirm(name + ' adlı kullanıcıyı sistemden silmek istediğinize emin misiniz?')) {
-        delete USER_DATA[name];
-        let lu = safeJSON(localStorage.getItem('localUsers'), {});
-        lu[name] = { deleted: true };
-        localStorage.setItem('localUsers', JSON.stringify(lu));
-        rAdmin(); toast('Kullanıcı silindi.', 'ok');
+    if(!confirm(name + ' adlı kullanıcıyı sistemden silmek istediğinize emin misiniz?')) return;
+
+    const payload = { action: "deleteUser", name: name };
+    try {
+        toast('Kullanıcı siliniyor...', 'warn');
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        toast('Silme isteği gönderildi. Liste 2 saniye içinde güncellenecek.', 'ok');
+        
+        // After sending the request, wait and refresh the user list from the source
+        setTimeout(async () => {
+            await fetchUsers();
+            rAdmin();
+        }, 2000); // Wait 2s for Google Sheets to update
+
+    } catch(err) {
+        toast('Kullanıcı silinemedi. Bağlantı hatası.', 'err');
     }
 }
 
