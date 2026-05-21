@@ -1090,7 +1090,7 @@ function rG(){
     const eM={}; dd.forEach(r=>{if(!eM[r.calisan])eM[r.calisan]={pSum:0,c:0}; eM[r.calisan].pSum+=r.tP; eM[r.calisan].c++;});
     const sr=Object.entries(eM).map(([c,v])=>({calisan:c, tP:v.pSum/v.c})).sort((a,b)=>b.tP-a.tP);
     
-    mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?cR('accent',0.75):r.tP>=90?cR('accent4',0.75):r.tP>=70?cR('accent3',0.75):cR('accent2',0.75))}]}, { x: { ticks: { callback: function(v) { return this.getLabelForValue(v).split(' ')[0]; } } } });
+    mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?cR('accent',0.75):r.tP>=90?cR('accent4',0.75):r.tP>=70?cR('accent3',0.75):cR('accent2',0.75))}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
     mc('c2','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,dd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
     const pm={}; dd.forEach(r=>{if(r.pres1)pm[r.pres1]=(pm[r.pres1]||0)+r.uretim1; if(r.pres2)pm[r.pres2]=(pm[r.pres2]||0)+r.uretim2;});
@@ -2412,7 +2412,7 @@ function filterContacts(v) { renderContacts(v); }
 // KULLANICI PROFİL FOTOĞRAFI YÖNETİMİ
 function openProfileModal() {
     if(!LOGGED_IN_USER) return;
-    const u = USER_DATA[LOGGED_IN_USER.name];
+    const u = USER_DATA[LOGGED_IN_USER.name] || {};
     $('profile-photo-b64').value = u.photo || '';
     $('profile-photo-upload').value = '';
     updateProfilePreview(u.photo || '');
@@ -3238,7 +3238,7 @@ function extractEntities(text) {
   else if (text.includes('bu hafta'))            entities.date = sW;
   else if (text.includes('bu ay'))               entities.date = sM;
   else {
-    const dateMatch = text.match(/(\d{1,2}).\s-/);
+    const dateMatch = text.match(/(\d{1,2})[\.\s-]+(\d{1,2})/);
     if (dateMatch) entities.date = `${dateMatch[1].padStart(2,'0')}.${dateMatch[2].padStart(2,'0')}.${new Date().getFullYear()}`;
   }
   const allNames = [...new Set([...RAW.map(r => r.calisan), ...Object.keys(USER_DATA)])];
