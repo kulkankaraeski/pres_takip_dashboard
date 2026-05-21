@@ -47,9 +47,11 @@ self.addEventListener('fetch', event => {
                     const cachedResponse = await caches.match(event.request);
                     if (cachedResponse) return cachedResponse;
                     const networkResponse = await fetch(event.request);
-                    const cache = await caches.open(CACHE_NAME);
-                    // Caching işleminin bitmesini bekle (await)
-                    await cache.put(event.request, networkResponse.clone());
+                    // Sadece başarılı (200 OK) veya Opak (0) HTTP yanıtlarını önbelleğe al (404/500 gibi hataları engeller)
+                    if (networkResponse && (networkResponse.ok || networkResponse.status === 0)) {
+                        const cache = await caches.open(CACHE_NAME);
+                        await cache.put(event.request, networkResponse.clone());
+                    }
                     return networkResponse;
                 } catch (error) {
                     console.error('SW: Harici kütüphane çekilemedi ve önbellekte yoktu.', error);
@@ -70,8 +72,10 @@ self.addEventListener('fetch', event => {
                     return preloadResponse;
                 }
                 const networkResponse = await fetch(event.request);
-                const cache = await caches.open(CACHE_NAME);
-                await cache.put(event.request, networkResponse.clone());
+                if (networkResponse && (networkResponse.ok || networkResponse.status === 0)) {
+                    const cache = await caches.open(CACHE_NAME);
+                    await cache.put(event.request, networkResponse.clone());
+                }
                 return networkResponse;
             } catch (error) {
                 console.warn('SW: Ağ isteği başarısız, önbellek deneniyor.', event.request.url);
