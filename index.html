@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="/src/style.css">
 </head>
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
 
@@ -710,13 +710,7 @@
 <script>
 // Chrome Eklentilerinden veya üçüncü parti araçlardan (örn: content.js) kaynaklanan Promise hatalarını konsolda gizle.
 window.addEventListener('unhandledrejection', function(event) {
-    const errStr = String(event.reason?.stack || event.reason || '');
-    if (
-        errStr.includes('content.js') || 
-        errStr === '[object Object]' ||
-        errStr.includes('A listener indicated an asynchronous response') ||
-        errStr.includes('message channel closed')
-    ) {
+    if (event.reason && (String(event.reason.stack || event.reason).includes('content.js') || String(event.reason) === '[object Object]')) {
         event.preventDefault();
     }
 });
