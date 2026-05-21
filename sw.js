@@ -1,9 +1,10 @@
-const CACHE_NAME = 'pres-takip-v2';
+const CACHE_NAME = 'pres-takip-v3';
 const STATIC_ASSETS = [
     './',
     './index.html',
     './manifest.json',
-    './icon-512.png'
+    './icon-512.png',
+    './src/style.css'
 ];
 
 self.addEventListener('install', event => {
