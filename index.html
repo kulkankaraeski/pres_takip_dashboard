@@ -710,7 +710,13 @@
 <script>
 // Chrome Eklentilerinden veya üçüncü parti araçlardan (örn: content.js) kaynaklanan Promise hatalarını konsolda gizle.
 window.addEventListener('unhandledrejection', function(event) {
-    if (event.reason && (String(event.reason.stack || event.reason).includes('content.js') || String(event.reason) === '[object Object]')) {
+    const errStr = String(event.reason?.stack || event.reason || '');
+    if (
+        errStr.includes('content.js') || 
+        errStr === '[object Object]' ||
+        errStr.includes('A listener indicated an asynchronous response') ||
+        errStr.includes('message channel closed')
+    ) {
         event.preventDefault();
     }
 });
