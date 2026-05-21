@@ -1946,17 +1946,22 @@ async function submitForm(e){
     // birinci satırda yer alan sütun başlıklarınızla HARFİ HARFİNE AYNI olmalıdır.
     const payload = {
         "Tarih": trh,
-        "Çalışan": cal, // Tablonuzdaki başlık 'Çalışan Adı' ise burayı da öyle değiştirin
+        "Çalışan": cal,
         "Vardiya": $('f-vardiya').value,
         "Pres1": $('f-pres1').value,
         "Fason1": $('f-fason1').value,
         "Üretilen Adet 1": $('f-uretim1').value,
+        "Arıza Türü 1": "",
+        "Duruş Başlangıcı 1": "",
+        "Duruş Bitişi 1": "",
         "Duruş Süresi 1 (dk)": $('f-durus1').value || 0,
         "Pres2": $('f-pres2').value,
         "Fason2": $('f-fason2').value,
         "Üretilen Adet 2": $('f-uretim2').value || "",
+        "Arıza Türü 2": "",
+        "Duruş Başlangıcı 2": "",
+        "Duruş Bitişi 2": "",
         "Duruş Süresi 2 (dk)": $('f-durus2').value || 0
-        // Performans vb. gibi hücreleriniz Google Sheets'te formüllü ise buraya eklemenize gerek yok.
     };
     
     if (editModeRecord) {
