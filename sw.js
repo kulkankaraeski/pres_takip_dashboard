@@ -80,7 +80,8 @@ self.addEventListener('fetch', event => {
             } catch (error) {
                 console.warn('SW: Ağ isteği başarısız, önbellek deneniyor.', event.request.url);
                 try {
-                    const cachedResponse = await caches.match(event.request);
+                    // ignoreSearch parametresi "?tab=haftalik" gibi ekleri görmezden gelerek çevrimdışı yüklemeyi kurtarır
+                    const cachedResponse = await caches.match(event.request, { ignoreSearch: true });
                     if (cachedResponse) return cachedResponse;
                 } catch (e) {
                     console.error('SW: Cache match hatası', e);

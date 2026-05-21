@@ -272,7 +272,14 @@
         <div class="panel active" id="panel-gunluk">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-4 bg-bg2/80 backdrop-blur-md border border-border/50 p-2.5 rounded-xl shadow-sm gap-2">
                 <button onclick="chD(-1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">◀ ÖNCEKİ</button>
-                <div class="flex items-center gap-3"><span id="c-day" class="font-bebas text-2xl md:text-3xl tracking-wider text-accent drop-shadow-sm"></span><input type="date" id="d-pick" class="bg-bg3 border border-border text-text2 text-xs rounded-lg p-2 outline-none focus:border-accent transition-colors cursor-pointer" onchange="pkD(this.value)"></div>
+                <div class="flex flex-col md:flex-row items-center gap-3">
+                    <div class="flex items-center gap-3"><span id="c-day" class="font-bebas text-2xl md:text-3xl tracking-wider text-accent drop-shadow-sm"></span><input type="date" id="d-pick" class="bg-bg3 border border-border text-text2 text-xs rounded-lg p-2 outline-none focus:border-accent transition-colors cursor-pointer" onchange="pkD(this.value)"></div>
+                    <div id="d-best" class="hidden items-center gap-2 px-3 py-1.5 bg-accent3/10 border border-accent3/30 rounded-lg cursor-pointer hover:bg-accent3/20 transition-transform hover:scale-105 shadow-sm" onclick="if(window.bestDayEmp) openModal(window.bestDayEmp)">
+                        <span class="text-[10px] text-accent3 font-bold uppercase tracking-wider">🌟 GÜNÜN YILDIZI</span>
+                        <span id="d-best-name" class="font-bebas text-sm md:text-base text-text uppercase"></span>
+                        <span id="d-best-perf" class="text-[10px] font-bold text-accent4 bg-bg3/50 px-1.5 py-0.5 rounded"></span>
+                    </div>
+                </div>
                 <button onclick="chD(1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">SONRAKİ ▶</button>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-5" id="g-kpi"></div>
@@ -301,10 +308,17 @@
         </div>
 
         <div class="panel hidden" id="panel-haftalik">
-            <div class="flex items-center justify-between mb-4 bg-bg2 border border-border p-2 rounded">
-                <button onclick="chW(-1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">◀ ÖNCEKİ</button>
-                <div class="flex items-center gap-3"><span id="c-week" class="font-bebas text-2xl tracking-wider text-accent"></span><input type="week" id="w-pick" class="bg-bg3 border border-border text-text2 text-xs rounded p-1.5 outline-none" onchange="pkW(this.value)"></div>
-                <button onclick="chW(1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">SONRAKİ ▶</button>
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 bg-bg2/80 backdrop-blur-md border border-border/50 p-2.5 rounded-xl shadow-sm gap-2">
+                <button onclick="chW(-1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">◀ ÖNCEKİ</button>
+                <div class="flex flex-col md:flex-row items-center gap-3">
+                    <div class="flex items-center gap-3"><span id="c-week" class="font-bebas text-2xl tracking-wider text-accent drop-shadow-sm"></span><input type="week" id="w-pick" class="bg-bg3 border border-border text-text2 text-xs rounded-lg p-2 outline-none focus:border-accent transition-colors cursor-pointer" onchange="pkW(this.value)"></div>
+                    <div id="w-best" class="hidden items-center gap-2 px-3 py-1.5 bg-accent3/10 border border-accent3/30 rounded-lg cursor-pointer hover:bg-accent3/20 transition-transform hover:scale-105 shadow-sm" onclick="if(window.bestWeekEmp) openModal(window.bestWeekEmp)">
+                        <span class="text-[10px] text-accent3 font-bold uppercase tracking-wider">🌟 HAFTANIN YILDIZI</span>
+                        <span id="w-best-name" class="font-bebas text-sm md:text-base text-text uppercase"></span>
+                        <span id="w-best-perf" class="text-[10px] font-bold text-accent4 bg-bg3/50 px-1.5 py-0.5 rounded"></span>
+                    </div>
+                </div>
+                <button onclick="chW(1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">SONRAKİ ▶</button>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4" id="w-kpi"></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -375,7 +389,14 @@
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">GENEL ÜRETİM (Noktalara Tıklayın)</div><div class="h-[240px] relative"><canvas id="h1"></canvas></div></div>
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">GENEL PERFORMANS</div><div class="h-[240px] relative"><canvas id="h2"></canvas></div></div>
             </div>
-            <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">EN İYİ 10 ÇALIŞAN (Çubuklara Tıklayın)</div><div class="h-[260px] relative"><canvas id="h3"></canvas></div></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-2">
+                <div class="bg-bg2 border border-border rounded p-4 lg:col-span-2"><div class="font-bebas text-base text-text2 mb-2">EN İYİ 10 ÇALIŞAN (Çubuklara Tıklayın)</div><div class="h-[260px] relative"><canvas id="h3"></canvas></div></div>
+                <!-- Şeref Kürsüsü (Hall of Fame) -->
+                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-sm border-accent3/30">
+                    <div class="p-3 border-b border-border bg-accent3/10"><span class="font-bebas text-base text-accent3 tracking-[1px] flex items-center gap-2">🏆 ŞEREF KÜRSÜSÜ</span></div>
+                    <div class="overflow-auto h-[260px] custom-scrollbar flex flex-col gap-2 p-3 bg-bg3/30" id="h-fame"></div>
+                </div>
+            </div>
         </div>
 
         <div class="panel hidden" id="panel-alarm">
@@ -1099,13 +1120,17 @@ function rG(){
     
     if(sr.length > 0 && sr[0].tP > 0) {
         window.bestDayEmp = sr[0].calisan;
-        $('d-best-name').textContent = sr[0].calisan;
-        $('d-best-perf').textContent = sr[0].tP.toFixed(1) + '%';
-        $('d-best').classList.remove('hidden');
-        $('d-best').classList.add('flex');
+        if($('d-best-name')) $('d-best-name').textContent = sr[0].calisan;
+        if($('d-best-perf')) $('d-best-perf').textContent = sr[0].tP.toFixed(1) + '%';
+        if($('d-best')) {
+            $('d-best').classList.remove('hidden');
+            $('d-best').classList.add('flex');
+        }
     } else {
-        $('d-best').classList.add('hidden');
-        $('d-best').classList.remove('flex');
+        if($('d-best')) {
+            $('d-best').classList.add('hidden');
+            $('d-best').classList.remove('flex');
+        }
     }
 
     mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?cR('accent',0.75):r.tP>=90?cR('accent4',0.75):r.tP>=70?cR('accent3',0.75):cR('accent2',0.75))}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
@@ -1146,13 +1171,17 @@ function rW(){
     const bestW = [...ws].sort((a,b) => b.p - a.p)[0];
     if(bestW && bestW.p > 0) {
         window.bestWeekEmp = bestW.w;
-        $('w-best-name').textContent = bestW.w;
-        $('w-best-perf').textContent = bestW.p.toFixed(1) + '%';
-        $('w-best').classList.remove('hidden');
-        $('w-best').classList.add('flex');
+        if($('w-best-name')) $('w-best-name').textContent = bestW.w;
+        if($('w-best-perf')) $('w-best-perf').textContent = bestW.p.toFixed(1) + '%';
+        if($('w-best')) {
+            $('w-best').classList.remove('hidden');
+            $('w-best').classList.add('flex');
+        }
     } else {
-        $('w-best').classList.add('hidden');
-        $('w-best').classList.remove('flex');
+        if($('w-best')) {
+            $('w-best').classList.add('hidden');
+            $('w-best').classList.remove('flex');
+        }
     }
 
     $('th-haf').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
@@ -1177,13 +1206,17 @@ function rM(){
         const bestM = [...ws].sort((a,b) => b.p - a.p)[0];
         if(bestM && bestM.p > 0) {
             window.bestMonthEmp = bestM.w;
-            $('m-best-name').textContent = bestM.w;
-            $('m-best-perf').textContent = bestM.p.toFixed(1) + '%';
-            $('m-best').classList.remove('hidden');
-            $('m-best').classList.add('flex');
+            if($('m-best-name')) $('m-best-name').textContent = bestM.w;
+            if($('m-best-perf')) $('m-best-perf').textContent = bestM.p.toFixed(1) + '%';
+            if($('m-best')) {
+                $('m-best').classList.remove('hidden');
+                $('m-best').classList.add('flex');
+            }
         } else {
-            $('m-best').classList.add('hidden');
-            $('m-best').classList.remove('flex');
+            if($('m-best')) {
+                $('m-best').classList.add('hidden');
+                $('m-best').classList.remove('flex');
+            }
         }
 
     $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
@@ -2995,10 +3028,12 @@ function fetchCSV(isBg = false) {
                 
                 const best = empStats.sort((a, b) => b.score - a.score)[0];
                 window.bestEmpName = best.w;
-                $('hdr-best-name').textContent = best.w.toUpperCase();
-                $('hdr-best-det').innerHTML = `<span class="text-accent4 font-bold" title="Adil Puan">⭐ ${best.score.toFixed(1)} Puan</span> | <span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?'text-accent':'text-accent2'}">${best.p.toFixed(1)}%</span> Perf`;
-                $('hdr-best').classList.remove('hidden');
-                $('hdr-best').classList.add('flex');
+                if($('hdr-best-name')) $('hdr-best-name').textContent = best.w.toUpperCase();
+                if($('hdr-best-det')) $('hdr-best-det').innerHTML = `<span class="text-accent4 font-bold" title="Adil Puan">⭐ ${best.score.toFixed(1)} Puan</span> | <span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?'text-accent':'text-accent2'}">${best.p.toFixed(1)}%</span> Perf`;
+                if($('hdr-best')) {
+                    $('hdr-best').classList.remove('hidden');
+                    $('hdr-best').classList.add('flex');
+                }
             }
         }
         
