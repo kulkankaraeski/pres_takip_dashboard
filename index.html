@@ -332,10 +332,17 @@
         </div>
 
         <div class="panel hidden" id="panel-aylik">
-            <div class="flex items-center justify-between mb-4 bg-bg2 border border-border p-2 rounded">
-                <button onclick="chM(-1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">◀ ÖNCEKİ</button>
-                <div class="flex items-center gap-3"><span id="c-month" class="font-bebas text-2xl tracking-wider text-accent"></span><input type="month" id="m-pick" class="bg-bg3 border border-border text-text2 text-xs rounded p-1.5 outline-none" onchange="pkM(this.value)"></div>
-                <button onclick="chM(1)" class="px-3 py-1 bg-bg3 hover:bg-border text-text rounded font-mono">SONRAKİ ▶</button>
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 bg-bg2/80 backdrop-blur-md border border-border/50 p-2.5 rounded-xl shadow-sm gap-2">
+                <button onclick="chM(-1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">◀ ÖNCEKİ</button>
+                <div class="flex flex-col md:flex-row items-center gap-3">
+                    <div class="flex items-center gap-3"><span id="c-month" class="font-bebas text-2xl tracking-wider text-accent drop-shadow-sm"></span><input type="month" id="m-pick" class="bg-bg3 border border-border text-text2 text-xs rounded-lg p-2 outline-none focus:border-accent transition-colors cursor-pointer" onchange="pkM(this.value)"></div>
+                    <div id="m-best" class="hidden items-center gap-2 px-3 py-1.5 bg-accent3/10 border border-accent3/30 rounded-lg cursor-pointer hover:bg-accent3/20 transition-transform hover:scale-105 shadow-sm" onclick="if(window.bestMonthEmp) openModal(window.bestMonthEmp)">
+                        <span class="text-[10px] text-accent3 font-bold uppercase tracking-wider">🌟 AYIN YILDIZI</span>
+                        <span id="m-best-name" class="font-bebas text-sm md:text-base text-text uppercase"></span>
+                        <span id="m-best-perf" class="text-[10px] font-bold text-accent4 bg-bg3/50 px-1.5 py-0.5 rounded"></span>
+                    </div>
+                </div>
+                <button onclick="chM(1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">SONRAKİ ▶</button>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4" id="m-kpi"></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -1090,6 +1097,17 @@ function rG(){
     const eM={}; dd.forEach(r=>{if(!eM[r.calisan])eM[r.calisan]={pSum:0,c:0}; eM[r.calisan].pSum+=r.tP; eM[r.calisan].c++;});
     const sr=Object.entries(eM).map(([c,v])=>({calisan:c, tP:v.pSum/v.c})).sort((a,b)=>b.tP-a.tP);
     
+    if(sr.length > 0 && sr[0].tP > 0) {
+        window.bestDayEmp = sr[0].calisan;
+        $('d-best-name').textContent = sr[0].calisan;
+        $('d-best-perf').textContent = sr[0].tP.toFixed(1) + '%';
+        $('d-best').classList.remove('hidden');
+        $('d-best').classList.add('flex');
+    } else {
+        $('d-best').classList.add('hidden');
+        $('d-best').classList.remove('flex');
+    }
+
     mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?cR('accent',0.75):r.tP>=90?cR('accent4',0.75):r.tP>=70?cR('accent3',0.75):cR('accent2',0.75))}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
     mc('c2','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,dd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
@@ -1124,6 +1142,19 @@ function rW(){
     mc('w4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,wd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
     const ws=[...new Set(wd.map(r=>r.calisan))].map(w=>({w,...calc(wd.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
+    
+    const bestW = [...ws].sort((a,b) => b.p - a.p)[0];
+    if(bestW && bestW.p > 0) {
+        window.bestWeekEmp = bestW.w;
+        $('w-best-name').textContent = bestW.w;
+        $('w-best-perf').textContent = bestW.p.toFixed(1) + '%';
+        $('w-best').classList.remove('hidden');
+        $('w-best').classList.add('flex');
+    } else {
+        $('w-best').classList.add('hidden');
+        $('w-best').classList.remove('flex');
+    }
+
     $('th-haf').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
 }
@@ -1142,6 +1173,19 @@ function rM(){
     mc('m4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,md.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
     const ws=[...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
+        
+        const bestM = [...ws].sort((a,b) => b.p - a.p)[0];
+        if(bestM && bestM.p > 0) {
+            window.bestMonthEmp = bestM.w;
+            $('m-best-name').textContent = bestM.w;
+            $('m-best-perf').textContent = bestM.p.toFixed(1) + '%';
+            $('m-best').classList.remove('hidden');
+            $('m-best').classList.add('flex');
+        } else {
+            $('m-best').classList.add('hidden');
+            $('m-best').classList.remove('flex');
+        }
+
     $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
 }
