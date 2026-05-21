@@ -2933,7 +2933,6 @@ function fetchCSV(isBg = false) {
         if(sM) {
             const mData = RAW.filter(r => r.tarih.endsWith(sM));
             if(mData.length > 0) {
-                const best = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) })).sort((a,b) => b.u - a.u)[0];
                 let empStats = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }));
                 
                 // Normalizasyon için o ayın en yüksek değerlerini bul
@@ -2953,7 +2952,6 @@ function fetchCSV(isBg = false) {
                 const best = empStats.sort((a, b) => b.score - a.score)[0];
                 window.bestEmpName = best.w;
                 $('hdr-best-name').textContent = best.w.toUpperCase();
-                $('hdr-best-det').innerHTML = `<span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?'text-accent':'text-accent2'}">${best.p.toFixed(1)}%</span> Perf | <span class="text-accent3">${n(best.d)}</span> dk Dur`;
                 $('hdr-best-det').innerHTML = `<span class="text-accent4 font-bold" title="Adil Puan">⭐ ${best.score.toFixed(1)} Puan</span> | <span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?'text-accent':'text-accent2'}">${best.p.toFixed(1)}%</span> Perf`;
                 $('hdr-best').classList.remove('hidden');
                 $('hdr-best').classList.add('flex');
