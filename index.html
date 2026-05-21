@@ -1154,6 +1154,54 @@ function rH(){
     const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u).slice(0,10);
     // FIX #4: x.w.calisan her zaman undefined'dı (x.w zaten string). Düzeltildi.
     mc('h3','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
+        
+        // ŞEREF KÜRSÜSÜ (HALL OF FAME)
+        const fameHtml = MONTHS.slice().reverse().map(m => {
+            const mData = RAW.filter(r => r.tarih.endsWith(m));
+            if(mData.length === 0) return '';
+            
+            let empStats = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }));
+            const maxU = Math.max(...empStats.map(e => e.u)) || 1;
+            const maxP = Math.max(...empStats.map(e => e.p)) || 1;
+            const maxC = Math.max(...empStats.map(e => e.c)) || 1;
+            
+            const wU = adminSettings.weights?.u ?? 40;
+            const wP = adminSettings.weights?.p ?? 40;
+            const wC = adminSettings.weights?.c ?? 20;
+            
+            empStats.forEach(e => {
+                e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC);
+            });
+            
+            const best = empStats.sort((a, b) => b.score - a.score)[0];
+            if(!best) return '';
+
+            const uInfo = USER_DATA[best.w] || {};
+            const avatar = uInfo.photo 
+                ? `<img src="${uInfo.photo}" class="w-10 h-10 rounded-full object-cover border-2 border-accent3 shadow-sm shrink-0">` 
+                : `<div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent3 to-accent4 border-2 border-accent3 flex items-center justify-center font-bold text-bg2 text-sm shadow-sm shrink-0">${best.w.slice(0,2).toUpperCase()}</div>`;
+            
+            const monthNames = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+            const [mm, yy] = m.split('.');
+            const mText = monthNames[parseInt(mm)-1] + ' ' + yy;
+
+            return `
+            <div class="flex items-center justify-between bg-bg2 border border-border/50 rounded-xl p-2 hover:bg-bg3 hover:shadow-md transition-all cursor-pointer group" onclick="openModal('${safeAttr(best.w)}')">
+                <div class="flex items-center gap-3">
+                    ${avatar}
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-mono text-text3 tracking-wider group-hover:text-accent3 transition-colors">${mText}</span>
+                        <span class="font-bold text-sm text-text">${best.w}</span>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end">
+                    <span class="text-xs font-bold text-accent4">⭐ ${best.score.toFixed(1)}</span>
+                    <span class="text-[9px] text-text2">${n(best.u)} Adet</span>
+                </div>
+            </div>`;
+        }).join('');
+        
+        if($('h-fame')) $('h-fame').innerHTML = fameHtml || '<div class="text-center text-text3 text-xs p-4 font-mono">Henüz kayıtlı bir yıldız bulunmuyor.</div>';
 }
 
 function checkSystemAlarms() {
@@ -2886,9 +2934,27 @@ function fetchCSV(isBg = false) {
             const mData = RAW.filter(r => r.tarih.endsWith(sM));
             if(mData.length > 0) {
                 const best = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) })).sort((a,b) => b.u - a.u)[0];
+                let empStats = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }));
+                
+                // Normalizasyon için o ayın en yüksek değerlerini bul
+                const maxU = Math.max(...empStats.map(e => e.u)) || 1;
+                const maxP = Math.max(...empStats.map(e => e.p)) || 1;
+                const maxC = Math.max(...empStats.map(e => e.c)) || 1;
+                
+                const wU = adminSettings.weights?.u ?? 40;
+                const wP = adminSettings.weights?.p ?? 40;
+                const wC = adminSettings.weights?.c ?? 20;
+                
+                // Ağırlıklı Puan: Yönetici ayarlarından gelen yüzdeler (Varsayılan %40, %40, %20)
+                empStats.forEach(e => {
+                    e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC);
+                });
+                
+                const best = empStats.sort((a, b) => b.score - a.score)[0];
                 window.bestEmpName = best.w;
                 $('hdr-best-name').textContent = best.w.toUpperCase();
                 $('hdr-best-det').innerHTML = `<span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?'text-accent':'text-accent2'}">${best.p.toFixed(1)}%</span> Perf | <span class="text-accent3">${n(best.d)}</span> dk Dur`;
+                $('hdr-best-det').innerHTML = `<span class="text-accent4 font-bold" title="Adil Puan">⭐ ${best.score.toFixed(1)} Puan</span> | <span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?'text-accent':'text-accent2'}">${best.p.toFixed(1)}%</span> Perf`;
                 $('hdr-best').classList.remove('hidden');
                 $('hdr-best').classList.add('flex');
             }
