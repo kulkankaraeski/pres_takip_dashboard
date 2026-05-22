@@ -13,10 +13,29 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: 'var(--bg)', bg2: 'var(--bg2)', bg3: 'var(--bg3)', border: 'var(--border)',
+                        text: 'var(--text)', text2: 'var(--text2)', text3: 'var(--text3)',
+                        accent: 'var(--accent)', accent2: 'var(--accent2)', accent3: 'var(--accent3)', accent4: 'var(--accent4)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                        bebas: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/src/style.css">
+    <link rel="stylesheet" href="./src/style.css">
 </head>
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
 
