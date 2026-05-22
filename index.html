@@ -127,11 +127,11 @@
         </div>
     </header>
 
-    <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-x-hidden">
-    <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2/80 backdrop-blur-md p-1.5 md:p-2 rounded-xl border border-border/50 shrink-0 shadow-md relative z-50" id="main-nav">
+    <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-hidden">
+    <nav class="flex overflow-x-auto snap-x scroll-smooth no-scrollbar gap-2 md:gap-3 bg-bg2/90 backdrop-blur-md p-2 md:p-3 rounded-xl border border-border/80 shadow-lg relative z-40 w-full" id="main-nav">
         <!-- Raporlar Dropdown -->
-        <div class="relative flex-1 md:flex-none z-[9999]" id="nav-dropdown-raporlar">
-            <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex');" class="nav-btn w-full bg-accent/20 text-accent border-accent flex justify-center items-center gap-2 outline-none shadow-sm">
+        <div class="relative shrink-0 snap-center z-[9999]" id="nav-dropdown-raporlar">
+            <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex');" class="nav-btn bg-accent/20 text-accent border-accent flex justify-center items-center gap-2 outline-none shadow-sm">
                 📊 GÜNLÜK RAPOR <span class="text-[10px]">▼</span>
             </button>
             <div class="absolute left-0 top-full mt-2 hidden flex-col bg-bg border border-border rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.9)] min-w-[240px] w-full md:w-auto overflow-hidden z-[9999] divide-y divide-border/50">
@@ -144,16 +144,16 @@
                 <div onclick="swT('fason',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">🏭 FASON DETAY</div>
             </div>
         </div>
-        <div onclick="swT('kaliphane',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">KALIPHANE</div>
-        <div onclick="swT('malzeme',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">PRES MALZEME TAKİP</div>
-        <div onclick="swT('kayitlar',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
-        <div onclick="swT('plan',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM PLANI</div>
-        <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="nav-tab nav-btn bg-bg3 text-accent2 border-border hover:bg-border transition-all duration-300">🚨 ALARMLAR</div>
-        <div onclick="swT('form',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ GİRİŞ FORMU</div>
-        <div id="nav-admin" onclick="swT('admin',this)" class="nav-tab nav-btn hidden bg-bg3 text-accent2 border-border hover:bg-border">YÖNETİM PANELİ</div>
+        <div onclick="swT('kaliphane',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">KALIPHANE</div>
+        <div onclick="swT('malzeme',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">PRES MALZEME TAKİP</div>
+        <div onclick="swT('kayitlar',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">ÜRETİM TAKİP DENEMELERİ</div>
+        <div onclick="swT('plan',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">ÜRETİM PLANI</div>
+        <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-accent2 border-border hover:bg-border transition-all duration-300 shadow-sm">🚨 ALARMLAR</div>
+        <div onclick="swT('form',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">VERİ GİRİŞ FORMU</div>
+        <div id="nav-admin" onclick="swT('admin',this)" class="nav-tab nav-btn shrink-0 snap-center hidden bg-bg3 text-accent2 border-border hover:bg-border shadow-sm">YÖNETİM PANELİ</div>
     </nav>
 
-    <main class="flex-1 relative min-h-[500px]">
+    <main class="flex-1 relative min-h-[500px] w-full overflow-x-hidden mt-2">
         <div class="panel active" id="panel-gunluk">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-4 bg-bg2/80 backdrop-blur-md border border-border/50 p-2.5 rounded-xl shadow-sm gap-2">
                 <button onclick="chD(-1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">◀ ÖNCEKİ</button>
@@ -184,11 +184,11 @@
             </div>
             <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-sm flex flex-col mb-4">
                 <div class="p-4 border-b border-border/50 bg-bg3/30 flex flex-wrap justify-between items-center gap-3"><span class="font-sans font-semibold text-xs tracking-wider uppercase text-text2 flex items-center gap-2">📊 MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-gun-kiyas',this.value)" placeholder="Ara..." class="bg-bg2 border border-border/80 text-text2 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-accent w-full sm:w-48 transition-colors shadow-inner"></div>
-                <div class="overflow-auto max-h-[40vh] custom-scrollbar"><table class="w-full text-left border-collapse" id="t-gun-kiyas"><thead id="th-gun-kiyas"></thead><tbody id="tb-gun-kiyas"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[40vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-gun-kiyas"><thead id="th-gun-kiyas"></thead><tbody id="tb-gun-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
                 <div class="p-4 border-b border-border/50 bg-bg3/30 flex flex-wrap justify-between items-center gap-3"><span class="font-sans font-semibold text-xs tracking-wider uppercase text-text2 flex items-center gap-2">📋 GÜNLÜK LİSTE</span><input type="text" onkeyup="fT('tb-gun',this.value)" placeholder="Ara..." class="bg-bg2 border border-border/80 text-text2 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-accent w-full sm:w-48 transition-colors shadow-inner"></div>
-                <div class="overflow-auto max-h-[60vh] custom-scrollbar"><table class="w-full text-left border-collapse" id="t-gun"><thead id="th-gun"></thead><tbody id="tb-gun"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[800px]" id="t-gun"><thead id="th-gun"></thead><tbody id="tb-gun"></tbody></table></div>
             </div>
         </div>
 
@@ -222,11 +222,11 @@
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden mb-4">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-haf-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-haf-kiyas"><thead id="th-haf-kiyas"></thead><tbody id="tb-haf-kiyas"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[40vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-haf-kiyas"><thead id="th-haf-kiyas"></thead><tbody id="tb-haf-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">HAFTALIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-haf',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-haf"><thead id="th-haf"></thead><tbody id="tb-haf"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-haf"><thead id="th-haf"></thead><tbody id="tb-haf"></tbody></table></div>
             </div>
         </div>
 
@@ -260,11 +260,11 @@
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden mb-4">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-ay-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-ay-kiyas"><thead id="th-ay-kiyas"></thead><tbody id="tb-ay-kiyas"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[40vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-ay-kiyas"><thead id="th-ay-kiyas"></thead><tbody id="tb-ay-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">AYLIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-ay',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-ay"><thead id="th-ay"></thead><tbody id="tb-ay"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-ay"><thead id="th-ay"></thead><tbody id="tb-ay"></tbody></table></div>
             </div>
         </div>
 
@@ -291,11 +291,11 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-start">
                 <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-lg border-accent2/30">
                     <div class="p-4 border-b border-border bg-accent2/10"><span class="font-bebas text-base text-accent2">🔴 KRİTİK UYARILAR LİSTESİ (Son 14 Gün)</span></div>
-                    <div class="overflow-auto max-h-[50vh]"><table class="w-full text-left border-collapse"><thead id="th-alarm"></thead><tbody id="tb-alarm"></tbody></table></div>
+                    <div class="overflow-x-auto overflow-y-auto max-h-[50vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[500px]"><thead id="th-alarm"></thead><tbody id="tb-alarm"></tbody></table></div>
                 </div>
                 <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-lg">
                     <div class="p-4 border-b border-border bg-accent/10"><span class="font-bebas text-base text-accent">📊 AYNI MAKİNE / FARKLI VARDİYA KIYASLAMALARI</span></div>
-                    <div class="overflow-auto max-h-[50vh] p-4 bg-bg3/30" id="makine-kiyas-container"></div>
+                    <div class="overflow-x-auto overflow-y-auto max-h-[50vh] p-4 bg-bg3/30 custom-scrollbar w-full" id="makine-kiyas-container"></div>
                 </div>
             </div>
             
@@ -311,7 +311,7 @@
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">TÜM ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-cal',this.value)" placeholder="İsim Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-cal"><thead id="th-cal"></thead><tbody id="tb-cal"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-cal"><thead id="th-cal"></thead><tbody id="tb-cal"></tbody></table></div>
             </div>
         </div>
 
@@ -321,7 +321,7 @@
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">PRES LİSTESİ</span><input type="text" onkeyup="fT('tb-pre',this.value)" placeholder="Pres Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-pre"><thead id="th-pre"></thead><tbody id="tb-pre"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-pre"><thead id="th-pre"></thead><tbody id="tb-pre"></tbody></table></div>
             </div>
         </div>
 
@@ -332,7 +332,7 @@
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">FASON LİSTESİ</span><input type="text" onkeyup="fT('tb-fas',this.value)" placeholder="Fason Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-fas"><thead id="th-fas"></thead><tbody id="tb-fas"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-fas"><thead id="th-fas"></thead><tbody id="tb-fas"></tbody></table></div>
             </div>
         </div>
 
@@ -408,8 +408,8 @@
                     <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">KALIPHANE LOKASYONLARI</span><button onclick="openGenericFormModal('kalip')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
                     <input type="text" onkeyup="fT('tb-kalip',this.value)" placeholder="Kalıp Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
                 </div>
-                <div class="overflow-auto max-h-[70vh]">
-                    <table class="w-full text-left border-collapse" id="t-kalip">
+                <div class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar w-full">
+                    <table class="w-full text-left border-collapse min-w-[600px]" id="t-kalip">
                         <thead id="th-kalip"></thead>
                         <tbody id="tb-kalip"></tbody>
                     </table>
@@ -423,8 +423,8 @@
                     <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">PRES MALZEME TAKİP LİSTESİ</span><button onclick="openGenericFormModal('malzeme')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
                     <input type="text" onkeyup="fT('tb-malzeme',this.value)" placeholder="Malzeme Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
                 </div>
-                <div class="overflow-auto max-h-[70vh]">
-                    <table class="w-full text-left border-collapse" id="t-malzeme">
+                <div class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar w-full">
+                    <table class="w-full text-left border-collapse min-w-[800px]" id="t-malzeme">
                         <thead id="th-malzeme"></thead>
                         <tbody id="tb-malzeme"></tbody>
                     </table>
@@ -532,7 +532,7 @@
     </div>
 
     <div id="generic-form-modal" class="fixed inset-0 bg-bg/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-all duration-300 backdrop-blur-md">
-        <div class="bg-bg2/90 border border-border/50 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative transform scale-95 transition-transform duration-300">
+        <div class="bg-bg2/90 border border-border/50 rounded-2xl p-6 max-w-lg w-[95%] md:w-full shadow-2xl relative transform scale-95 transition-transform duration-300">
             <button onclick="closeGenericFormModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-all hover:scale-110">&times;</button>
             <h2 id="gen-form-title" class="font-sans font-bold text-xl tracking-wide text-accent mb-5 border-b border-border/50 pb-3">KAYIT EKLE/DÜZENLE</h2>
             <form id="generic-data-form" onsubmit="saveGenericForm(event)" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
@@ -543,7 +543,7 @@
     </div>
 
     <div id="generic-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-3xl w-[95%] md:w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
             <button onclick="closeGenericModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-3xl font-bold z-10 transition-colors">&times;</button>
             <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-text mb-6 border-b border-border pb-2">KAYIT DETAYI</h2>
             <div id="gen-mdl-content" class="flex flex-col gap-2"></div>
@@ -551,13 +551,13 @@
     </div>
 
     <div id="emp-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-5xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
+        <div class="bg-bg2 border border-border rounded-lg p-4 md:p-6 max-w-5xl w-[95%] md:w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
             <button onclick="closeModal()" class="absolute top-4 right-4 text-text2 hover:text-accent2 text-3xl font-bold z-10">&times;</button>
             <h2 id="mdl-name" class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">ÇALIŞAN ADI</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="mdl-stats"></div>
             <h3 class="font-bebas text-xl tracking-[1px] text-text2 mb-3">SON ÜRETİM KAYITLARI</h3>
-            <div class="overflow-auto max-h-[40vh] bg-bg3 border border-border rounded">
-                <table class="w-full text-left border-collapse">
+            <div class="overflow-x-auto overflow-y-auto max-h-[40vh] w-full bg-bg3 border border-border rounded custom-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead id="mdl-th"></thead>
                     <tbody id="mdl-history" class="text-sm"></tbody>
                 </table>
@@ -566,15 +566,15 @@
     </div>
 
     <div id="recs-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-[100%] lg:max-w-7xl w-full max-h-[95vh] flex flex-col relative shadow-2xl">
+        <div class="bg-bg2 border border-border rounded-lg p-4 md:p-6 max-w-[95%] lg:max-w-7xl w-full max-h-[95vh] flex flex-col relative shadow-2xl">
             <button onclick="closeRecsModal()" class="absolute top-4 right-4 text-text2 hover:text-accent2 text-3xl font-bold z-10">&times;</button>
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-border pb-4 gap-4 pr-6 shrink-0">
                 <h2 id="recs-title" class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent">DETAYLAR</h2>
                 <button onclick="exportRecsToPDF()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors">📥 PDF İNDİR</button>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 shrink-0" id="recs-stats"></div>
-            <div class="overflow-auto flex-1 bg-bg3 border border-border rounded">
-                <table class="w-full text-left border-collapse" id="t-recs"></table>
+            <div class="overflow-x-auto overflow-y-auto flex-1 w-full bg-bg3 border border-border rounded custom-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[800px]" id="t-recs"></table>
             </div>
         </div>
     </div>
@@ -684,7 +684,7 @@
 
     <!-- YENİ: PROFİL FOTOĞRAFI DÜZENLEME MODALI -->
     <div id="profile-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-sm w-full shadow-2xl relative">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-sm w-[95%] md:w-full shadow-2xl relative">
             <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
             <h2 class="font-bebas text-2xl tracking-[2px] text-accent mb-4 border-b border-border pb-2">PROFİL DÜZENLE</h2>
             <form onsubmit="saveProfileFromModal(event)" class="space-y-4">
@@ -832,7 +832,7 @@ const thD=(cols)=>`<tr>${cols.map((c,i)=>{ let cls="sticky-th p-2 text-left font
 const trD=(cols)=>`<tr class="hover:bg-bg3/50 transition-colors border-b border-border/50 text-[11px] md:text-xs">${cols.map((c,i)=>{ let cls="p-2 whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1"; else if(i>=9&&i<=14) cls+=" kafa2"; return `<td class="${cls}">${c}</td>`; }).join('')}</tr>`;
 const th=(cols)=>`<tr>${cols.map(c=>`<th class="sticky-th p-3 text-left font-sans font-semibold text-[11px] tracking-wider text-text3 border-b border-border uppercase whitespace-nowrap th-bg bg-bg2/95 backdrop-blur">${c}</th>`).join('')}</tr>`;
 const tr=(cols)=>`<tr class="hover:bg-bg3/50 transition-colors border-b border-border/50 text-xs">${cols.map(c=>`<td class="p-3 whitespace-nowrap">${c}</td>`).join('')}</tr>`;
-const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2/80 backdrop-blur-sm border border-border/60 border-l-4 ${c} rounded-2xl p-5 shadow-md ${clk?'cursor-pointer hover:bg-bg3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group':''}"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 ${clk?'group-hover:text-text':''}">${l}</div><div class="font-mono text-2xl md:text-3xl font-bold ${l.includes('Duruş') ? 'text-accent2' : 'text-text'} my-1.5">${v}</div><div class="text-[10px] text-text3 font-medium">${s}</div></div>`;
+const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2/90 backdrop-blur-sm border border-border/60 border-l-[4px] ${c} rounded-2xl p-3 md:p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-center gap-1 ${clk?'cursor-pointer hover:bg-bg3 hover:-translate-y-1 group':''}"><div class="font-sans font-semibold text-[10px] md:text-[11px] tracking-wider uppercase text-text2 ${clk?'group-hover:text-text':''} leading-tight">${l}</div><div class="font-mono text-xl md:text-3xl font-bold ${l.includes('Duruş') ? 'text-accent2' : 'text-text'} leading-none">${v}</div><div class="text-[9px] md:text-[10px] text-text3 font-medium">${s}</div></div>`;
 
 // Tıklanabilir Grafikler
 function mc(id,t,d,o={}){
