@@ -2608,14 +2608,15 @@ async function saveProfileFromModal(e) {
         // Fotoğraf yeni yüklenmiş bir base64 verisiyse ImgBB'ye yükleyip kalıcı bir URL'ye dönüştürelim
         if (photo.startsWith('data:image')) {
             try {
-                const formData = new FormData();
-                formData.append('image', photo.split(',')[1]);
+                const urlEncodedData = new URLSearchParams();
+                urlEncodedData.append('image', photo.split(',')[1]);
                 
                 // Güvenilir kullanım için https://api.imgbb.com/ adresinden kendi ücretsiz API anahtarınızı alabilirsiniz.
                 const IMGBB_API_KEY = '5a415a77f3a97bd7118eb38012bfba91'; 
                 const uploadRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: urlEncodedData
                 });
                 const uploadData = await uploadRes.json();
                 
@@ -2627,8 +2628,8 @@ async function saveProfileFromModal(e) {
                 }
             } catch (uploadErr) {
                 console.error(uploadErr);
-                toast('Resim buluta yüklenemedi. Lütfen tekrar deneyin.', 'err');
-                return; // Yükleme başarısızsa işlemi durdur
+                toast('Bulut sunucusu reddetti, resim yerel olarak kaydediliyor...', 'warn');
+                // Hata olsa bile işlemi durdurma; Base64 kodunu Google Sheets'e kaydetmeye devam et
             }
         }
 

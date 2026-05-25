@@ -78,7 +78,7 @@ self.addEventListener('fetch', event => {
                 }
                 return networkResponse;
             } catch (error) {
-                console.warn('SW: Ağ isteği başarısız, önbellek deneniyor.', event.request.url);
+                // Ağdan çekilemediğinde sessizce önbelleği dene (Konsolu kirletmemesi için log gizlendi)
                 try {
                     // ignoreSearch parametresi "?tab=haftalik" gibi ekleri görmezden gelerek çevrimdışı yüklemeyi kurtarır
                     const cachedResponse = await caches.match(event.request, { ignoreSearch: true });
