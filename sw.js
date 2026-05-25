@@ -54,7 +54,8 @@ self.addEventListener('fetch', event => {
                     }
                     return networkResponse;
                 } catch (error) {
-                    console.
+                    console.warn('SW: CDN isteği başarısız, önbellek deneniyor.', event.request.url);
+                }
             })()
         );
         return;
@@ -81,9 +82,11 @@ self.addEventListener('fetch', event => {
                     const cachedResponse = await caches.match(event.request, { ignoreSearch: true });
                     if (cachedResponse) return cachedResponse;
                 } catch (e) {
-                    console.w
-                return new Re
-                    statusText/plain;charset=utf-8' })
+                    console.warn('SW: Önbellekte de bulunamadı.', event.request.url);
+                }
+                return new Response('Çevrimdışı Mod - Ağ bağlantısı yok.', {
+                    status: 503,
+                    headers: new Headers({ 'Content-Type': 'text/plain;charset=utf-8' })
                 });
             }
         })()
