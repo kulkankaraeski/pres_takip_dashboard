@@ -11,146 +11,31 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <script>
-        const originalWarn = console.warn;
-        console.warn = (...args) => { if(typeof args[0]==='string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) return; originalWarn(...args); };
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: 'var(--bg)', bg2: 'var(--bg2)', bg3: 'var(--bg3)', border: 'var(--border)',
+                        text: 'var(--text)', text2: 'var(--text2)', text3: 'var(--text3)',
+                        accent: 'var(--accent)', accent2: 'var(--accent2)', accent3: 'var(--accent3)', accent4: 'var(--accent4)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                        bebas: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config={theme:{extend:{colors:{bg:'var(--bg)',bg2:'var(--bg2)',bg3:'var(--bg3)',border:'var(--border)',text:'var(--text)',text2:'var(--text2)',text3:'var(--text3)',accent:'var(--accent)',accent2:'var(--accent2)',accent3:'var(--accent3)',accent4:'var(--accent4)'},fontFamily:{sans:['Inter','sans-serif'],mono:['Fira Code','monospace'],bebas:['Poppins','sans-serif']}}}}
-    </script>
-    <style>
-        :root {
-            --bg: #090e17; --bg2: #111827; --bg3: #1f2937; --border: #374151;
-            --text: #f3f4f6; --text2: #9ca3af; --text3: #6b7280;
-            --accent: #3b82f6; --accent2: #ef4444; --accent3: #f59e0b; --accent4: #10b981;
-            --c-accent: 59, 130, 246; --c-accent2: 239, 68, 68; --c-accent3: 245, 158, 11; --c-accent4: 16, 185, 129; --c-border: 55, 65, 81; --c-text3: 107, 114, 128;
-        }
-        .light-mode {
-            --bg: #f9fafb; --bg2: #ffffff; --bg3: #f3f4f6; --border: #e5e7eb;
-            --text: #111827; --text2: #4b5563; --text3: #9ca3af;
-            --accent: #2563eb; --accent2: #dc2626; --accent3: #d97706; --accent4: #059669;
-            --c-accent: 37, 99, 235; --c-accent2: 220, 38, 38; --c-accent3: 217, 119, 6; --c-accent4: 5, 150, 105; --c-border: 229, 231, 235; --c-text3: 156, 163, 175;
-        }
-        body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.4s ease, color 0.4s ease;}
-        ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:var(--bg); border-radius: 4px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px; transition: background 0.3s;} ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
-        
-        .panel { display: none; opacity: 0; }
-        .panel.active { display: block; opacity: 1; animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(15px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        
-        .skeleton{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:skel 1.5s infinite;border-radius:8px}
-        @keyframes skel{0%{background-position:200% 0} 100%{background-position:-200% 0}}
-        
-        .emp-link{cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-color:#2a3024;transition:all 0.2s}
-        .emp-link:hover{color:#a8e063;text-decoration-color:#a8e063}
-        
-        /* Panel Görünümlü Navigasyon Butonları (Mobil Uyumlu) */
-        .nav-btn { flex: 1 1 auto; text-align: center; padding: 10px 14px; font-family: 'Poppins', sans-serif; font-weight: 600; letter-spacing: 0.5px; font-size: 13px; border-radius: 8px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-width: 1px; white-space: nowrap; user-select: none; position: relative; overflow: hidden; }
-        .nav-btn:active { transform: scale(0.95); }
-        .nav-btn::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
-            transform: skewX(-25deg); transition: left 0.5s ease-in-out; z-index: 1; pointer-events: none;
-        }
-        .nav-btn:hover::after { left: 150%; }
-        .nav-btn.nav-active { background-color: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; box-shadow: 0 4px 12px -2px rgba(var(--c-accent), 0.4), 0 2px 6px -1px rgba(var(--c-accent), 0.2) !important; transform: translateY(-1px); }
-        @media (max-width: 768px) { .nav-btn { font-size: 11px; padding: 6px 8px; flex-basis: 30%; } }
-        
-        /* Tablo Başlık Sabitleme & Renkler */
-        .sticky-th { position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .th-bg { background-color: var(--bg3); }
-        .kafa1 { background-color: rgba(var(--c-accent), 0.08); color: var(--accent); }
-        .kafa2 { background-color: rgba(var(--c-accent3), 0.08); color: var(--accent3); }
-        .kafa1-th { background-color: rgba(var(--c-accent), 0.15); color: var(--accent); }
-        .kafa2-th { background-color: rgba(var(--c-accent3), 0.15); color: var(--accent3); }
-
-        /* Ayın Elemanı Animasyonları */
-        .ayin-elemani { background: linear-gradient(90deg, #f5c842, #ff9b44, #f5c842); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shineText 3s linear infinite; }
-        @keyframes shineText { to { background-position: 200% center; } }
-        .ayin-elemani-kutu { border: 1px solid rgba(245, 200, 66, 0.4); box-shadow: 0 0 15px rgba(245, 200, 66, 0.15); animation: pulseBox 2s infinite; }
-        @keyframes pulseBox { 0% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } 50% { box-shadow: 0 0 20px rgba(245,200,66,0.3); } 100% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } }
-
-        /* Login Modal Stilleri */
-        /* FIX #1: .main-content blur artık JS querySelector ile yönetiliyor */
-        #login-modal { backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
-        .main-content.blurred { filter: blur(5px); pointer-events: none; transition: filter 0.3s; }
-
-        /* YAZDIRMA (CTRL+P) AYARLARI: Tamamen Ekran Görüntüsü Kalitesinde */
-        @media print {
-            body { 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
-                background-color: #0f172a !important; 
-                color: #f8fafc !important; 
-            }
-            .panel:not(.active) { display: none !important; opacity: 0 !important; }
-            .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
-            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #generic-form-modal, #notif-modal, #user-info { display: none !important; }
-            .overflow-auto { max-height: none !important; overflow: visible !important; }
-            canvas { max-height: 250px !important; }
-            .admin-only-btn { display: none !important; }
-        }
-        
-        /* Toast Bildirimleri (Kritik #1 Fix) */
-        .toast-el {
-            position: fixed; top: 24px; right: 24px; z-index: 9999;
-            padding: 12px 20px; border-radius: 8px; font-family: 'Fira Code', monospace;
-            font-size: 12px; color: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            transition: opacity 0.35s, transform 0.35s; pointer-events: none;
-            max-width: 320px; border-left: 4px solid;
-        }
-        .toast-ok   { background: #0f2a1a; border-color: #10b981; }
-        .toast-err  { background: #2a0f0f; border-color: #ef4444; }
-        .toast-warn { background: #2a1f0f; border-color: #f59e0b; }
-        
-        /* Üretim Takip Denemeleri kart animasyonu */
-        .kayit-card .kayit-detail { animation: slideDown 0.25s ease-out; }
-        @keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
-        
-        /* Genel UI İyileştirmeleri */
-        input, select, textarea { transition: all 0.3s ease; }
-        input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px rgba(var(--c-accent), 0.3); }
-        button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        button:active { transform: scale(0.95); }
-        .glass-panel { background: rgba(var(--c-bg2), 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(var(--c-border), 0.5); }
-        
-        /* Form elemanları okunurluk düzeltmesi */
-        select:required:invalid {
-            color: var(--text2);
-        }
-        option {
-            background: var(--bg2);
-            color: var(--text);
-        }
-        input::placeholder, textarea::placeholder {
-            color: var(--text2);
-            opacity: 1;
-        }
-
-        /* Mobil Yan Ekran (Landscape) Optimizasyonları */
-        @media (max-height: 600px) and (orientation: landscape) {
-            body { padding: 8px !important; gap: 8px !important; }
-            #app-header { flex-direction: row !important; flex-wrap: wrap !important; padding: 8px 12px !important; gap: 8px !important; border-radius: 12px !important; }
-            #app-header > div:first-child { flex-direction: row !important; width: auto !important; padding: 6px 12px !important; align-items: center !important; gap: 10px !important; }
-            #app-header > div:first-child h1 { font-size: 18px !important; margin: 0 !important; }
-            #app-header > div:first-child div { margin-top: 0 !important; }
-            #app-header > div:nth-child(2) { flex-wrap: nowrap !important; overflow-x: auto !important; justify-content: flex-start !important; padding-bottom: 2px; }
-            #app-header > div:nth-child(2)::-webkit-scrollbar { display: none; }
-            #app-header > div:nth-child(2) > div { padding: 4px 10px !important; flex-direction: row !important; gap: 8px !important; width: auto !important; flex: 0 0 auto !important; }
-            #app-header > div:nth-child(2) span.text-xl { font-size: 16px !important; line-height: 1 !important; }
-            #main-nav { flex-wrap: nowrap !important; overflow-x: auto !important; overflow-y: hidden !important; padding: 6px !important; border-radius: 12px !important; }
-            #main-nav::-webkit-scrollbar { display: none; }
-            .nav-btn { padding: 6px 14px !important; font-size: 11px !important; flex: 0 0 auto !important; }
-            .h-\\[240px\\], .h-\\[260px\\], .h-\\[320px\\] { height: 180px !important; }
-            #user-info { flex-direction: row !important; flex-wrap: nowrap !important; flex: 0 0 auto !important; }
-        }
-    </style>
+    <link rel="stylesheet" href="./src/style.css">
 </head>
 <body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
 
@@ -242,11 +127,11 @@
         </div>
     </header>
 
-    <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-x-hidden">
-    <nav class="flex flex-wrap gap-1.5 md:gap-2 bg-bg2/80 backdrop-blur-md p-1.5 md:p-2 rounded-xl border border-border/50 shrink-0 shadow-md relative z-50" id="main-nav">
+    <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-hidden">
+    <nav class="flex overflow-x-auto snap-x scroll-smooth no-scrollbar gap-2 md:gap-3 bg-bg2/90 backdrop-blur-md p-2 md:p-3 rounded-xl border border-border/80 shadow-lg relative z-40 w-full" id="main-nav">
         <!-- Raporlar Dropdown -->
-        <div class="relative flex-1 md:flex-none z-[9999]" id="nav-dropdown-raporlar">
-            <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex');" class="nav-btn w-full bg-accent/20 text-accent border-accent flex justify-center items-center gap-2 outline-none shadow-sm">
+        <div class="relative shrink-0 snap-center z-[9999]" id="nav-dropdown-raporlar">
+            <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex');" class="nav-btn bg-accent/20 text-accent border-accent flex justify-center items-center gap-2 outline-none shadow-sm">
                 📊 GÜNLÜK RAPOR <span class="text-[10px]">▼</span>
             </button>
             <div class="absolute left-0 top-full mt-2 hidden flex-col bg-bg border border-border rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.9)] min-w-[240px] w-full md:w-auto overflow-hidden z-[9999] divide-y divide-border/50">
@@ -259,16 +144,16 @@
                 <div onclick="swT('fason',this)" class="nav-tab nav-btn border-0 rounded-none bg-bg text-text2 hover:bg-accent/20 hover:text-accent w-full text-left transition-colors font-medium">🏭 FASON DETAY</div>
             </div>
         </div>
-        <div onclick="swT('kaliphane',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">KALIPHANE</div>
-        <div onclick="swT('malzeme',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">PRES MALZEME TAKİP</div>
-        <div onclick="swT('kayitlar',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
-        <div onclick="swT('plan',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM PLANI</div>
-        <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="nav-tab nav-btn bg-bg3 text-accent2 border-border hover:bg-border transition-all duration-300">🚨 ALARMLAR</div>
-        <div onclick="swT('form',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ GİRİŞ FORMU</div>
-        <div id="nav-admin" onclick="swT('admin',this)" class="nav-tab nav-btn hidden bg-bg3 text-accent2 border-border hover:bg-border">YÖNETİM PANELİ</div>
+        <div onclick="swT('kaliphane',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">KALIPHANE</div>
+        <div onclick="swT('malzeme',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">PRES MALZEME TAKİP</div>
+        <div onclick="swT('kayitlar',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">ÜRETİM TAKİP DENEMELERİ</div>
+        <div onclick="swT('plan',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">ÜRETİM PLANI</div>
+        <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-accent2 border-border hover:bg-border transition-all duration-300 shadow-sm">🚨 ALARMLAR</div>
+        <div onclick="swT('form',this)" class="nav-tab nav-btn shrink-0 snap-center bg-bg3 text-text2 border-border hover:bg-border hover:text-text shadow-sm">VERİ GİRİŞ FORMU</div>
+        <div id="nav-admin" onclick="swT('admin',this)" class="nav-tab nav-btn shrink-0 snap-center hidden bg-bg3 text-accent2 border-border hover:bg-border shadow-sm">YÖNETİM PANELİ</div>
     </nav>
 
-    <main class="flex-1 relative min-h-[500px]">
+    <main class="flex-1 relative min-h-[500px] w-full overflow-x-hidden mt-2">
         <div class="panel active" id="panel-gunluk">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-4 bg-bg2/80 backdrop-blur-md border border-border/50 p-2.5 rounded-xl shadow-sm gap-2">
                 <button onclick="chD(-1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">◀ ÖNCEKİ</button>
@@ -299,11 +184,11 @@
             </div>
             <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-sm flex flex-col mb-4">
                 <div class="p-4 border-b border-border/50 bg-bg3/30 flex flex-wrap justify-between items-center gap-3"><span class="font-sans font-semibold text-xs tracking-wider uppercase text-text2 flex items-center gap-2">📊 MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-gun-kiyas',this.value)" placeholder="Ara..." class="bg-bg2 border border-border/80 text-text2 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-accent w-full sm:w-48 transition-colors shadow-inner"></div>
-                <div class="overflow-auto max-h-[40vh] custom-scrollbar"><table class="w-full text-left border-collapse" id="t-gun-kiyas"><thead id="th-gun-kiyas"></thead><tbody id="tb-gun-kiyas"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[40vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-gun-kiyas"><thead id="th-gun-kiyas"></thead><tbody id="tb-gun-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
                 <div class="p-4 border-b border-border/50 bg-bg3/30 flex flex-wrap justify-between items-center gap-3"><span class="font-sans font-semibold text-xs tracking-wider uppercase text-text2 flex items-center gap-2">📋 GÜNLÜK LİSTE</span><input type="text" onkeyup="fT('tb-gun',this.value)" placeholder="Ara..." class="bg-bg2 border border-border/80 text-text2 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-accent w-full sm:w-48 transition-colors shadow-inner"></div>
-                <div class="overflow-auto max-h-[60vh] custom-scrollbar"><table class="w-full text-left border-collapse" id="t-gun"><thead id="th-gun"></thead><tbody id="tb-gun"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[800px]" id="t-gun"><thead id="th-gun"></thead><tbody id="tb-gun"></tbody></table></div>
             </div>
         </div>
 
@@ -337,11 +222,11 @@
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden mb-4">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-haf-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-haf-kiyas"><thead id="th-haf-kiyas"></thead><tbody id="tb-haf-kiyas"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[40vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-haf-kiyas"><thead id="th-haf-kiyas"></thead><tbody id="tb-haf-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">HAFTALIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-haf',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-haf"><thead id="th-haf"></thead><tbody id="tb-haf"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-haf"><thead id="th-haf"></thead><tbody id="tb-haf"></tbody></table></div>
             </div>
         </div>
 
@@ -375,79 +260,100 @@
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden mb-4">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-ay-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-ay-kiyas"><thead id="th-ay-kiyas"></thead><tbody id="tb-ay-kiyas"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[40vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-ay-kiyas"><thead id="th-ay-kiyas"></thead><tbody id="tb-ay-kiyas"></tbody></table></div>
             </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">AYLIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-ay',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-ay"><thead id="th-ay"></thead><tbody id="tb-ay"></tbody></table></div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-ay"><thead id="th-ay"></thead><tbody id="tb-ay"></tbody></table></div>
             </div>
         </div>
 
         <div class="panel hidden" id="panel-genel">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4" id="h-kpi"></div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">GENEL ÜRETİM (Noktalara Tıklayın)</div><div class="h-[240px] relative"><canvas id="h1"></canvas></div></div>
-                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">GENEL PERFORMANS</div><div class="h-[240px] relative"><canvas id="h2"></canvas></div></div>
+            <div class="mb-6 bg-bg2/30 border border-border/40 p-4 md:p-5 rounded-2xl shadow-sm">
+                <h3 class="font-bebas text-lg md:text-xl text-text2 tracking-[1px] mb-4 flex items-center gap-2 border-b border-border/50 pb-2"><span class="text-accent">📊</span> GENEL GÖSTERGELER</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="h-kpi"></div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-2">
-                <div class="bg-bg2 border border-border rounded p-4 lg:col-span-2"><div class="font-bebas text-base text-text2 mb-2">EN İYİ 10 ÇALIŞAN (Çubuklara Tıklayın)</div><div class="h-[260px] relative"><canvas id="h3"></canvas></div></div>
-                <!-- Şeref Kürsüsü (Hall of Fame) -->
-                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-sm border-accent3/30">
-                    <div class="p-3 border-b border-border bg-accent3/10"><span class="font-bebas text-base text-accent3 tracking-[1px] flex items-center gap-2">🏆 ŞEREF KÜRSÜSÜ</span></div>
-                    <div class="overflow-auto h-[260px] custom-scrollbar flex flex-col gap-2 p-3 bg-bg3/30" id="h-fame"></div>
+            <div class="mb-6 bg-bg2/30 border border-border/40 p-4 md:p-5 rounded-2xl shadow-sm">
+                <h3 class="font-bebas text-lg md:text-xl text-text2 tracking-[1px] mb-4 flex items-center gap-2 border-b border-border/50 pb-2"><span class="text-accent3">📈</span> GRAFİKLER VE LİDERLİK TABLOSU</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span>GENEL ÜRETİM TRENDİ</div><div class="h-[240px] relative"><canvas id="h1"></canvas></div></div>
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent4"></span>GENEL PERFORMANS TRENDİ</div><div class="h-[240px] relative"><canvas id="h2"></canvas></div></div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow lg:col-span-2"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent3"></span>EN İYİ 10 ÇALIŞAN</div><div class="h-[260px] relative"><canvas id="h3"></canvas></div></div>
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden flex flex-col shadow-sm border-accent3/30">
+                        <div class="p-4 border-b border-border/50 bg-accent3/10"><span class="font-bebas text-base text-accent3 tracking-[1px] flex items-center gap-2">🏆 ŞEREF KÜRSÜSÜ (YILDIZLAR)</span></div>
+                        <div class="overflow-auto h-[260px] custom-scrollbar flex flex-col gap-2 p-3 bg-bg3/30" id="h-fame"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="panel hidden" id="panel-alarm">
-            <h2 class="font-bebas text-2xl text-accent2 tracking-wider mb-4 flex items-center gap-2">🚨 SİSTEM ALARMLARI VE KIYASLAMA ANALİZİ</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" id="alarm-kpis"></div>
+            <h2 class="font-bebas text-2xl md:text-3xl text-accent2 tracking-[2px] mb-6 flex items-center gap-2 border-b border-border/50 pb-3">🚨 SİSTEM ALARMLARI VE KIYASLAMA ANALİZİ</h2>
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-start">
-                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-lg border-accent2/30">
-                    <div class="p-4 border-b border-border bg-accent2/10"><span class="font-bebas text-base text-accent2">🔴 KRİTİK UYARILAR LİSTESİ (Son 14 Gün)</span></div>
-                    <div class="overflow-auto max-h-[50vh]"><table class="w-full text-left border-collapse"><thead id="th-alarm"></thead><tbody id="tb-alarm"></tbody></table></div>
-                </div>
-                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-lg">
-                    <div class="p-4 border-b border-border bg-accent/10"><span class="font-bebas text-base text-accent">📊 AYNI MAKİNE / FARKLI VARDİYA KIYASLAMALARI</span></div>
-                    <div class="overflow-auto max-h-[50vh] p-4 bg-bg3/30" id="makine-kiyas-container"></div>
-                </div>
+            <div class="mb-6 bg-bg2/30 border border-border/40 p-4 md:p-5 rounded-2xl shadow-sm">
+                <h3 class="font-bebas text-lg md:text-xl text-text2 tracking-[1px] mb-4 flex items-center gap-2 border-b border-border/50 pb-2"><span class="text-accent2">⚠️</span> KRİTİK UYARILAR</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="alarm-kpis"></div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-bg2 border border-border rounded p-4 shadow-sm"><div class="font-bebas text-base text-text2 mb-2">ÇALIŞAN PERFORMANS DAĞILIMI (Son 14 Gün)</div><div class="h-[240px] relative"><canvas id="alarm-c1"></canvas></div></div>
-                <div class="bg-bg2 border border-border rounded p-4 shadow-sm"><div class="font-bebas text-base text-text2 mb-2">FASON PERFORMANS DAĞILIMI (Son 14 Gün)</div><div class="h-[240px] relative"><canvas id="alarm-c2"></canvas></div></div>
+            <div class="mb-6 bg-bg2/30 border border-border/40 p-4 md:p-5 rounded-2xl shadow-sm">
+                <h3 class="font-bebas text-lg md:text-xl text-text2 tracking-[1px] mb-4 flex items-center gap-2 border-b border-border/50 pb-2"><span class="text-accent3">📊</span> DETAYLI ANALİZ</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-start">
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden flex flex-col shadow-lg border-accent2/30">
+                        <div class="p-4 border-b border-border bg-accent2/10"><span class="font-bebas text-base text-accent2">🔴 KRİTİK UYARILAR LİSTESİ (Son 14 Gün)</span></div>
+                        <div class="overflow-x-auto overflow-y-auto max-h-[50vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[500px]"><thead id="th-alarm"></thead><tbody id="tb-alarm"></tbody></table></div>
+                    </div>
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden flex flex-col shadow-lg">
+                        <div class="p-4 border-b border-border bg-accent/10"><span class="font-bebas text-base text-accent">📊 AYNI MAKİNE / FARKLI VARDİYA KIYASLAMALARI</span></div>
+                        <div class="overflow-x-auto overflow-y-auto max-h-[50vh] p-4 bg-bg3/30 custom-scrollbar w-full" id="makine-kiyas-container"></div>
+                    </div>
+                </div>
+            
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span>ÇALIŞAN PERFORMANS DAĞILIMI (Son 14 Gün)</div><div class="h-[240px] relative"><canvas id="alarm-c1"></canvas></div></div>
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent3"></span>FASON PERFORMANS DAĞILIMI (Son 14 Gün)</div><div class="h-[240px] relative"><canvas id="alarm-c2"></canvas></div></div>
+                </div>
             </div>
         </div>
 
         <div class="panel hidden" id="panel-calisan">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="bg-bg2 border border-border rounded p-4 md:col-span-2"><div class="font-bebas text-base text-text2 mb-2">ÇALIŞAN ÜRETİM (Çubuklara Tıklayın)</div><div class="h-[240px] relative"><canvas id="ca1"></canvas></div></div>
-            </div>
-            <div class="bg-bg2 border border-border rounded overflow-hidden">
-                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">TÜM ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-cal',this.value)" placeholder="İsim Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-cal"><thead id="th-cal"></thead><tbody id="tb-cal"></tbody></table></div>
+            <div class="mb-6 bg-bg2/30 border border-border/40 p-4 md:p-5 rounded-2xl shadow-sm">
+                <h3 class="font-bebas text-lg md:text-xl text-text2 tracking-[1px] mb-4 flex items-center gap-2 border-b border-border/50 pb-2"><span class="text-accent">👥</span> ÇALIŞAN PERFORMANSI</h3>
+                <div class="grid grid-cols-1 gap-4 mb-4">
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span>ÇALIŞAN ÜRETİM (Çubuklara Tıklayın)</div><div class="h-[240px] relative"><canvas id="ca1"></canvas></div></div>
+                </div>
+                <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                    <div class="p-4 border-b border-border/50 bg-bg3/30 flex flex-wrap justify-between items-center gap-3"><span class="font-sans font-semibold text-xs tracking-wider uppercase text-text2 flex items-center gap-2">📋 TÜM ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-cal',this.value)" placeholder="İsim Ara..." class="bg-bg2 border border-border/80 text-text2 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-accent w-full sm:w-48 transition-colors shadow-inner"></div>
+                    <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-cal"><thead id="th-cal"></thead><tbody id="tb-cal"></tbody></table></div>
+                </div>
             </div>
         </div>
 
         <div class="panel hidden" id="panel-pres">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="bg-bg2 border border-border rounded p-4 md:col-span-2"><div class="font-bebas text-base text-text2 mb-2">PRES ÜRETİM (Çubuklara Tıklayın)</div><div class="h-[240px] relative"><canvas id="p1"></canvas></div></div>
-            </div>
-            <div class="bg-bg2 border border-border rounded overflow-hidden">
-                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">PRES LİSTESİ</span><input type="text" onkeyup="fT('tb-pre',this.value)" placeholder="Pres Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-pre"><thead id="th-pre"></thead><tbody id="tb-pre"></tbody></table></div>
+            <div class="mb-6 bg-bg2/30 border border-border/40 p-4 md:p-5 rounded-2xl shadow-sm">
+                <h3 class="font-bebas text-lg md:text-xl text-text2 tracking-[1px] mb-4 flex items-center gap-2 border-b border-border/50 pb-2"><span class="text-accent3">⚙️</span> PRES İSTATİSTİKLERİ</h3>
+                <div class="grid grid-cols-1 gap-4 mb-4">
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent3"></span>PRES ÜRETİM (Çubuklara Tıklayın)</div><div class="h-[240px] relative"><canvas id="p1"></canvas></div></div>
+                </div>
+                <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                    <div class="p-4 border-b border-border/50 bg-bg3/30 flex flex-wrap justify-between items-center gap-3"><span class="font-sans font-semibold text-xs tracking-wider uppercase text-text2 flex items-center gap-2">📋 PRES LİSTESİ</span><input type="text" onkeyup="fT('tb-pre',this.value)" placeholder="Pres Ara..." class="bg-bg2 border border-border/80 text-text2 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-accent w-full sm:w-48 transition-colors shadow-inner"></div>
+                    <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-pre"><thead id="th-pre"></thead><tbody id="tb-pre"></tbody></table></div>
+                </div>
             </div>
         </div>
 
         <div class="panel hidden" id="panel-fason">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">FASON ÜRETİM (Çubuklara Tıklayın)</div><div class="h-[320px] relative"><canvas id="f1"></canvas></div></div>
-                <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">FASON PERFORMANS</div><div class="h-[320px] relative"><canvas id="f2"></canvas></div></div>
-            </div>
-            <div class="bg-bg2 border border-border rounded overflow-hidden">
-                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">FASON LİSTESİ</span><input type="text" onkeyup="fT('tb-fas',this.value)" placeholder="Fason Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-fas"><thead id="th-fas"></thead><tbody id="tb-fas"></tbody></table></div>
+            <div class="mb-6 bg-bg2/30 border border-border/40 p-4 md:p-5 rounded-2xl shadow-sm">
+                <h3 class="font-bebas text-lg md:text-xl text-text2 tracking-[1px] mb-4 flex items-center gap-2 border-b border-border/50 pb-2"><span class="text-accent4">🏭</span> FASON İSTATİSTİKLERİ</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span>FASON ÜRETİM (Çubuklara Tıklayın)</div><div class="h-[320px] relative"><canvas id="f1"></canvas></div></div>
+                    <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent4"></span>FASON PERFORMANS</div><div class="h-[320px] relative"><canvas id="f2"></canvas></div></div>
+                </div>
+                <div class="bg-bg2/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                    <div class="p-4 border-b border-border/50 bg-bg3/30 flex flex-wrap justify-between items-center gap-3"><span class="font-sans font-semibold text-xs tracking-wider uppercase text-text2 flex items-center gap-2">📋 FASON LİSTESİ</span><input type="text" onkeyup="fT('tb-fas',this.value)" placeholder="Fason Ara..." class="bg-bg2 border border-border/80 text-text2 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-accent w-full sm:w-48 transition-colors shadow-inner"></div>
+                    <div class="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar w-full"><table class="w-full text-left border-collapse min-w-[600px]" id="t-fas"><thead id="th-fas"></thead><tbody id="tb-fas"></tbody></table></div>
+                </div>
             </div>
         </div>
 
@@ -523,8 +429,8 @@
                     <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">KALIPHANE LOKASYONLARI</span><button onclick="openGenericFormModal('kalip')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
                     <input type="text" onkeyup="fT('tb-kalip',this.value)" placeholder="Kalıp Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
                 </div>
-                <div class="overflow-auto max-h-[70vh]">
-                    <table class="w-full text-left border-collapse" id="t-kalip">
+                <div class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar w-full">
+                    <table class="w-full text-left border-collapse min-w-[600px]" id="t-kalip">
                         <thead id="th-kalip"></thead>
                         <tbody id="tb-kalip"></tbody>
                     </table>
@@ -538,8 +444,8 @@
                     <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">PRES MALZEME TAKİP LİSTESİ</span><button onclick="openGenericFormModal('malzeme')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
                     <input type="text" onkeyup="fT('tb-malzeme',this.value)" placeholder="Malzeme Ara..." class="bg-bg3 border border-border text-text2 text-xs rounded px-2 py-1 outline-none focus:border-accent w-32 md:w-48">
                 </div>
-                <div class="overflow-auto max-h-[70vh]">
-                    <table class="w-full text-left border-collapse" id="t-malzeme">
+                <div class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar w-full">
+                    <table class="w-full text-left border-collapse min-w-[800px]" id="t-malzeme">
                         <thead id="th-malzeme"></thead>
                         <tbody id="tb-malzeme"></tbody>
                     </table>
@@ -647,7 +553,7 @@
     </div>
 
     <div id="generic-form-modal" class="fixed inset-0 bg-bg/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-all duration-300 backdrop-blur-md">
-        <div class="bg-bg2/90 border border-border/50 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative transform scale-95 transition-transform duration-300">
+        <div class="bg-bg2/90 border border-border/50 rounded-2xl p-6 max-w-lg w-[95%] md:w-full shadow-2xl relative transform scale-95 transition-transform duration-300">
             <button onclick="closeGenericFormModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-all hover:scale-110">&times;</button>
             <h2 id="gen-form-title" class="font-sans font-bold text-xl tracking-wide text-accent mb-5 border-b border-border/50 pb-3">KAYIT EKLE/DÜZENLE</h2>
             <form id="generic-data-form" onsubmit="saveGenericForm(event)" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
@@ -658,7 +564,7 @@
     </div>
 
     <div id="generic-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-3xl w-[95%] md:w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
             <button onclick="closeGenericModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-3xl font-bold z-10 transition-colors">&times;</button>
             <h2 class="font-bebas text-2xl md:text-3xl tracking-[2px] text-text mb-6 border-b border-border pb-2">KAYIT DETAYI</h2>
             <div id="gen-mdl-content" class="flex flex-col gap-2"></div>
@@ -666,13 +572,13 @@
     </div>
 
     <div id="emp-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-5xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
+        <div class="bg-bg2 border border-border rounded-lg p-4 md:p-6 max-w-5xl w-[95%] md:w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
             <button onclick="closeModal()" class="absolute top-4 right-4 text-text2 hover:text-accent2 text-3xl font-bold z-10">&times;</button>
             <h2 id="mdl-name" class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent mb-6 border-b border-border pb-2">ÇALIŞAN ADI</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="mdl-stats"></div>
             <h3 class="font-bebas text-xl tracking-[1px] text-text2 mb-3">SON ÜRETİM KAYITLARI</h3>
-            <div class="overflow-auto max-h-[40vh] bg-bg3 border border-border rounded">
-                <table class="w-full text-left border-collapse">
+            <div class="overflow-x-auto overflow-y-auto max-h-[40vh] w-full bg-bg3 border border-border rounded custom-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead id="mdl-th"></thead>
                     <tbody id="mdl-history" class="text-sm"></tbody>
                 </table>
@@ -681,15 +587,15 @@
     </div>
 
     <div id="recs-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-[100%] lg:max-w-7xl w-full max-h-[95vh] flex flex-col relative shadow-2xl">
+        <div class="bg-bg2 border border-border rounded-lg p-4 md:p-6 max-w-[95%] lg:max-w-7xl w-full max-h-[95vh] flex flex-col relative shadow-2xl">
             <button onclick="closeRecsModal()" class="absolute top-4 right-4 text-text2 hover:text-accent2 text-3xl font-bold z-10">&times;</button>
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-border pb-4 gap-4 pr-6 shrink-0">
                 <h2 id="recs-title" class="font-bebas text-2xl md:text-3xl tracking-[2px] text-accent">DETAYLAR</h2>
                 <button onclick="exportRecsToPDF()" class="px-3 py-1.5 bg-bg3 hover:bg-border text-text2 hover:text-text border border-border rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors">📥 PDF İNDİR</button>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 shrink-0" id="recs-stats"></div>
-            <div class="overflow-auto flex-1 bg-bg3 border border-border rounded">
-                <table class="w-full text-left border-collapse" id="t-recs"></table>
+            <div class="overflow-x-auto overflow-y-auto flex-1 w-full bg-bg3 border border-border rounded custom-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[800px]" id="t-recs"></table>
             </div>
         </div>
     </div>
@@ -799,7 +705,7 @@
 
     <!-- YENİ: PROFİL FOTOĞRAFI DÜZENLEME MODALI -->
     <div id="profile-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-sm w-full shadow-2xl relative">
+        <div class="bg-bg2 border border-border rounded-lg p-6 max-w-sm w-[95%] md:w-full shadow-2xl relative">
             <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-text3 hover:text-accent2 text-2xl font-bold z-10 transition-colors">&times;</button>
             <h2 class="font-bebas text-2xl tracking-[2px] text-accent mb-4 border-b border-border pb-2">PROFİL DÜZENLE</h2>
             <form onsubmit="saveProfileFromModal(event)" class="space-y-4">
@@ -844,9 +750,7 @@
 <script>
 // Chrome Eklentilerinden veya üçüncü parti araçlardan (örn: content.js) kaynaklanan Promise hatalarını konsolda gizle.
 window.addEventListener('unhandledrejection', function(event) {
-    if (event.reason && (String(event.reason.stack || event.reason).includes('content.js') || String(event.reason) === '[object Object]')) {
-        event.preventDefault();
-    }
+    event.preventDefault(); // Kırmızı görünen tüm unhandled promise rejection'ları (beklenmeyen hataları) gizler
 });
 
 if (localStorage.getItem('theme') === 'light') {
@@ -947,7 +851,7 @@ const thD=(cols)=>`<tr>${cols.map((c,i)=>{ let cls="sticky-th p-2 text-left font
 const trD=(cols)=>`<tr class="hover:bg-bg3/50 transition-colors border-b border-border/50 text-[11px] md:text-xs">${cols.map((c,i)=>{ let cls="p-2 whitespace-nowrap"; if(i>=3&&i<=8) cls+=" kafa1"; else if(i>=9&&i<=14) cls+=" kafa2"; return `<td class="${cls}">${c}</td>`; }).join('')}</tr>`;
 const th=(cols)=>`<tr>${cols.map(c=>`<th class="sticky-th p-3 text-left font-sans font-semibold text-[11px] tracking-wider text-text3 border-b border-border uppercase whitespace-nowrap th-bg bg-bg2/95 backdrop-blur">${c}</th>`).join('')}</tr>`;
 const tr=(cols)=>`<tr class="hover:bg-bg3/50 transition-colors border-b border-border/50 text-xs">${cols.map(c=>`<td class="p-3 whitespace-nowrap">${c}</td>`).join('')}</tr>`;
-const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2/80 backdrop-blur-sm border border-border/60 border-l-4 ${c} rounded-2xl p-5 shadow-md ${clk?'cursor-pointer hover:bg-bg3 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group':''}"><div class="font-sans font-semibold text-[11px] tracking-wider uppercase text-text2 ${clk?'group-hover:text-text':''}">${l}</div><div class="font-mono text-2xl md:text-3xl font-bold ${l.includes('Duruş') ? 'text-accent2' : 'text-text'} my-1.5">${v}</div><div class="text-[10px] text-text3 font-medium">${s}</div></div>`;
+const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2/90 backdrop-blur-sm border border-border/60 border-l-[4px] ${c} rounded-2xl p-3 md:p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-center gap-1 ${clk?'cursor-pointer hover:bg-bg3 hover:-translate-y-1 group':''}"><div class="font-sans font-semibold text-[10px] md:text-[11px] tracking-wider uppercase text-text2 ${clk?'group-hover:text-text':''} leading-tight">${l}</div><div class="font-mono text-xl md:text-3xl font-bold ${l.includes('Duruş') ? 'text-accent2' : 'text-text'} leading-none">${v}</div><div class="text-[9px] md:text-[10px] text-text3 font-medium">${s}</div></div>`;
 
 // Tıklanabilir Grafikler
 function mc(id,t,d,o={}){
@@ -1946,17 +1850,22 @@ async function submitForm(e){
     // birinci satırda yer alan sütun başlıklarınızla HARFİ HARFİNE AYNI olmalıdır.
     const payload = {
         "Tarih": trh,
-        "Çalışan": cal, // Tablonuzdaki başlık 'Çalışan Adı' ise burayı da öyle değiştirin
+        "Çalışan": cal,
         "Vardiya": $('f-vardiya').value,
         "Pres1": $('f-pres1').value,
         "Fason1": $('f-fason1').value,
         "Üretilen Adet 1": $('f-uretim1').value,
+        "Arıza Türü 1": "",
+        "Duruş Başlangıcı 1": "",
+        "Duruş Bitişi 1": "",
         "Duruş Süresi 1 (dk)": $('f-durus1').value || 0,
         "Pres2": $('f-pres2').value,
         "Fason2": $('f-fason2').value,
         "Üretilen Adet 2": $('f-uretim2').value || "",
+        "Arıza Türü 2": "",
+        "Duruş Başlangıcı 2": "",
+        "Duruş Bitişi 2": "",
         "Duruş Süresi 2 (dk)": $('f-durus2').value || 0
-        // Performans vb. gibi hücreleriniz Google Sheets'te formüllü ise buraya eklemenize gerek yok.
     };
     
     if (editModeRecord) {
@@ -2649,7 +2558,7 @@ async function fetchUsers() {
             localStorage.setItem('cachedUsers', JSON.stringify(USER_DATA));
         }
     } catch(e) {
-        console.error("Kullanıcı listesi çekilemedi, önbellek kullanılıyor.", e);
+        console.warn("Kullanıcı listesi çekilemedi, önbellek kullanılıyor.", e);
         // Offline durumunda önbellekten al
         USER_DATA = safeJSON(localStorage.getItem('cachedUsers'), {});
         if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin";
@@ -2822,7 +2731,7 @@ async function saveUserObj(e) {
         }, 2000);
 
     } catch(err) { 
-        console.error('Kullanıcı Google Sheets\'e kaydedilirken hata oluştu:', err); 
+        console.warn('Kullanıcı Google Sheets\'e kaydedilirken hata oluştu:', err); 
         toast('Kullanıcı kaydedilemedi. Bağlantı hatası.', 'err');
     }
 }
@@ -3070,7 +2979,7 @@ function fetchCSV(isBg = false) {
             swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
         }
     }).catch(e=>{
-        console.error('Veri İşleme Hatası:', e);
+        console.warn('Veri İşleme Hatası:', e);
         $('src-status').innerText='● BAĞLANTI HATASI'; $('src-status').style.color='#e86d3a';
         $('src-info').innerText='Veri okunamadı. İzinleri kontrol edin.';
         if(!isBg) {

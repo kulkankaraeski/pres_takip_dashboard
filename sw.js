@@ -54,9 +54,7 @@ self.addEventListener('fetch', event => {
                     }
                     return networkResponse;
                 } catch (error) {
-                    console.error('SW: Harici kütüphane çekilemedi ve önbellekte yoktu.', error);
-                    // Önbellekte olmayan ve çekilemeyen bir kütüphane için hata döndür
-                    return new Response(`Kaynak yüklenemedi: ${event.request.url}`, { status: 500 });
+                    console.warn('SW: CDN isteği başarısız, önbellek deneniyor.', event.request.url);
                 }
             })()
         );
@@ -84,11 +82,10 @@ self.addEventListener('fetch', event => {
                     const cachedResponse = await caches.match(event.request, { ignoreSearch: true });
                     if (cachedResponse) return cachedResponse;
                 } catch (e) {
-                    console.error('SW: Cache match hatası', e);
+                    console.warn('SW: Önbellekte de bulunamadı.', event.request.url);
                 }
-                return new Response('Çevrimdışısınız ve bu sayfa önbellekte bulunamadı.', {
+                return new Response('Çevrimdışı Mod - Ağ bağlantısı yok.', {
                     status: 503,
-                    statusText: 'Service Unavailable',
                     headers: new Headers({ 'Content-Type': 'text/plain;charset=utf-8' })
                 });
             }
