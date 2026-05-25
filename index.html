@@ -1492,154 +1492,52 @@ function rKayitlar() {
 
     const headers = DENEME_RAW.h;
 
-    // Sütun gruplarını belirle (keyword tespiti)
-    const kriterIdxs = headers.reduce((acc, h, i) => {
-            if (h && h.trim().toLowerCase().includes('kriter')) acc.push(i);
-        return acc;
-    }, []);
-
-    const olcumIdxs = headers.reduce((acc, h, i) => {
-            if (!h || !h.trim()) return acc;
-        const l = h.toLowerCase();
-        if ((l.includes('ölçüm') || l.includes('olcum') || l.includes('ölçme') || l.includes('boyut') || l.includes('mm') || l.includes('çap') || l.includes('cap')) && !kriterIdxs.includes(i)) acc.push(i);
-        return acc;
-    }, []);
-
-    const basicIdxs = headers.reduce((acc, h, i) => {
-            if (!h || !h.trim()) return acc;
-        if (!kriterIdxs.includes(i) && !olcumIdxs.includes(i)) acc.push(i);
-        return acc;
-    }, []);
-
-    const aciklamaIdxs = basicIdxs.filter(i => {
-        const l = headers[i].toLowerCase();
-        return l.includes('açıklama') || l.includes('aciklama') || l.includes('sonuç') || l.includes('sonuc') || l.includes('not');
-    });
-    
-    const temelIdxs = basicIdxs.filter(i => !aciklamaIdxs.includes(i));
-
-    // Özet gösterim için ilk 4 temel sütun
-    const summaryIdxs = temelIdxs.slice(0, 4);
-
             if (!items.length) {
-        container.innerHTML = '<div class="p-8 text-center text-text3 font-mono text-xs">Arama sonucu bulunamadı.</div>';
+        container.innerHTML = '<div class="p-8 text-center text-text3 font-mono text-sm">Veri bulunamadı veya arama sonucu boş.</div>';
         return;
     }
+
+    const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
 
             container.innerHTML = items.map((item) => {
                 const rowIdx = item.idx;
                 const row = item.data;
                 
-            const summaryHtml = summaryIdxs.map((i, sIdx) => {
-                const val = row[i] || '';
-                if (!val || val === '-') return '';
-                const borderCls = sIdx === 0 ? 'border-l-2 border-l-accent pl-2.5' : '';
-                return `<div class="flex flex-col min-w-[90px] flex-1 ${borderCls}">
-                    <span class="text-[9px] font-sans font-semibold text-text3 uppercase tracking-wider truncate">${escapeHTML(headers[i])}</span>
-                    <span class="text-[13px] font-bold text-text truncate mt-0.5" title="${escapeHTML(val)}">${escapeHTML(val.length > 25 ? val.slice(0,25)+'…' : val)}</span>
-                </div>`;
-            }).filter(Boolean).join('<div class="hidden md:block w-px h-8 bg-border/50 mx-2"></div>');
+            let rowsHtml = '';
+            let validFieldCount = 0;
+            
+            headers.forEach((h, i) => {
+                const val = row[i];
+                if (val && val !== '-') {
+                    const bgClass = validFieldCount % 2 === 0 ? 'bg-bg2' : 'bg-bg3/60';
+                    rowsHtml += `
+                        <div class="flex flex-col sm:flex-row sm:items-center px-4 py-3 ${bgClass} border-b border-border/40 hover:bg-border/30 transition-colors">
+                            <span class="w-full sm:w-1/3 font-sans font-semibold text-text3 text-[11px] sm:text-xs uppercase mb-1 sm:mb-0 break-words pr-2">${escapeHTML(h)}</span>
+                            <span class="w-full sm:w-2/3 font-mono text-text text-sm break-words">${escapeHTML(val)}</span>
+                        </div>
+                    `;
+                    validFieldCount++;
+                }
+            });
 
-            // Grup sayım rozetleri
-            const kriterDolu = kriterIdxs.filter(i => row[i] && row[i] !== '-').length;
-            const olcumDolu  = olcumIdxs.filter(i => row[i] && row[i] !== '-').length;
-
-            const badges = [
-                kriterIdxs.length ? `<span class="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold bg-accent3/10 text-accent3 border border-accent3/30"><span class="w-1.5 h-1.5 rounded-full bg-accent3 animate-pulse"></span>${kriterDolu}/${kriterIdxs.length} Kriter</span>` : '',
-                olcumIdxs.length  ? `<span class="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold bg-accent4/10 text-accent4 border border-accent4/30"><span class="w-1.5 h-1.5 rounded-full bg-accent4 animate-pulse"></span>${olcumDolu}/${olcumIdxs.length} Ölçüm</span>` : ''
-            ].filter(Boolean).join('');
-
-            // Detay paneli: 4 renk grubu, grid tasarımı
-            const makeGroup = (idxArr, label, colorCls, borderCls, textCls, bgCls, flexCol = false) => {
-                if (!idxArr.length) return `
-                <div class="flex flex-col h-full bg-bg3/20 rounded-xl border border-border/50 p-4 shadow-inner opacity-60">
-                    <div class="text-[10px] font-sans font-bold ${textCls} uppercase tracking-[2px] mb-3 flex items-center gap-2 border-b border-border/50 pb-2">
-                        <span class="flex items-center justify-center w-4 h-4 rounded-full ${colorCls} text-bg2 text-[8px] shadow-sm shrink-0">✓</span>${label}
-                    </div>
-                    <div class="flex-1 flex items-center justify-center text-text3 text-xs font-mono">Veri Bulunmuyor</div>
-                </div>`;
-                const fields = idxArr.map(i => {
-                    const val = row[i] || '-';
-                    return `<div class="flex flex-col p-2.5 rounded-lg border ${borderCls} ${bgCls} ${flexCol ? 'w-full' : 'flex-1 min-w-[100px] sm:min-w-[120px]'} hover:-translate-y-0.5 transition-transform shadow-sm">
-                        <span class="text-[9px] font-sans font-semibold ${textCls} uppercase tracking-wider mb-1 truncate" title="${escapeHTML(headers[i])}">${escapeHTML(headers[i])}</span>
-                        <span class="text-[12px] md:text-[13px] font-bold text-text break-words leading-tight">${escapeHTML(val)}</span>
-                    </div>`;
-                }).join('');
-                return `
-                <div class="flex flex-col h-full bg-bg3/20 rounded-xl border border-border/50 p-4 shadow-inner">
-                    <div class="text-[10px] font-sans font-bold ${textCls} uppercase tracking-[2px] mb-3 flex items-center gap-2 border-b border-border/50 pb-2">
-                        <span class="flex items-center justify-center w-4 h-4 rounded-full ${colorCls} text-bg2 text-[8px] shadow-sm shrink-0">✓</span>${label}
-                    </div>
-                    <div class="flex ${flexCol ? 'flex-col' : 'flex-wrap'} gap-2 md:gap-3 items-start content-start flex-1">${fields}</div>
-                </div>`;
-            };
-
-            const detailHtml = `
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    ${makeGroup(temelIdxs,  'TEMEL BİLGİLER', 'bg-accent',  'border-accent/20',  'text-accent',  'bg-accent/5')}
-                    ${makeGroup(aciklamaIdxs, 'AÇIKLAMA VE SONUÇ', 'bg-accent2', 'border-accent2/20', 'text-accent2', 'bg-accent2/5', true)}
-                    ${makeGroup(kriterIdxs, 'KRİTERLER',      'bg-accent3', 'border-accent3/20', 'text-accent3', 'bg-accent3/5')}
-                    ${makeGroup(olcumIdxs,  'ÖLÇÜMLER',       'bg-accent4', 'border-accent4/20', 'text-accent4', 'bg-accent4/5')}
-                </div>
-            `;
-
-            const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
             const adminBtns = isAdmin ? `
-                <div class="flex gap-2 mt-4 pt-3 border-t border-border/50 justify-end">
-                    <button onclick="event.stopPropagation(); editGenericRecord(${rowIdx},'deneme')" class="px-4 py-2 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded-lg font-mono text-[10px] font-bold transition-all shadow-sm">✎ DÜZENLE</button>
-                    <button onclick="event.stopPropagation(); deleteGenericRecord(${rowIdx},'Üretim Takip Denemeleri')" class="px-4 py-2 bg-accent2/10 text-accent2 hover:bg-accent2 hover:text-white rounded-lg font-mono text-[10px] font-bold transition-all shadow-sm">🗑 SİL</button>
+                <div class="flex gap-3 mt-2 pt-3 border-t border-border/50 justify-end px-4 pb-4 bg-bg2">
+                    <button onclick="editGenericRecord(${rowIdx},'deneme')" class="px-5 py-2.5 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded-lg font-mono text-xs font-bold transition-all shadow-sm flex items-center gap-2">✎ DÜZENLE</button>
+                    <button onclick="deleteGenericRecord(${rowIdx},'Üretim Takip Denemeleri')" class="px-5 py-2.5 bg-accent2/10 text-accent2 hover:bg-accent2 hover:text-white rounded-lg font-mono text-xs font-bold transition-all shadow-sm flex items-center gap-2">🗑 SİL</button>
                 </div>` : '';
 
             return `
-        <div class="kayit-card group bg-bg2/90 backdrop-blur-sm border border-border/60 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:border-accent/40 transition-all duration-300" data-idx="${rowIdx}">
-                <!-- ÖZET SATIR (tıklanabilir) -->
-                <div class="flex items-center justify-between px-4 py-3 md:py-4 cursor-pointer hover:bg-bg3/60 transition-colors select-none"
-                     onclick="toggleKayitCard(this)">
-                    <div class="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
-                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-bg3 border border-border text-xs font-mono text-text3 shrink-0 group-hover:bg-accent group-hover:text-white group-hover:border-accent transition-colors shadow-inner">${rowIdx + 1}</div>
-                        <div class="flex flex-col md:flex-row gap-2 md:gap-4 flex-1 min-w-0 md:items-center">
-                            <div class="flex flex-wrap md:flex-nowrap gap-3 md:gap-4 items-center flex-1 min-w-0">${summaryHtml}</div>
-                            <div class="flex gap-2 flex-wrap shrink-0 mt-1 md:mt-0">${badges}</div>
-                        </div>
+                <div class="bg-bg2 border border-border/80 rounded-xl shadow-lg overflow-hidden flex flex-col transition-all hover:border-accent/40 mb-3">
+                    <div class="px-4 py-3 bg-bg3 border-b border-border/60 flex justify-between items-center">
+                        <span class="font-bebas text-lg tracking-wider text-accent">KAYIT #${rowIdx + 1}</span>
                     </div>
-                    <div class="ml-4 w-8 h-8 flex items-center justify-center rounded-full bg-bg3 group-hover:bg-bg border border-transparent group-hover:border-border/50 shrink-0 transition-colors">
-                        <span class="chevron text-text2 font-bold text-xl leading-none transition-transform duration-300 relative top-[-1px]">›</span>
+                    <div class="flex flex-col">
+                        ${rowsHtml}
                     </div>
+                    ${adminBtns}
                 </div>
-
-                <!-- DETAY PANELİ (gizli) -->
-                <div class="kayit-detail hidden overflow-hidden border-t border-border/40">
-                    <div class="p-4 md:p-5 bg-bg/40 backdrop-blur-md">
-                        ${detailHtml}
-                        ${adminBtns}
-                    </div>
-                </div>
-            </div>`;
+            `;
     }).join('');
-}
-
-function toggleKayitCard(headerEl) {
-    const card   = headerEl.closest('.kayit-card');
-    const detail = card.querySelector('.kayit-detail');
-    const chevron = headerEl.querySelector('.chevron');
-    const isOpen = !detail.classList.contains('hidden');
-
-    // Diğer açık kartları kapat
-    document.querySelectorAll('.kayit-card .kayit-detail').forEach(d => {
-        if (d !== detail) {
-            d.classList.add('hidden');
-            const c = d.closest('.kayit-card').querySelector('.chevron');
-            if (c) { c.style.transform = 'rotate(0deg)'; }
-        }
-    });
-
-    if (isOpen) {
-        detail.classList.add('hidden');
-        chevron.style.transform = 'rotate(0deg)';
-    } else {
-        detail.classList.remove('hidden');
-        chevron.style.transform = 'rotate(90deg)';
-    }
 }
 
         let kayitSearchTimeout;
