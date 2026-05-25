@@ -54,10 +54,7 @@ self.addEventListener('fetch', event => {
                     }
                     return networkResponse;
                 } catch (error) {
-                    console.error('SW: Harici kütüphane çekilemedi ve önbellekte yoktu.', error);
-                    // Önbellekte olmayan ve çekilemeyen bir kütüphane için hata döndür
-                    return new Response(`Kaynak yüklenemedi: ${event.request.url}`, { status: 500 });
-                }
+                    console.
             })()
         );
         return;
@@ -84,12 +81,9 @@ self.addEventListener('fetch', event => {
                     const cachedResponse = await caches.match(event.request, { ignoreSearch: true });
                     if (cachedResponse) return cachedResponse;
                 } catch (e) {
-                    console.error('SW: Cache match hatası', e);
-                }
-                return new Response('Çevrimdışısınız ve bu sayfa önbellekte bulunamadı.', {
-                    status: 503,
-                    statusText: 'Service Unavailable',
-                    headers: new Headers({ 'Content-Type': 'text/plain;charset=utf-8' })
+                    console.w
+                return new Re
+                    statusText/plain;charset=utf-8' })
                 });
             }
         })()
