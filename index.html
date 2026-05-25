@@ -1000,8 +1000,15 @@ function swT(t,el){
     }
 
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
+        
+        if(t==='kaliphane') rKaliphane(); 
+        if(t==='malzeme') rMalzeme(); 
+        if(t==='kayitlar') rKayitlar(); 
+        if(t==='plan') rPlan(); 
+        if(t==='admin') rAdmin();
+        
     if(!RAW.length)return;
-    if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='alarm')rAlarm(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); if(t==='kaliphane')rKaliphane(); if(t==='malzeme')rMalzeme(); if(t==='kayitlar')rKayitlar(); if(t==='plan')rPlan(); if(t==='admin')rAdmin();
+        if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='alarm')rAlarm(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); 
 }
 
 // Tema Değiştirme
@@ -1487,17 +1494,19 @@ function rKayitlar() {
 
     // Sütun gruplarını belirle (keyword tespiti)
     const kriterIdxs = headers.reduce((acc, h, i) => {
-        if (h.toLowerCase().includes('kriter')) acc.push(i);
+            if (h && h.trim().toLowerCase().includes('kriter')) acc.push(i);
         return acc;
     }, []);
 
     const olcumIdxs = headers.reduce((acc, h, i) => {
+            if (!h || !h.trim()) return acc;
         const l = h.toLowerCase();
         if ((l.includes('ölçüm') || l.includes('olcum') || l.includes('ölçme') || l.includes('boyut') || l.includes('mm') || l.includes('çap') || l.includes('cap')) && !kriterIdxs.includes(i)) acc.push(i);
         return acc;
     }, []);
 
     const basicIdxs = headers.reduce((acc, h, i) => {
+            if (!h || !h.trim()) return acc;
         if (!kriterIdxs.includes(i) && !olcumIdxs.includes(i)) acc.push(i);
         return acc;
     }, []);
@@ -2961,20 +2970,58 @@ function saveAdminSettings() {
     applyRoleRestrictions();
 }
 
-// DATA FETCH & PARSE
+// Yeni ve sağlam CSV Ayrıştırıcı
+function parseCSV(text) {
+    if (!text || typeof text !== 'string' || text.includes('<html') || text.includes('<!DOCTYPE')) return [];
+    if (text.includes('Markdown Content:')) text = text.split('Markdown Content:')[1];
+    text = text.trim();
+    if (!text) return [];
+
+    const rows = [];
+    let currentRow = [];
+    let currentCell = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                currentCell += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            currentRow.push(currentCell.trim());
+            currentCell = '';
+        } else if ((char === '\n' || (char === '\r' && nextChar === '\n')) && !inQuotes) {
+            if (char === '\r') i++;
+            currentRow.push(currentCell.trim());
+            rows.push(currentRow);
+            currentRow = [];
+            currentCell = '';
+        } else {
+            currentCell += char;
+        }
+    }
+    
+    if (currentCell !== '' || text[text.length - 1] === ',') {
+        currentRow.push(currentCell.trim());
+    }
+    if (currentRow.length > 0) {
+        rows.push(currentRow);
+    }
+
+    return rows;
+}
+
 function parse(t){
-    if(!t || t.includes('<html')) return []; // Gelen veri boş veya bir hata sayfası ise boş dizi dön
-    if(t.includes('Markdown Content:')) t = t.split('Markdown Content:')[1];
-    const l = t.split('\n').map(x => x.trim()).filter(x => x);
-    if (l.length < 2) return [];
+    const rows = parseCSV(t);
+    if (rows.length < 2) return [];
 
-    const pL = line => {
-        let c=[], cur='', iQ=false;
-        for(let ch of line){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim().replace(/"/g,''));cur='';} else cur+=ch;} c.push(cur.trim().replace(/"/g,''));
-        return c;
-    };
-
-    const headers = pL(l[0]).map(h => h.toLowerCase());
+    const headers = rows[0].map(h => h.toLowerCase());
     const p = [];
 
     const idx = {
@@ -2999,8 +3046,8 @@ function parse(t){
 
     const tN=v=>{if(!v||v==='-')return 0; return parseFloat(v.toString().replace(/\./g,'').replace(',','.').replace('%',''))||0;};
     
-    const rows = l.slice(1).map(pL);
-    for(const c of rows){
+    for(let i=1; i<rows.length; i++) {
+        const c = rows[i];
         const get = (key) => idx[key] > -1 ? c[idx[key]] : '';
         let tarih=get('tarih'), cal=get('calisan'); if(!tarih||!cal)continue;
         let u1=tN(get('uretim1')), p1=tN(get('perf1')), u2=tN(get('uretim2')), p2=tN(get('perf2'));
@@ -3011,21 +3058,9 @@ function parse(t){
 }
 
 function parseGeneric(t){
-    if(!t || t.includes('<html')) return {h:[], r:[]};
-    if(t.includes('Markdown Content:')) t = t.split('Markdown Content:')[1];
-    const l=t.split('\n').map(x=>x.trim()).filter(x=>x);
-    if(l.length < 1) return {h:[], r:[]};
-    const pL = line => {
-        let c=[], cur='', iQ=false;
-        for(let ch of line){if(ch==='"')iQ=!iQ; else if(ch===','&&!iQ){c.push(cur.trim().replace(/"/g,''));cur='';} else cur+=ch;} c.push(cur.trim().replace(/"/g,''));
-        return c;
-    };
-    
-    let headerIdx = 0;
-    let headers = pL(l[headerIdx]);
-    let rows = l.slice(headerIdx + 1).map(pL);
-    
-    return { h: headers, r: rows };
+    const rows = parseCSV(t);
+    if(rows.length < 1) return {h:[], r:[]};
+    return { h: rows[0], r: rows.slice(1) };
 }
 
 function showLoader() {
