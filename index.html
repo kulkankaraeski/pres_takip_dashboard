@@ -71,7 +71,7 @@
         .kafa2-th { background-color: rgba(var(--c-accent3), 0.15); color: var(--accent3); }
 
         /* Ayın Elemanı Animasyonları */
-        .ayin-elemani { background: linear-gradient(90deg, #f5c842, #ff9b44, #f5c842); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shineText 3s linear infinite; }
+        .ayin-elemani { background: linear-gradient(90deg, #f5c842, #ff9b44, #f5c842); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shineText 3s linear infinite; }
         @keyframes shineText { to { background-position: 200% center; } }
         .ayin-elemani-kutu { border: 1px solid rgba(245, 200, 66, 0.4); box-shadow: 0 0 15px rgba(245, 200, 66, 0.15); animation: pulseBox 2s infinite; }
         @keyframes pulseBox { 0% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } 50% { box-shadow: 0 0 20px rgba(245,200,66,0.3); } 100% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } }
@@ -147,7 +147,7 @@
             #main-nav { flex-wrap: nowrap !important; overflow-x: auto !important; overflow-y: hidden !important; padding: 6px !important; border-radius: 12px !important; }
             #main-nav::-webkit-scrollbar { display: none; }
             .nav-btn { padding: 6px 14px !important; font-size: 11px !important; flex: 0 0 auto !important; }
-            .h-\\[240px\\], .h-\\[260px\\], .h-\\[320px\\] { height: 180px !important; }
+            .h-\[240px\], .h-\[260px\], .h-\[320px\] { height: 180px !important; }
             #user-info { flex-direction: row !important; flex-wrap: nowrap !important; flex: 0 0 auto !important; }
         }
     </style>
