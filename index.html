@@ -2597,21 +2597,73 @@ function removeProfilePhoto() {
 
 async function saveProfileFromModal(e) {
     e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const origTxt = btn.innerText;
     try {
+        btn.innerText = 'YÜKLENİYOR...';
+        btn.disabled = true;
+
         const photo = $('profile-photo-b64').value.trim();
+        
+        // Fotoğraf yeni yüklenmiş bir base64 verisiyse ImgBB'ye yükleyip kalıcı bir URL'ye dönüştürelim
+        if (photo.startsWith('data:image')) {
+            try {
+                const formData = new FormData();
+                formData.append('image', photo.split(',')[1]);
+                
+                // Güvenilir kullanım için https://api.imgbb.com/ adresinden kendi ücretsiz API anahtarınızı alabilirsiniz.
+                const IMGBB_API_KEY = '5a415a77f3a97bd7118eb38012bfba91'; 
+                const uploadRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const uploadData = await uploadRes.json();
+                
+                if (uploadData && uploadData.success) {
+                    photo = uploadData.data.url; // Elde edilen kısa ".jpg" linkini kullan
+                    $('profile-photo-b64').value = photo;
+                } else {
+                    throw new Error('Sunucu yüklemeyi reddetti');
+                }
+            } catch (uploadErr) {
+                console.error(uploadErr);
+                toast('Resim buluta yüklenemedi. Lütfen tekrar deneyin.', 'err');
+                return; // Yükleme başarısızsa işlemi durdur
+            }
+        }
+
         const name = LOGGED_IN_USER.name;
         const pass = USER_DATA[name]?.pass || '1234';
         const role = USER_DATA[name]?.role || 'user';
+        
+        // Artık photo değişkeni uzun bir kod değil, kısa bir link olduğu için Google Sheets'e sorunsuz kaydedilir.
         const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
         fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.error(err));
         
         if (USER_DATA[name]) USER_DATA[name].photo = photo;
         let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
         if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
-        if (photo) { $('user-avatar').src = photo; $('user-avatar').classList.remove('hidden'); } else { $('user-avatar').classList.add('hidden'); }
-        toast('Profil fotoğrafı güncellendi.', 'ok'); closeProfileModal(); if(cTab==='admin') rAdmin();
+        
+        if (photo) { 
+            $('user-avatar').src = photo; 
+            $('user-avatar').classList.remove('hidden'); 
+            if($('user-initials')) $('user-initials').classList.add('hidden');
+        } else { 
+            $('user-avatar').classList.add('hidden'); 
+            if($('user-initials')) {
+                $('user-initials').innerText = name.slice(0,2).toUpperCase();
+                $('user-initials').classList.remove('hidden');
+            }
+        }
+        
+        toast('Profil fotoğrafı kalıcı olarak güncellendi.', 'ok'); 
+        closeProfileModal(); 
+        if(cTab==='admin') rAdmin();
     } catch(err) {
         toast('Profil kaydedilirken hata oluştu.', 'err');
+    } finally {
+        btn.innerText = origTxt;
+        btn.disabled = false;
     }
 }
 
