@@ -611,6 +611,13 @@
                         <h3 class="font-bebas text-xl text-accent4 mb-4 border-b border-border/50 pb-1">SAYFA GÖRÜNÜRLÜĞÜ (ÜYELER)</h3>
                         <div id="admin-tabs-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm"></div>
                     </div>
+                
+                <!-- Ağırlık Ayarları (weights) -->
+                <div>
+                    <h3 class="font-bebas text-xl text-accent3 mb-4 border-b border-border/50 pb-1">AYIN YILDIZI AĞIRLIKLARI (%)</h3>
+                    <div class="space-y-3 p-4 bg-bg3 border border-border rounded" id="admin-weights-list">
+                    </div>
+                </div>
                 </div>
                 
                 <!-- Gelişmiş Kullanıcı Yönetimi Modülü -->
@@ -873,7 +880,12 @@ if (!adminSettings || !Array.isArray(adminSettings.hiddenTabs)) adminSettings = 
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has('tab')) cTab = urlParams.get('tab');
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'; // Apps Script Web App linkini buraya yapıştırın
+// GÜVENLİK: API Anahtarları ve URL'ler
+const CONFIG = {
+    IMGBB_API_KEY: '5a415a77f3a97bd7118eb38012bfba91', // imgbb.com'dan alınan key
+    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxksyktK3Fu55_ub_5Pq-m3BDx1sPeuKRYsCH1iulwy93Esg5kRL2hHjD1l5joRVX0G4w/exec'
+};
+const SCRIPT_URL = CONFIG.SCRIPT_URL; 
 
 // PRES MALZEME TAKİP DOSYASININ ID'Sİ (Veya Tam Linki)
 const MALZEME_DOC_ID = '1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c'; 
@@ -1023,9 +1035,9 @@ function toggleTheme() {
 
 // Arama
 const searchTimeouts = {};
-function fT(id, q) {
+function fT(id, q, bypass = false) {
     clearTimeout(searchTimeouts[id]);
-    searchTimeouts[id] = setTimeout(() => {
+    const exec = () => {
         const f = q.toLocaleLowerCase('tr-TR');
         const tb = $(id);
         if (!tb) return;
@@ -1040,7 +1052,9 @@ function fT(id, q) {
         }
         
         tb.style.display = prev; // Tabloyu tek seferde yeniden çizdir
-    }, 250);
+    };
+    if (bypass) exec();
+    else searchTimeouts[id] = setTimeout(exec, 250);
 }
 
 function chD(x){const i=DATES.indexOf(sD); if(DATES[i+x]){sD=DATES[i+x]; rG();}}
@@ -1438,7 +1452,7 @@ function rF(){
 function rKaliphane() {
     if(!KALIP_RAW.h || !KALIP_RAW.h.length) {
         $('th-kalip').innerHTML = '';
-        $('tb-kalip').innerHTML = '<tr><td class="p-4 text-text3">Veri bulunamadı veya sayfa boş.</td></tr>';
+        $('tb-kalip').innerHTML = '<tr><td class="p-4 text-center text-text3">Veri yükleniyor veya tablo boş...</td></tr>';
         return;
     }
 
@@ -1667,7 +1681,7 @@ function closeRecsModal() { const el = $('recs-modal'); el.classList.add('opacit
 
 function openModal(emp) {
     const data = RAW.filter(r => r.calisan === emp).sort((a,b)=> a.tarih.split('.').reverse().join('') > b.tarih.split('.').reverse().join('') ? -1 : 1);
-    $('mdl-name').innerText = emp + ' — ' + sM + ' AYI';
+    $('mdl-name').innerText = emp + (sM ? ' — ' + sM + ' AYI' : '');
     const cCard = (lbl, val) => `
         <div class="bg-bg border border-border rounded p-4 flex flex-col shadow-inner">
             <span class="text-xs font-mono text-text3 mb-1">${lbl}</span>
@@ -2070,8 +2084,6 @@ function openNotifModal() {
     
     playBeepSound(); // Bildirim penceresi açıldığında DIT sesini çal
 
-    if(LOGGED_IN_USER.role === 'admin') { if($('btn-notif-sheet')) $('btn-notif-sheet').classList.remove('hidden'); }
-    
     const myU = USER_DATA[LOGGED_IN_USER.name] || {};
     if(myU.photo) { $('chat-my-avatar').src=myU.photo; $('chat-my-avatar').classList.remove('hidden'); $('chat-my-ini').classList.add('hidden'); }
     else { $('chat-my-avatar').classList.add('hidden'); $('chat-my-ini').classList.remove('hidden'); $('chat-my-ini').innerText=LOGGED_IN_USER.name.slice(0,2).toUpperCase(); }
@@ -2418,7 +2430,7 @@ function cancelChatVoiceRecord(e) {
 
 function showNewChatSelector() {
     const overlay = $('new-chat-overlay'); overlay.classList.remove('hidden');
-    setTimeout(() => { overlay.classList.remove('-translate-x-full'); }, 10);
+    setTimeout(() => { overlay.classList.remove('-translate-x-full'); }, 30);
     $('chat-contact-search').value = ''; renderContacts('');
 }
 
@@ -2510,7 +2522,7 @@ async function saveProfileFromModal(e) {
         btn.innerText = 'YÜKLENİYOR...';
         btn.disabled = true;
 
-        const photo = $('profile-photo-b64').value.trim();
+        let photo = $('profile-photo-b64').value.trim();
         
         // Fotoğraf yeni yüklenmiş bir base64 verisiyse ImgBB'ye yükleyip kalıcı bir URL'ye dönüştürelim
         if (photo.startsWith('data:image')) {
@@ -2518,8 +2530,7 @@ async function saveProfileFromModal(e) {
                 const urlEncodedData = new URLSearchParams();
                 urlEncodedData.append('image', photo.split(',')[1]);
                 
-                // Güvenilir kullanım için https://api.imgbb.com/ adresinden kendi ücretsiz API anahtarınızı alabilirsiniz.
-                const IMGBB_API_KEY = '5a415a77f3a97bd7118eb38012bfba91'; 
+                const IMGBB_API_KEY = CONFIG.IMGBB_API_KEY; 
                 const uploadRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -2731,6 +2742,12 @@ function rAdmin() {
     ];
     $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
     
+    $('admin-weights-list').innerHTML = `
+        <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim Ağırlığı</label><input type="number" id="admin-w-u" value="${adminSettings.weights?.u ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+        <div><label class="block text-[10px] text-text3 mb-1 uppercase">Performans Ağırlığı</label><input type="number" id="admin-w-p" value="${adminSettings.weights?.p ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+        <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kayıt Sayısı Ağırlığı</label><input type="number" id="admin-w-c" value="${adminSettings.weights?.c ?? 20}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+    `;
+
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
         
@@ -2862,7 +2879,10 @@ function clearNotif() {
 function saveAdminSettings() {
     const hiddenTabs = [];
     document.querySelectorAll('.admin-tab-cb').forEach(cb => { if(!cb.checked) hiddenTabs.push(cb.value); });
-    adminSettings = { hiddenTabs };
+    const u = parseInt($('admin-w-u').value) || 40;
+    const p = parseInt($('admin-w-p').value) || 40;
+    const c = parseInt($('admin-w-c').value) || 20;
+    adminSettings = { hiddenTabs, weights: {u, p, c} };
     localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
     toast('Yönetim ayarları başarıyla kaydedildi!', 'ok');
     applyRoleRestrictions();
@@ -3104,7 +3124,7 @@ if(savedUser && savedUser !== "undefined") {
     showLogin();
 }
 
-setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled) fetchCSV(true); }, 15000);
+setInterval(() => { if (LOGGED_IN_USER && !$('btn-refresh').disabled && cTab !== 'form') fetchCSV(true); }, 15000);
 
 // SERVICE WORKER (PWA) KAYDI
 if ('serviceWorker' in navigator) {
