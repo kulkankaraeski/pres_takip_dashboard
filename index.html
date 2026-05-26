@@ -2346,7 +2346,7 @@ function sendChatMessage(directMsg = null) {
     const payload = { 
         action: "addRecord", 
         sheet: "Mesajlar", 
-        data: { "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": finalMsg }
+        "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": currentChatPartner, "Mesaj": finalMsg
     };
     
     if(!MESAJ_RAW.r) MESAJ_RAW.r = [];
@@ -2903,7 +2903,7 @@ function sendNotif(e) {
     const payload = { 
         action: "addRecord", 
         sheet: "Mesajlar", 
-        data: { "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": targetUser, "Mesaj": msg }
+        "Tarih": timeStr, "Kimden": LOGGED_IN_USER.name, "Kime": targetUser, "Mesaj": msg
     };
     fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.log(err));
     
@@ -3257,7 +3257,7 @@ async function saveGenericForm(e) {
     
     const payload = editIdx !== '' 
         ? { action: "editGenericRecord", sheet: sheetName, rowIndex: parseInt(editIdx) + 2, data: formData } 
-        : { action: "addRecord", sheet: sheetName, data: formData };
+        : { action: "addRecord", sheet: sheetName, ...formData };
         
     try {
         toast('Kaydediliyor...', 'warn');
