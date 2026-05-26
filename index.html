@@ -1500,11 +1500,19 @@ function rKayitlar() {
 
     window._kayitlarData = DENEME_RAW;
 
-    // Tabloda kalabalık yapmaması için sadece ilk 5 sütunu veya mevcut olanları gösterelim
-    const maxCols = Math.min(DENEME_RAW.h.length, 5);
-    const displayCols = Array.from({length: maxCols}, (_, i) => i);
+    // Tabloda kalabalık yapmaması için sadece ilk 5 sütunu veya mevcut olanları gösterelim (ID hariç)
+    const displayCols = [];
+    for (let i = 0; i < DENEME_RAW.h.length && displayCols.length < 5; i++) {
+        const hName = String(DENEME_RAW.h[i]).toLowerCase().trim();
+        if (hName !== 'id' && hName !== 'ıd') {
+            displayCols.push(i);
+        }
+    }
 
-    $('th-deneme').innerHTML = `<tr>${displayCols.map(i => `<th class="sticky-th p-2 md:p-3 text-left font-sans font-semibold text-[11px] md:text-sm text-accent border-b-2 border-border uppercase th-bg leading-tight">${DENEME_RAW.h[i]}</th>`).join('')}</tr>`;
+    $('th-deneme').innerHTML = `<tr>${displayCols.map(i => {
+        let cleanH = String(DENEME_RAW.h[i]).replace(/^kriterler\s+/i, '').trim();
+        return `<th class="sticky-th p-2 md:p-3 text-left font-sans font-semibold text-[11px] md:text-sm text-accent border-b-2 border-border uppercase th-bg leading-tight">${cleanH}</th>`;
+    }).join('')}</tr>`;
 
     // Verileri ters çevir (yeni kayıtlar en üstte) ama orijinal indeksleri koru
     const mapped = DENEME_RAW.r.map((r, i) => ({ idx: i, data: r })).reverse();
@@ -1531,8 +1539,14 @@ function filterKayitlar(q) {
     kayitSearchTimeout = setTimeout(() => {
         const f = q.toLowerCase().trim();
         const mapped = DENEME_RAW.r.map((r, i) => ({ idx: i, data: r })).reverse();
-        const maxCols = Math.min(DENEME_RAW.h.length, 5);
-        const displayCols = Array.from({length: maxCols}, (_, i) => i);
+        
+        const displayCols = [];
+        for (let i = 0; i < DENEME_RAW.h.length && displayCols.length < 5; i++) {
+            const hName = String(DENEME_RAW.h[i]).toLowerCase().trim();
+            if (hName !== 'id' && hName !== 'ıd') {
+                displayCols.push(i);
+            }
+        }
 
         if (!f) {
             renderKayitTable(mapped.slice(0, 100), displayCols);
