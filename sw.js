@@ -2,7 +2,10 @@ const CACHE_NAME = 'pres-takip-v2';
 const STATIC_ASSETS = [
     './',
     './index.html',
+    './utils.js',
     './manifest.json',
+    './icon-192-light.png',
+    './icon-512-light.png',
     './icon-512.png'
 ];
 
