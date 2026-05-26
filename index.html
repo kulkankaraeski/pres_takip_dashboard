@@ -1725,7 +1725,7 @@ function openGenericModal(idx, type = 'deneme') {
             else if (hL.includes('ölçüm') || hL.includes('değer') || hL.includes('basınç') || hL.includes('hız') || hL.includes('sıcaklık') || hL.includes('zaman')) cat = 'ÖLÇÜMLER';
             else if (hL.includes('kriter') || hL.includes('şart') || hL.includes('hedef') || hL.includes('beklenen') || hL.includes('tolerans')) cat = 'KRİTERLER';
 
-            let cleanH = h.replace(/^kriterler\s+/i, '').replace(/\s+kriteri$/i, '').trim();
+            let cleanH = h.trim();
 
             groups[cat].push({ h: cleanH, val });
         });
@@ -3786,6 +3786,9 @@ function processVoiceCommand(command) {
   speakText('Anlamadım. "Yardım" diyerek komut listesini görebilirsiniz.');
   showVoiceOverlay(command, 'unknown', entities);
 }
+</script>
+</body>
+</html>
 </script>
 </body>
 </html>
