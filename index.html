@@ -533,6 +533,9 @@
         </div>
 
         <div class="panel hidden" id="panel-malzeme">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" id="malzeme-dashboard" style="display:none;">
+                <!-- Dashboard cards generated via JS -->
+            </div>
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col">
                 <div class="p-4 border-b border-border flex justify-between items-center">
                     <div class="flex items-center gap-4"><span class="font-bebas text-base tracking-[2px] text-text2">PRES MALZEME TAKİP LİSTESİ</span><button onclick="openGenericFormModal('malzeme')" class="admin-only-btn hidden px-2 py-1 bg-accent text-bg2 text-[10px] font-bold rounded shadow hover:scale-105 transition-transform">+ YENİ EKLE</button></div>
@@ -903,7 +906,7 @@ const extMalzemeId = matchMalz ? matchMalz[1] : MALZEME_DOC_ID;
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
 const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
 const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
-const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Pres Malzeme Takip Listesi');
+const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&gid=959090458';
 const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
 const MESAJ_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Mesajlar');
 
@@ -1564,6 +1567,51 @@ function rMalzeme() {
     }
     $('th-malzeme').innerHTML = `<tr>${MALZEME_RAW.h.map(c=>`<th class="sticky-th px-1.5 py-1 text-left font-mono text-[9px] text-text3 border-b border-border uppercase whitespace-nowrap th-bg max-w-[120px] truncate" title="${c}">${c}</th>`).join('')}</tr>`;
     $('tb-malzeme').innerHTML = MALZEME_RAW.r.map((row, idx) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[10px] cursor-pointer transition-colors" onclick="openGenericModal(${idx}, 'malzeme')">${row.map(c=>`<td class="px-1.5 py-1 whitespace-nowrap max-w-[120px] truncate" title="${c||''}">${c||'-'}</td>`).join('')}</tr>`).join('');
+
+    // Akıllı Depo Analizi Dashboard
+    const db = $('malzeme-dashboard');
+    if (!db) return;
+    if (MALZEME_RAW.r.length === 0) {
+        db.style.display = 'none';
+        return;
+    }
+    
+    const headers = MALZEME_RAW.h.map(h => String(h).toLowerCase().trim());
+    const idxPerson = headers.findIndex(h => h.includes('personel') || h.includes('çalışan') || h.includes('ad'));
+    const idxUrun = headers.findIndex(h => h.includes('ürün') || h.includes('malzeme'));
+    const idxAdet = headers.findIndex(h => h.includes('adet') || h.includes('miktar'));
+    
+    if (idxPerson > -1 && idxUrun > -1 && idxAdet > -1) {
+        let personelData = {};
+        let urunData = {};
+        let totalAdet = 0;
+        
+        MALZEME_RAW.r.forEach(row => {
+            const p = String(row[idxPerson] || 'Bilinmeyen').trim();
+            const u = String(row[idxUrun] || 'Bilinmeyen').trim();
+            const a = parseFloat(String(row[idxAdet]).replace(/,/g, '.')) || 0;
+            
+            if (!personelData[p]) personelData[p] = { count: 0 };
+            personelData[p].count += a;
+            
+            if (!urunData[u]) urunData[u] = 0;
+            urunData[u] += a;
+            totalAdet += a;
+        });
+        
+        const sortedPersonel = Object.entries(personelData).sort((a,b) => b[1].count - a[1].count);
+        const topPerson = sortedPersonel[0];
+        
+        const sortedUrun = Object.entries(urunData).sort((a,b) => b[1] - a[1]);
+        const topUrun = sortedUrun[0];
+        
+        db.innerHTML = card('border-l-accent3 bg-accent3/5', '📦 TOPLAM MALZEME ÇIKIŞI', n(totalAdet), 'Adet Ürün', '') +
+                       card('border-l-accent bg-accent/5', '👑 EN ÇOK ALIM YAPAN', topPerson ? escapeHTML(topPerson[0].split(' ')[0]) : '-', topPerson ? n(topPerson[1].count) + ' Adet Toplam' : '', '') +
+                       card('border-l-accent4 bg-accent4/5', '🔥 EN ÇOK GİDEN ÜRÜN', topUrun ? escapeHTML(topUrun[0]) : '-', topUrun ? n(topUrun[1]) + ' Adet Tüketildi' : '', '');
+        db.style.display = 'grid';
+    } else {
+        db.style.display = 'none';
+    }
 }
 
 function rPlan() {
@@ -2656,6 +2704,12 @@ async function fetchUsers() {
                 }
                 let photo = (photoIdx !== -1 && cols[photoIdx]) ? cols[photoIdx] : '';
                 if (photo && !photo.startsWith('http') && !photo.startsWith('data:')) photo = '';
+                
+                // Aynı cihazda kalıcılık için yerel depolama yedeği (Google Sheet'ten gelmezse)
+                let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+                if (!photo && lu[name] && lu[name].photo) {
+                    photo = lu[name].photo;
+                }
                 
                 if (name) USER_DATA[name] = { pass: String(pass), role: role, photo: photo };
             }
@@ -3777,18 +3831,6 @@ function processVoiceCommand(command) {
   speakText('Anlamadım. "Yardım" diyerek komut listesini görebilirsiniz.');
   showVoiceOverlay(command, 'unknown', entities);
 }
-</script>
-</body>
-</html>      }
-    }
-  }
-
-  speakText('Anlamadım. "Yardım" diyerek komut listesini görebilirsiniz.');
-  showVoiceOverlay(command, 'unknown', entities);
-}
-</script>
-</body>
-</html>
 </script>
 </body>
 </html>
