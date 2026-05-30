@@ -263,12 +263,28 @@
         <div onclick="swT('malzeme',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">PRES MALZEME TAKİP</div>
         <div onclick="swT('kayitlar',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM TAKİP DENEMELERİ</div>
         <div onclick="swT('plan',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">ÜRETİM PLANI</div>
+        <div onclick="swT('verisayfasi',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ SAYFASI</div>
         <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="nav-tab nav-btn bg-bg3 text-accent2 border-border hover:bg-border transition-all duration-300">🚨 ALARMLAR</div>
         <div onclick="swT('form',this)" class="nav-tab nav-btn bg-bg3 text-text2 border-border hover:bg-border hover:text-text">VERİ GİRİŞ FORMU</div>
         <div id="nav-admin" onclick="swT('admin',this)" class="nav-tab nav-btn hidden bg-bg3 text-accent2 border-border hover:bg-border">YÖNETİM PANELİ</div>
     </nav>
 
     <main class="flex-1 relative min-h-[500px]">
+        <div class="panel hidden" id="panel-verisayfasi">
+            <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col h-[calc(100vh-100px)] shadow-sm relative">
+                <div class="p-3 md:p-4 border-b border-border flex justify-between items-center bg-bg3 shrink-0">
+                    <span class="font-bebas text-base tracking-[2px] text-text2">VERİ SAYFASI</span>
+                    <input type="text" onkeyup="fT('tb-verisayfasi',this.value)" placeholder="Tabloda Ara..." class="bg-bg border border-border text-text2 text-xs rounded px-2 py-1.5 outline-none focus:border-accent w-36 md:w-52 transition-colors">
+                </div>
+                <div class="overflow-auto flex-1 custom-scrollbar">
+                    <table class="w-full text-left border-collapse" id="t-verisayfasi">
+                        <thead id="th-verisayfasi"></thead>
+                        <tbody id="tb-verisayfasi"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="panel active" id="panel-gunluk">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-4 bg-bg2/80 backdrop-blur-md border border-border/50 p-2.5 rounded-xl shadow-sm gap-2">
                 <button onclick="chD(-1)" class="px-4 py-1.5 bg-bg3/80 hover:bg-border hover:shadow-sm text-text rounded-lg font-mono text-xs transition-all">◀ ÖNCEKİ</button>
@@ -488,6 +504,9 @@
                                     <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim1" required min="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                     <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus1" min="0" value="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                 </div>
+                                <div class="grid grid-cols-1 gap-2 mt-2">
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruşsuz 1 Vardiyalık Üretim Adedi 1</label><input type="number" id="f-durussuz1" min="0" step="0.01" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="bg-bg3/40 border border-border/50 rounded-xl p-5 shadow-sm opacity-90 hover:opacity-100 transition-opacity">
@@ -500,6 +519,9 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim2" min="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                     <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus2" min="0" value="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-2 mt-2">
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruşsuz 1 Vardiyalık Üretim Adedi 2</label><input type="number" id="f-durussuz2" min="0" step="0.01" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                 </div>
                             </div>
                         </div>
@@ -1027,6 +1049,7 @@ function swT(t,el){
         if(t==='kayitlar') rKayitlar(); 
         if(t==='plan') rPlan(); 
         if(t==='admin') rAdmin();
+        if(t==='verisayfasi') rVerisayfasi();
         
     if(!RAW.length)return;
         if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='alarm')rAlarm(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); 
@@ -1040,6 +1063,24 @@ function toggleTheme() {
 
     const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
     if(RAW.length) swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
+}
+
+function rVerisayfasi() {
+    if (!window.RAW_CSV_ROWS || window.RAW_CSV_ROWS.length === 0) {
+        $('th-verisayfasi').innerHTML = '';
+        $('tb-verisayfasi').innerHTML = '<tr><td class="p-4 text-center text-text3">Henüz veri yok.</td></tr>';
+        return;
+    }
+    const headers = window.RAW_CSV_ROWS[0];
+    const rows = window.RAW_CSV_ROWS.slice(1);
+    
+    $('th-verisayfasi').innerHTML = `<tr>${headers.map(h => `<th class="sticky-th p-2 md:p-3 text-left font-sans font-semibold text-[11px] md:text-sm text-text2 border-b-2 border-border uppercase th-bg leading-tight whitespace-nowrap">${escapeHTML(h)}</th>`).join('')}</tr>`;
+    $('tb-verisayfasi').innerHTML = rows.map((r, idx) => {
+        const bgClass = idx % 2 === 0 ? 'bg-bg2' : 'bg-bg3/50';
+        return `<tr class="${bgClass} hover:bg-border/50 border-b border-border/80 text-xs md:text-sm transition-colors">
+            ${r.map(col => `<td class="p-2 md:p-3 break-words align-top whitespace-nowrap">${escapeHTML(col || '')}</td>`).join('')}
+        </tr>`;
+    }).join('');
 }
 
 // Arama
@@ -2005,6 +2046,32 @@ async function submitForm(e){
     btn.innerHTML = '⏳ İŞLENİYOR...'; 
     btn.disabled = true;
 
+    const vDurussuz1 = parseFloat($('f-durussuz1').value) || 0;
+    const vDurussuz2 = parseFloat($('f-durussuz2').value) || 0;
+    const vUretim1 = parseFloat($('f-uretim1').value) || 0;
+    const vUretim2 = parseFloat($('f-uretim2').value) || 0;
+    const vDurus1 = parseFloat($('f-durus1').value) || 0;
+    const vDurus2 = parseFloat($('f-durus2').value) || 0;
+
+    let calisilan1 = 450 - vDurus1;
+    let beklenen1 = vDurussuz1 > 0 ? (vDurussuz1 / 450) * calisilan1 : 0;
+    let perf1 = beklenen1 > 0 ? vUretim1 / beklenen1 : 0;
+
+    let calisilan2 = 450 - vDurus2;
+    let beklenen2 = vDurussuz2 > 0 ? (vDurussuz2 / 450) * calisilan2 : 0;
+    let perf2 = beklenen2 > 0 ? vUretim2 / beklenen2 : 0;
+
+    let perfCount = 0;
+    let topPerf = 0;
+    if ($('f-pres1').value && beklenen1 > 0) { topPerf += perf1; perfCount++; }
+    if ($('f-pres2').value && beklenen2 > 0) { topPerf += perf2; perfCount++; }
+    
+    let gunlukPerf = perfCount > 0 ? topPerf / perfCount : 0;
+    let toplamUretim = vUretim1 + vUretim2;
+
+    const fmt = (v) => v ? v.toFixed(1).replace('.', ',') : "";
+    const fmtP = (v) => v ? (v * 100).toFixed(2).replace('.', ',') + '%' : "";
+
     // DİKKAT: Sol taraftaki anahtar isimleri (Tarih, Çalışan vb.) Google Sheets'teki 
     // birinci satırda yer alan sütun başlıklarınızla HARFİ HARFİNE AYNI olmalıdır.
     const payload = {
@@ -2013,18 +2080,26 @@ async function submitForm(e){
         "Vardiya": $('f-vardiya').value,
         "Pres1": $('f-pres1').value,
         "Fason1": $('f-fason1').value,
-        "Üretilen Adet 1": $('f-uretim1').value,
+        "Duruşsuz 1 vardiyalık üretim adedi 1": vDurussuz1 ? vDurussuz1.toFixed(2).replace('.', ',') : "",
+        "Üretilen Adet 1": vUretim1 || "",
+        "Çalışılan Süre İle Üretilmesi Gereken Adet 1": fmt(beklenen1),
+        "Üretim Yüzdesi (Performans)": fmtP(perf1),
         "Arıza Türü 1": "",
         "Duruş Başlangıcı 1": "",
         "Duruş Bitişi 1": "",
-        "Duruş Süresi 1 (dk)": $('f-durus1').value || 0,
+        "Duruş Süresi 1 (dk)": vDurus1 || 0,
         "Pres2": $('f-pres2').value,
         "Fason2": $('f-fason2').value,
-        "Üretilen Adet 2": $('f-uretim2').value || "",
+        "Duruşsuz 1 vardiyalık üretim adedi 2": vDurussuz2 ? vDurussuz2.toFixed(2).replace('.', ',') : "",
+        "Üretilen Adet 2": vUretim2 || "",
+        "Çalışılan Süre İle Üretilmesi Gereken Adet2": fmt(beklenen2),
+        "Üretim Yüzdesi (Performans)2": fmtP(perf2),
         "Arıza Türü 2": "",
         "Duruş Başlangıcı 2": "",
         "Duruş Bitişi 2": "",
-        "Duruş Süresi 2 (dk)": $('f-durus2').value || 0
+        "Duruş Süresi 2 (dk)": vDurus2 || 0,
+        "Günlük Toplam Performans": fmtP(gunlukPerf),
+        "Toplam Üretilen Çift Kafa Günlük Adet": toplamUretim ? toplamUretim.toFixed(2).replace('.', ',') : ""
     };
     
     if (editModeRecord) {
@@ -3159,6 +3234,7 @@ function fetchCSV(isBg = false) {
         getCSV(MALZEME_URL).catch(()=>''),
         getCSV(MESAJ_URL).catch(()=>'')
     ]).then(([t, k_text, d_text, m_text, msg_text]) => {
+        window.RAW_CSV_ROWS = t.split('\n').map(x => x.trim()).filter(x => x).map(row => parseCSVLine(row));
         RAW=parse(t);
         KALIP_RAW=parseGeneric(k_text);
         DENEME_RAW=parseGeneric(d_text);
