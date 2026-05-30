@@ -1577,14 +1577,14 @@ function analyzeFason(fasonName) {
 
     const best = presses[0];
     
-    let html = \`
+    let html = `
     <div class="flex items-start gap-3 bg-accent3/10 p-3 md:p-4 rounded-xl border border-accent3/30">
         <div class="text-3xl md:text-4xl text-accent3">💡</div>
         <div class="flex-1">
-            <h3 class="text-accent3 font-bebas text-lg md:text-xl tracking-wider mb-1">PLANLAMA ÖNERİSİ: \${escapeHTML(best.pres)}</h3>
+            <h3 class="text-accent3 font-bebas text-lg md:text-xl tracking-wider mb-1">PLANLAMA ÖNERİSİ: ${escapeHTML(best.pres)}</h3>
             <p class="text-text2 text-xs md:text-sm leading-relaxed">
-                Tarihsel verilere göre <b>\${escapeHTML(fasonName)}</b> fasonu en hızlı <b>\${escapeHTML(best.pres)}</b> makinesinde üretilmektedir. 
-                Bu preste duruşlar düşüldükten sonra dakikada ortalama <b class="text-accent">\${best.ppm.toFixed(2)} adet</b> üretim gerçekleşmiştir. Toplam <b>\${best.runs}</b> kez çalışılmış olup, vardiya başına ortalama <b class="text-accent2">\${Math.round(best.durus)} dk</b> duruş süresi gözlemlenmiştir. 
+                Tarihsel verilere göre <b>${escapeHTML(fasonName)}</b> fasonu en hızlı <b>${escapeHTML(best.pres)}</b> makinesinde üretilmektedir. 
+                Bu preste duruşlar düşüldükten sonra dakikada ortalama <b class="text-accent">${best.ppm.toFixed(2)} adet</b> üretim gerçekleşmiştir. Toplam <b>${best.runs}</b> kez çalışılmış olup, vardiya başına ortalama <b class="text-accent2">${Math.round(best.durus)} dk</b> duruş süresi gözlemlenmiştir. 
                 Planlamanızı bu prese yapmanız önerilir.
             </p>
         </div>
@@ -1593,24 +1593,24 @@ function analyzeFason(fasonName) {
     <div class="mt-2">
         <h4 class="font-bold text-text3 text-xs uppercase mb-2">Bu Fasonun Diğer Preslerdeki Kıyaslaması</h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-    \`;
+    `;
 
     presses.forEach((p, idx) => {
         const isBest = idx === 0;
-        html += \`
-            <div class="bg-bg border \${isBest ? 'border-accent3' : 'border-border/50'} rounded-lg p-3 flex flex-col gap-1 relative overflow-hidden shadow-sm">
-                \${isBest ? '<div class="absolute top-0 right-0 bg-accent3 text-bg font-bold text-[8px] px-1.5 py-0.5 rounded-bl-lg">EN HIZLI</div>' : ''}
-                <span class="font-bold text-text text-sm">\${escapeHTML(p.pres)}</span>
+        html += `
+            <div class="bg-bg border ${isBest ? 'border-accent3' : 'border-border/50'} rounded-lg p-3 flex flex-col gap-1 relative overflow-hidden shadow-sm">
+                ${isBest ? '<div class="absolute top-0 right-0 bg-accent3 text-bg font-bold text-[8px] px-1.5 py-0.5 rounded-bl-lg">EN HIZLI</div>' : ''}
+                <span class="font-bold text-text text-sm">${escapeHTML(p.pres)}</span>
                 <div class="flex justify-between text-[10px] text-text2 border-t border-border/50 pt-1 mt-1">
-                    <span>Kayıt: <b class="text-text">\${p.runs}</b> kez</span>
-                    <span>Hız: <b class="text-accent">\${p.ppm.toFixed(2)} adet/dk</b></span>
+                    <span>Kayıt: <b class="text-text">${p.runs}</b> kez</span>
+                    <span>Hız: <b class="text-accent">${p.ppm.toFixed(2)} adet/dk</b></span>
                 </div>
                 <div class="flex justify-between text-[10px] text-text2">
-                    <span>Toplam Üretim: <b>\${n(p.uretim)}</b></span>
-                    <span>Ort. Duruş: <b class="text-accent2">\${Math.round(p.durus)} dk</b></span>
+                    <span>Toplam Üretim: <b>${n(p.uretim)}</b></span>
+                    <span>Ort. Duruş: <b class="text-accent2">${Math.round(p.durus)} dk</b></span>
                 </div>
             </div>
-        \`;
+        `;
     });
 
     html += `</div></div>`;
