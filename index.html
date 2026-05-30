@@ -1556,9 +1556,14 @@ function analyzeFason(fasonName) {
     const presses = Object.entries(pStats).map(([p, v]) => {
         const avgPerf = v.perfArr.length ? v.perfArr.reduce((a,b)=>a+b,0)/v.perfArr.length : 0;
         const avgDurus = v.runs ? v.durus / v.runs : 0;
-        // Puanlama mantığı: Ortalama performans baz alınır, duruş süresi eksi puan
-        const score = (avgPerf * 100) - (avgDurus * 0.5); 
-        return { pres: p, runs: v.runs, perf: avgPerf, durus: avgDurus, score: score, uretim: v.uretim };
+        
+        // Puanlama mantığı: Dakikada Üretilen Adet
+        // Vardiya başına 450 dakika varsayımıyla net çalışma süresi:
+        const totalMins = v.runs * 450;
+        const netMins = totalMins - v.durus;
+        const piecesPerMin = netMins > 0 ? (v.uretim / netMins) : 0;
+
+        return { pres: p, runs: v.runs, perf: avgPerf, durus: avgDurus, score: piecesPerMin, uretim: v.uretim, ppm: piecesPerMin };
     }).sort((a,b) => b.score - a.score);
 
     const resDiv = $('fas-analyze-result');
@@ -1572,14 +1577,14 @@ function analyzeFason(fasonName) {
 
     const best = presses[0];
     
-    let html = `
+    let html = \`
     <div class="flex items-start gap-3 bg-accent3/10 p-3 md:p-4 rounded-xl border border-accent3/30">
         <div class="text-3xl md:text-4xl text-accent3">💡</div>
         <div class="flex-1">
-            <h3 class="text-accent3 font-bebas text-lg md:text-xl tracking-wider mb-1">PLANLAMA ÖNERİSİ: ${escapeHTML(best.pres)}</h3>
+            <h3 class="text-accent3 font-bebas text-lg md:text-xl tracking-wider mb-1">PLANLAMA ÖNERİSİ: \${escapeHTML(best.pres)}</h3>
             <p class="text-text2 text-xs md:text-sm leading-relaxed">
-                Tarihsel verilere göre <b>${escapeHTML(fasonName)}</b> fasonu en verimli <b>${escapeHTML(best.pres)}</b> makinesinde çalışmaktadır. 
-                Bu preste toplam <b>${best.runs}</b> kez çalışılmış olup, ortalama <b>${pb(best.perf)}</b> performans ve vardiya başına ortalama <b class="text-accent2">${Math.round(best.durus)} dk</b> duruş süresi gözlemlenmiştir. 
+                Tarihsel verilere göre <b>\${escapeHTML(fasonName)}</b> fasonu en hızlı <b>\${escapeHTML(best.pres)}</b> makinesinde üretilmektedir. 
+                Bu preste duruşlar düşüldükten sonra dakikada ortalama <b class="text-accent">\${best.ppm.toFixed(2)} adet</b> üretim gerçekleşmiştir. Toplam <b>\${best.runs}</b> kez çalışılmış olup, vardiya başına ortalama <b class="text-accent2">\${Math.round(best.durus)} dk</b> duruş süresi gözlemlenmiştir. 
                 Planlamanızı bu prese yapmanız önerilir.
             </p>
         </div>
@@ -1588,24 +1593,24 @@ function analyzeFason(fasonName) {
     <div class="mt-2">
         <h4 class="font-bold text-text3 text-xs uppercase mb-2">Bu Fasonun Diğer Preslerdeki Kıyaslaması</h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-    `;
+    \`;
 
     presses.forEach((p, idx) => {
         const isBest = idx === 0;
-        html += `
-            <div class="bg-bg border ${isBest ? 'border-accent3' : 'border-border/50'} rounded-lg p-3 flex flex-col gap-1 relative overflow-hidden shadow-sm">
-                ${isBest ? '<div class="absolute top-0 right-0 bg-accent3 text-bg font-bold text-[8px] px-1.5 py-0.5 rounded-bl-lg">EN İYİ</div>' : ''}
-                <span class="font-bold text-text text-sm">${escapeHTML(p.pres)}</span>
+        html += \`
+            <div class="bg-bg border \${isBest ? 'border-accent3' : 'border-border/50'} rounded-lg p-3 flex flex-col gap-1 relative overflow-hidden shadow-sm">
+                \${isBest ? '<div class="absolute top-0 right-0 bg-accent3 text-bg font-bold text-[8px] px-1.5 py-0.5 rounded-bl-lg">EN HIZLI</div>' : ''}
+                <span class="font-bold text-text text-sm">\${escapeHTML(p.pres)}</span>
                 <div class="flex justify-between text-[10px] text-text2 border-t border-border/50 pt-1 mt-1">
-                    <span>Kayıt: <b class="text-text">${p.runs}</b> kez</span>
-                    <span>Ort. Perf: <b>${pb(p.perf)}</b></span>
+                    <span>Kayıt: <b class="text-text">\${p.runs}</b> kez</span>
+                    <span>Hız: <b class="text-accent">\${p.ppm.toFixed(2)} adet/dk</b></span>
                 </div>
                 <div class="flex justify-between text-[10px] text-text2">
-                    <span>Toplam Üretim: <b class="text-accent">${n(p.uretim)}</b></span>
-                    <span>Ort. Duruş: <b class="text-accent2">${Math.round(p.durus)} dk</b></span>
+                    <span>Toplam Üretim: <b>\${n(p.uretim)}</b></span>
+                    <span>Ort. Duruş: <b class="text-accent2">\${Math.round(p.durus)} dk</b></span>
                 </div>
             </div>
-        `;
+        \`;
     });
 
     html += `</div></div>`;
