@@ -3245,7 +3245,7 @@ function fetchCSV(isBg = false) {
         getCSV(MALZEME_URL).catch(()=>''),
         getCSV(MESAJ_URL).catch(()=>'')
     ]).then(([t, k_text, d_text, m_text, msg_text]) => {
-        window.RAW_CSV_ROWS = t.split('\n').map(x => x.trim()).filter(x => x).map(row => parseCSVLine(row));
+        window.RAW_CSV_ROWS = parseCSV(t);
         RAW=parse(t);
         KALIP_RAW=parseGeneric(k_text);
         DENEME_RAW=parseGeneric(d_text);
