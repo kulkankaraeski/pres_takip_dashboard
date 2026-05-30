@@ -416,23 +416,75 @@
         </div>
 
         <div class="panel hidden" id="panel-alarm">
-            <h2 class="font-bebas text-2xl text-accent2 tracking-wider mb-4 flex items-center gap-2">🚨 SİSTEM ALARMLARI VE KIYASLAMA ANALİZİ</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" id="alarm-kpis"></div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-start">
-                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-lg border-accent2/30">
-                    <div class="p-4 border-b border-border bg-accent2/10"><span class="font-bebas text-base text-accent2">🔴 KRİTİK UYARILAR LİSTESİ (Son 14 Gün)</span></div>
-                    <div class="overflow-auto max-h-[50vh]"><table class="w-full text-left border-collapse"><thead id="th-alarm"></thead><tbody id="tb-alarm"></tbody></table></div>
-                </div>
-                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-lg">
-                    <div class="p-4 border-b border-border bg-accent/10"><span class="font-bebas text-base text-accent">📊 AYNI MAKİNE / FARKLI VARDİYA KIYASLAMALARI</span></div>
-                    <div class="overflow-auto max-h-[50vh] p-4 bg-bg3/30" id="makine-kiyas-container"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-bebas text-3xl text-accent2 tracking-wider flex items-center gap-3">
+                    <span class="animate-pulse">🚨</span> SİSTEM ALARMLARI VE ANALİZ MERKEZİ
+                </h2>
+                <div class="flex gap-2">
+                    <span class="bg-bg2 border border-border text-text2 text-xs px-3 py-1 rounded-full flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span> Canlı İzleme Aktif</span>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-bg2 border border-border rounded p-4 shadow-sm"><div class="font-bebas text-base text-text2 mb-2">ÇALIŞAN PERFORMANS DAĞILIMI (Son 14 Gün)</div><div class="h-[240px] relative"><canvas id="alarm-c1"></canvas></div></div>
-                <div class="bg-bg2 border border-border rounded p-4 shadow-sm"><div class="font-bebas text-base text-text2 mb-2">FASON PERFORMANS DAĞILIMI (Son 14 Gün)</div><div class="h-[240px] relative"><canvas id="alarm-c2"></canvas></div></div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                <!-- Sol Kolon: Canlı Uyarı Akışı (Live Warning Feed) -->
+                <div class="xl:col-span-1 flex flex-col h-full max-h-[85vh]">
+                    <div class="bg-bg2 border-2 border-accent2/20 rounded-xl overflow-hidden flex flex-col shadow-lg shadow-accent2/5 h-full">
+                        <div class="p-4 border-b border-border bg-gradient-to-r from-accent2/10 to-transparent flex justify-between items-center">
+                            <span class="font-bebas text-lg text-accent2 tracking-wide flex items-center gap-2">
+                                <svg class="w-5 h-5 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                AKTİF UYARI AKIŞI
+                            </span>
+                            <span id="alarm-feed-count" class="bg-accent2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div class="overflow-y-auto custom-scrollbar flex-1 p-3 space-y-3 bg-bg3/10" id="alarm-feed-container">
+                            <!-- Uyarılar JS ile buraya yüklenecek -->
+                            <div class="text-center text-text3 text-sm py-10 font-mono animate-pulse">Analiz ediliyor...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sağ 3 Kolon: KPI, Matris ve Grafikler -->
+                <div class="xl:col-span-3 flex flex-col gap-6">
+                    
+                    <!-- KPI Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="alarm-kpis">
+                        <!-- KPI'lar JS ile buraya gelecek -->
+                    </div>
+
+                    <!-- Kıyaslama Matrisi -->
+                    <div class="bg-bg2 border border-border rounded-xl overflow-hidden shadow-md flex-1">
+                        <div class="p-4 border-b border-border bg-gradient-to-r from-accent/10 to-transparent flex justify-between items-center">
+                            <span class="font-bebas text-lg text-accent tracking-wide flex items-center gap-2">
+                                📊 MAKİNE BAZLI VARDİYA & KAFA KIYASLAMASI
+                            </span>
+                            <span class="text-xs text-text3 font-mono">Son 14 Gün Analizi</span>
+                        </div>
+                        <div class="p-4 bg-bg3/20">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4" id="makine-kiyas-container">
+                                <!-- Kıyaslama kartları JS ile buraya yüklenecek -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grafikler Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="bg-bg2 border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="font-bebas text-base text-text tracking-wide">ÇALIŞAN PERFORMANS RİSK HARİTASI</div>
+                                <div class="w-2 h-2 rounded-full bg-accent2 animate-ping"></div>
+                            </div>
+                            <div class="h-[220px] relative"><canvas id="alarm-c1"></canvas></div>
+                        </div>
+                        <div class="bg-bg2 border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="font-bebas text-base text-text tracking-wide">DURUŞ VE PERFORMANS KORELASYONU</div>
+                                <div class="text-[10px] text-text3 px-2 py-0.5 bg-bg3 rounded">Pres Bazlı</div>
+                            </div>
+                            <div class="h-[220px] relative"><canvas id="alarm-c2"></canvas></div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
 
@@ -1406,102 +1458,306 @@ function checkSystemAlarms() {
     const btn = $('nav-alarm-btn');
     if(btn) {
         if(alarmCount > 0) {
-            btn.innerHTML = `🚨 ALARMLAR <span class="bg-accent2 text-white px-1.5 py-0.5 rounded-full text-[9px] animate-pulse shadow-md ml-1">${alarmCount}</span>`;
-            btn.classList.add('border-accent2', 'text-accent2');
+            btn.innerHTML = `<span class="animate-pulse">🚨</span> ALARMLAR <span class="bg-accent2 text-white px-1.5 py-0.5 rounded-full text-[9px] animate-pulse shadow-md ml-1">${alarmCount}</span>`;
+            btn.classList.add('border-accent2', 'text-accent2', 'font-bold');
         } else {
-            btn.innerHTML = `🚨 ANALİZ`;
-            btn.classList.remove('border-accent2', 'text-accent2');
+            btn.innerHTML = `🔔 ALARMLAR`;
+            btn.classList.remove('border-accent2', 'text-accent2', 'font-bold');
         }
     }
 }
 
 function rAlarm() {
+    if(!RAW.length) return;
     const last14Dates = DATES.slice(-14);
-    const recentData = RAW.filter(r => last14Dates.includes(r.tarih));
+    const dr = RAW.filter(r => last14Dates.includes(r.tarih));
+    if(!dr.length) return;
 
-    const empPerf = {}; const pressDown = {}; const fasonPerf = {};
-    const makineKiyas = {};
-
-    recentData.forEach(r => {
-        if(!empPerf[r.calisan]) empPerf[r.calisan] = {p:0, c:0, vals:[]};
-        empPerf[r.calisan].p += r.tP; empPerf[r.calisan].c++; empPerf[r.calisan].vals.push(r.tP);
-
+    let alarms = [];
+    let pPerf = {}, fPerf = {}, mStats = {};
+    
+    dr.forEach(r => {
+        // Personel İstatistikleri (Tüm presler için toplam)
+        if(!pPerf[r.calisan]) pPerf[r.calisan] = { perf: [], durus: 0, runs: 0 };
+        pPerf[r.calisan].perf.push(r.tP);
+        
         [1,2].forEach(i => {
-            const pr = r['pres'+i], fas = r['fason'+i], dur = r['durus'+i], perf = r['perf'+i];
-            if(pr) {
-                if(!pressDown[pr]) pressDown[pr] = 0; pressDown[pr] += dur;
-                if(perf > 0) {
-                    if(!makineKiyas[pr]) makineKiyas[pr] = {};
-                    const k = r.vardiya + ' | ' + r.calisan;
-                    if(!makineKiyas[pr][k]) makineKiyas[pr][k] = {p:0, c:0, e:r.calisan, v:r.vardiya};
-                    makineKiyas[pr][k].p += perf; makineKiyas[pr][k].c++;
-                }
+            const m = r['pres'+i], f = r['fason'+i], dur = Number(r['durus'+i])||0, perf = Number(r['perf'+i])||0, ur = Number(r['uretim'+i])||0, kafa = r['kafa'+i]||1;
+            
+            pPerf[r.calisan].durus += dur;
+            
+            if(f) {
+                if(!fPerf[f]) fPerf[f] = { perf: [], runs: 0 };
+                fPerf[f].perf.push(perf);
+                fPerf[f].runs++;
             }
-            if(fas) { 
-                if(!fasonPerf[fas]) fasonPerf[fas] = {p:0, c:0, vals:[]}; 
-                fasonPerf[fas].p += perf; fasonPerf[fas].c++; fasonPerf[fas].vals.push(perf);
+
+            if(m) {
+                let vardiyaKey = `Vardiya ${r.vardiya}`;
+                let kafaKey = `Kafa ${kafa}`;
+                if(!mStats[m]) mStats[m] = {};
+                if(!mStats[m][vardiyaKey]) mStats[m][vardiyaKey] = {};
+                if(!mStats[m][vardiyaKey][kafaKey]) mStats[m][vardiyaKey][kafaKey] = {};
+                
+                if(!mStats[m][vardiyaKey][kafaKey][r.calisan]) {
+                    mStats[m][vardiyaKey][kafaKey][r.calisan] = { totalUretim: 0, totalDurus: 0, runs: 0, perfSum: 0 };
+                }
+                let st = mStats[m][vardiyaKey][kafaKey][r.calisan];
+                st.totalUretim += ur;
+                st.totalDurus += dur;
+                st.perfSum += perf;
+                st.runs++;
             }
         });
+        pPerf[r.calisan].runs++;
     });
 
-    const badEmps = Object.entries(empPerf).map(([k,v])=>({k, v:v.p/v.c})).filter(x=>x.v>0 && x.v<80).sort((a,b)=>a.v-b.v);
-    const badPresses = Object.entries(pressDown).map(([k,v])=>({k, v})).filter(x=>x.v>60).sort((a,b)=>b.v-a.v);
-    const badFasons = Object.entries(fasonPerf).map(([k,v])=>({k, v:v.p/v.c})).filter(x=>x.v>0 && x.v<80).sort((a,b)=>a.v-b.v);
-
-    $('alarm-kpis').innerHTML =
-        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Sorunlu Çalışanlar', badEmps.length, 'Ort. Perf < %80', "swT('calisan')") +
-        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Kritik Makine Duruşları', badPresses.length, 'Son 14 Gün > 60 dk', "swT('pres')") +
-        card('border-l-accent2 bg-accent2/5 hover:bg-accent2/10', '🔴 Sorunlu Fasonlar', badFasons.length, 'Ort. Perf < %80', "swT('fason')");
-
-    let kiyasHtml = '';
-    Object.keys(makineKiyas).sort().forEach(pr => {
-        const workers = Object.values(makineKiyas[pr]).map(x => ({e: x.e, v: x.v, p: x.p/x.c})).sort((a,b) => b.p - a.p);
-        if(workers.length > 1) { 
-            kiyasHtml += `<div class="mb-4 bg-bg rounded-lg border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <h4 class="font-bebas tracking-wide text-accent bg-bg2 p-2.5 border-b border-border text-sm flex justify-between items-center">
-                    <span>🏭 ${pr}</span>
-                    <span class="text-[10px] text-text3 font-mono normal-case tracking-normal">En İyi: ${workers[0].e.split(' ')[0]}</span>
-                </h4>
-                <table class="w-full text-left border-collapse text-[10px] sm:text-[11px] font-mono">
-                    <thead class="bg-bg/50">${th(['Çalışan', 'Vardiya', 'Ort. Perf'])}</thead>
-                    <tbody>`;
-            workers.forEach((w, idx) => {
-                const rowClass = idx === 0 ? 'text-accent4 bg-accent4/5' : (idx === workers.length-1 && w.p < 80 ? 'text-accent2 bg-accent2/5' : 'text-text2');
-                const badge = idx === 0 ? '🏆 ' : (w.p < 80 ? '⚠️ ' : '');
-                kiyasHtml += `<tr class="${rowClass} border-b border-border/50 hover:bg-bg/50 transition-colors">
-                    <td class="p-2 font-sans font-medium">${badge}${w.e}</td>
-                    <td class="p-2 text-text3">${w.v || '-'}</td>
-                    <td class="p-2 font-bold">${pb(w.p)}</td>
-                </tr>`;
+    // 1. Alarm ve Uyarıların Toplanması
+    Object.entries(pPerf).forEach(([p, v]) => {
+        let avgPerf = v.perf.reduce((a,b)=>a+b,0) / v.perf.length;
+        let avgDurus = v.durus / v.runs;
+        
+        if(avgPerf < 80) {
+            alarms.push({
+                type: 'critical', icon: '📉', title: 'Kritik Performans', entity: p,
+                desc: `Ortalama performansı kritik seviyede: <b class="text-accent2">%${avgPerf.toFixed(1)}</b>.`,
+                metric: `${v.runs} Kayıt`
             });
-            kiyasHtml += `</tbody></table></div>`;
+        } else if(avgPerf < 85) {
+            alarms.push({
+                type: 'warning', icon: '⚠️', title: 'Düşük Performans', entity: p,
+                desc: `Ortalama performans hedefin altında: <b>%${avgPerf.toFixed(1)}</b>.`,
+                metric: `${v.runs} Kayıt`
+            });
+        }
+        
+        if(avgDurus > 60) {
+            alarms.push({
+                type: 'critical', icon: '🛑', title: 'Yüksek Duruş Süresi', entity: p,
+                desc: `Vardiya başına ortalama <b class="text-accent2">${Math.round(avgDurus)} dk</b> duruş yaşanıyor.`,
+                metric: 'Sürekli İnceleme Şart'
+            });
         }
     });
-    if(!kiyasHtml) kiyasHtml = '<div class="text-text3 font-mono text-xs p-4 text-center">Kıyaslama yapılacak aynı makinede yeterli farklı vardiya/çalışan verisi bulunamadı.</div>';
-    $('makine-kiyas-container').innerHTML = kiyasHtml;
 
-    const alarms = [];
-    badEmps.forEach(x => alarms.push(['ÇALIŞAN', x.k, `Ortalama performans çok düşük (${x.v.toFixed(1)}%)`]));
-    badPresses.forEach(x => alarms.push(['MAKİNE', x.k, `Ciddi duruş süresi alarmı (${x.v} dk)`]));
-    badFasons.forEach(x => alarms.push(['FASON', x.k, `Fason ortalama performansı sınırın altında (${x.v.toFixed(1)}%)`]));
-
-    $('th-alarm').innerHTML = th(['Tip', 'İlgili Kayıt', 'Sistem Uyarısı']);
-    $('tb-alarm').innerHTML = alarms.length ? alarms.map(a => tr([
-        `<span class="text-accent2 font-bold text-[10px] uppercase bg-accent2/10 px-1.5 py-0.5 rounded">${a[0]}</span>`,
-        `<b class="text-text">${a[1]}</b>`,
-        `<span class="text-text2">${a[2]}</span>`
-    ])).join('') : '<tr><td colspan="3" class="p-6 text-center text-accent4 font-bold">Harika! Son 14 günde tespit edilen kritik bir sorun yok. 🎉</td></tr>';
-
-    const eSort = Object.entries(empPerf).map(([k,v])=>({k, p:v.p/v.c})).sort((a,b)=>b.p-a.p).slice(0,12);
-    mc('alarm-c1', 'bar', {
-        labels: eSort.map(x=>x.k.split(' ')[0]),
-        datasets: [{label:'Ort. Perf %', data: eSort.map(x=>x.p), backgroundColor: eSort.map(x=>x.p<80 ? cR('accent2',0.8) : cR('accent',0.8))}]
+    Object.entries(fPerf).forEach(([f, v]) => {
+        let avgPerf = v.perf.reduce((a,b)=>a+b,0) / v.perf.length;
+        if(avgPerf < 80) {
+             alarms.push({
+                type: 'warning', icon: '📦', title: 'Zorlu Fason', entity: f,
+                desc: `Üretim performansı genelde düşük kalıyor: <b>%${avgPerf.toFixed(1)}</b>.`,
+                metric: `${v.runs} Kayıt`
+            });
+        }
     });
+
+    // Uyarı Akışını Doldur
+    const feedContainer = $('alarm-feed-container');
+    const feedCount = $('alarm-feed-count');
+    if(!feedContainer || !feedCount) return;
     
-    const fSort = Object.entries(fasonPerf).map(([k,v])=>({k, p:v.p/v.c})).sort((a,b)=>b.p-a.p).slice(0,12);
+    feedContainer.innerHTML = '';
+    
+    if(alarms.length === 0) {
+        feedContainer.innerHTML = `<div class="text-center text-text3 text-sm py-10">Harika! Son 14 güne ait kritik bir uyarı bulunmuyor.</div>`;
+        feedCount.textContent = '0';
+    } else {
+        feedCount.textContent = alarms.length;
+        alarms.sort((a,b) => (a.type === 'critical' ? -1 : 1)).forEach(al => {
+            let borderClass = al.type === 'critical' ? 'border-accent2/50 shadow-[0_0_10px_rgba(255,107,107,0.2)] bg-accent2/5' : 'border-accent/30 bg-accent/5';
+            let titleColor = al.type === 'critical' ? 'text-accent2' : 'text-accent';
+            let pulseClass = al.type === 'critical' ? 'animate-pulse' : '';
+            
+            feedContainer.innerHTML += `
+                <div class="border ${borderClass} rounded-lg p-3 transition-all duration-300 hover:scale-[1.02]">
+                    <div class="flex items-start gap-3">
+                        <div class="text-2xl ${pulseClass}">${al.icon}</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-xs uppercase ${titleColor}">${al.title}</span>
+                                <span class="text-[9px] px-1.5 py-0.5 bg-bg border border-border text-text rounded font-mono">${al.metric}</span>
+                            </div>
+                            <div class="font-bebas text-lg text-text leading-tight mb-1">${escapeHTML(al.entity)}</div>
+                            <div class="text-[11px] text-text2 leading-snug">${al.desc}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // 2. Makine Kıyaslama Matrisi (Pres -> Vardiya -> Kafa)
+    const mContainer = $('makine-kiyas-container');
+    mContainer.innerHTML = '';
+    let kiyasDataCount = 0;
+
+    Object.entries(mStats).forEach(([mName, vData]) => {
+        let compHtml = '';
+        let hasMultiple = Object.keys(vData).length > 1; // Birden fazla vardiya var mı?
+        
+        Object.entries(vData).forEach(([vardiya, kData]) => {
+             Object.entries(kData).forEach(([kafa, pData]) => {
+                 Object.entries(pData).forEach(([personel, stat]) => {
+                    const totalMins = stat.runs * 450;
+                    const netMins = totalMins - stat.totalDurus;
+                    const ppm = netMins > 0 ? (stat.totalUretim / netMins) : 0;
+                    const avgPerf = stat.perfSum / stat.runs;
+                    const avgDurus = stat.totalDurus / stat.runs;
+                    
+                    let speedColor = ppm > 15 ? 'text-accent' : (ppm < 8 ? 'text-accent2' : 'text-text');
+
+                    compHtml += `
+                        <div class="flex flex-col gap-1.5 p-2 bg-bg border border-border/50 rounded hover:border-accent3/50 transition-colors">
+                            <div class="flex justify-between items-center border-b border-border/30 pb-1">
+                                <span class="text-xs font-bold text-text">${escapeHTML(personel.split(' ')[0])}</span>
+                                <div class="flex gap-1">
+                                    <span class="text-[9px] bg-bg3 px-1 rounded text-text font-bold shadow-sm">${vardiya}</span>
+                                    <span class="text-[9px] bg-bg3/50 px-1 rounded text-text3">${kafa}</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center mt-1">
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] text-text3 uppercase">Hız</span>
+                                    <span class="text-xs font-mono font-bold ${speedColor}">${ppm.toFixed(1)} <span class="text-[8px] font-normal">d/k</span></span>
+                                </div>
+                                <div class="flex flex-col border-x border-border/30">
+                                    <span class="text-[9px] text-text3 uppercase">Perf</span>
+                                    <span class="text-xs font-mono font-bold ${avgPerf < 80 ? 'text-accent2' : 'text-text2'}">%${Math.round(avgPerf)}</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] text-text3 uppercase">Duruş</span>
+                                    <span class="text-xs font-mono font-bold ${avgDurus > 60 ? 'text-accent2' : 'text-text2'}">${Math.round(avgDurus)}m</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    kiyasDataCount++;
+                 });
+             });
+        });
+
+        if(compHtml) {
+            mContainer.innerHTML += `
+                <div class="bg-bg2 border ${hasMultiple ? 'border-accent/40 shadow-[0_0_10px_rgba(20,184,166,0.1)]' : 'border-border'} rounded-lg p-3 flex flex-col gap-2 relative">
+                    ${hasMultiple ? '<div class="absolute -top-2.5 -right-2.5 bg-accent text-bg text-[8px] font-bold px-2 py-0.5 rounded-full shadow-md animate-bounce">FARKLI VARDİYA</div>' : ''}
+                    <div class="font-bebas text-lg text-text border-b border-border/50 pb-1">${escapeHTML(mName)}</div>
+                    <div class="flex flex-col gap-2">
+                        ${compHtml}
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    if(kiyasDataCount === 0) {
+        mContainer.innerHTML = `<div class="col-span-full text-center text-text3 py-4 text-sm">Karşılaştırılabilir makine verisi bulunamadı.</div>`;
+    }
+
+    // 3. KPI Alanı (Özet)
+    const badP = Object.entries(pPerf).filter(x => (x[1].perf.reduce((a,b)=>a+b,0)/x[1].perf.length) < 80);
+    const badM = Object.entries(mStats).map(m => {
+        let totalD = 0, runs = 0;
+        Object.values(m[1]).forEach(v=>Object.values(v).forEach(k=>Object.values(k).forEach(p=>{ totalD+=p.totalDurus; runs+=p.runs; })));
+        return {m: m[0], d: runs?totalD/runs:0};
+    }).filter(x=>x.d>60);
+
+    $('alarm-kpis').innerHTML = `
+        <div class="bg-bg2 border border-border p-4 rounded-xl flex items-center justify-between shadow-sm relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 text-6xl opacity-5">🚨</div>
+            <div class="relative z-10">
+                <div class="text-[10px] text-text3 font-bold uppercase tracking-wider mb-1">Aktif Kritik Alarm</div>
+                <div class="text-3xl font-bebas ${alarms.filter(a=>a.type==='critical').length > 0 ? 'text-accent2' : 'text-text'}">${alarms.filter(a=>a.type==='critical').length}</div>
+            </div>
+        </div>
+        <div class="bg-bg2 border border-border p-4 rounded-xl flex items-center justify-between shadow-sm relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 text-6xl opacity-5">👥</div>
+            <div class="relative z-10">
+                <div class="text-[10px] text-text3 font-bold uppercase tracking-wider mb-1">Riskli Personel Sayısı</div>
+                <div class="text-3xl font-bebas ${badP.length > 0 ? 'text-accent3' : 'text-text'}">${badP.length}</div>
+            </div>
+        </div>
+        <div class="bg-bg2 border border-border p-4 rounded-xl flex items-center justify-between shadow-sm relative overflow-hidden">
+             <div class="absolute -right-4 -top-4 text-6xl opacity-5">⚙️</div>
+            <div class="relative z-10">
+                <div class="text-[10px] text-text3 font-bold uppercase tracking-wider mb-1">Yüksek Duruşlu Pres</div>
+                <div class="text-3xl font-bebas ${badM.length > 0 ? 'text-accent2' : 'text-text'}">${badM.length}</div>
+            </div>
+        </div>
+    `;
+
+    // 4. Grafikler
+    // Scatter Plot: Çalışan Performans vs Duruş
+    const scatterData = Object.entries(pPerf).map(([p, v]) => ({
+        x: v.durus / v.runs, // Ortalama Duruş (dk)
+        y: (v.perf.reduce((a,b)=>a+b,0) / v.perf.length), // Ortalama Perf %
+        r: Math.min(v.runs * 3, 20), // Nokta büyüklüğü kayıt sayısına göre
+        label: p.split(' ')[0]
+    }));
+
+    mc('alarm-c1', 'scatter', {
+        datasets: [{
+            label: 'Personel',
+            data: scatterData,
+            backgroundColor: cR('accent3', 0.6),
+            borderColor: cR('accent3', 1),
+            borderWidth: 1,
+            hoverBackgroundColor: cR('accent2', 0.8)
+        }]
+    }, {
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(ctx) { return `${ctx.raw.label}: %${ctx.raw.y.toFixed(1)} Perf, ${ctx.raw.x.toFixed(0)}dk Duruş`; }
+                }
+            }
+        },
+        scales: {
+            x: { title: { display: true, text: 'Ortalama Duruş (Dakika)', color: '#6b7280' }, grid: {color: '#374151'} },
+            y: { title: { display: true, text: 'Ortalama Performans (%)', color: '#6b7280' }, grid: {color: '#374151'}, min: 40, max: 120 }
+        }
+    });
+
+    // Bar/Line Mix: Pres Duruş vs Ortalama Hız Korelasyonu
+    const presKorelasyonData = Object.entries(mStats).map(([mName, vData]) => {
+        let totalD = 0, totalU = 0, runs = 0;
+        Object.values(vData).forEach(v=>Object.values(v).forEach(k=>Object.values(k).forEach(p=>{
+            totalD += p.totalDurus;
+            totalU += p.totalUretim;
+            runs += p.runs;
+        })));
+        let avgD = runs ? totalD/runs : 0;
+        let ppm = (runs*450 - totalD) > 0 ? (totalU / (runs*450 - totalD)) : 0;
+        return { pres: mName, avgD, ppm };
+    }).sort((a,b) => b.avgD - a.avgD).slice(0, 10); // En çok duruş yaşayan 10 pres
+
     mc('alarm-c2', 'bar', {
-        labels: fSort.map(x=>x.k),
-        datasets: [{label:'Ort. Perf %', data: fSort.map(x=>x.p), backgroundColor: fSort.map(x=>x.p<80 ? cR('accent2',0.8) : cR('accent3',0.8))}]
+        labels: presKorelasyonData.map(x=>x.pres),
+        datasets: [
+            {
+                type: 'bar',
+                label: 'Ortalama Duruş (dk)',
+                data: presKorelasyonData.map(x=>x.avgD),
+                backgroundColor: cR('accent2', 0.7),
+                borderRadius: 4,
+                yAxisID: 'y'
+            },
+            {
+                type: 'line',
+                label: 'Ortalama Hız (Adet/Dk)',
+                data: presKorelasyonData.map(x=>x.ppm),
+                borderColor: cR('accent', 1),
+                backgroundColor: cR('accent', 0.2),
+                borderWidth: 3,
+                tension: 0.4,
+                pointBackgroundColor: cR('accent', 1),
+                yAxisID: 'y1'
+            }
+        ]
+    }, {
+        scales: {
+            y: { type: 'linear', display: true, position: 'left', title: {display: true, text:'Duruş (dk)', color: '#6b7280'}, grid: {color: '#374151'} },
+            y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: {display: true, text:'Hız (Adet/dk)', color: '#6b7280'} }
+        }
     });
 }
 
