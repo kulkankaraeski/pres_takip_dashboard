@@ -946,22 +946,33 @@ const cR=(v,a=1)=>`rgba(${getComputedStyle(document.documentElement).getProperty
 
 // YENİ: Gelişmiş Fetch (CORS ve HTML Yönlendirme Korumalı)
 async function getCSV(url) {
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-    try {
-        let r = await fetch(url, {cache: 'no-store'});
-        let t = await r.text();
-        if(t.match(/<html/i) || t.match(/<!DOCTYPE/i)) throw new Error('HTML Redirect');
-        return t;
-    } catch(e) {
+    const proxies = [
+        '',
+        'https://corsproxy.io/?',
+        'https://api.allorigins.win/raw?url=',
+        'https://thingproxy.freeboard.io/fetch/'
+    ];
+    
+    let lastErr;
+    for (let i = 0; i < proxies.length; i++) {
+        const proxyUrl = proxies[i] ? proxies[i] + encodeURIComponent(url) : url;
         try {
             let r = await fetch(proxyUrl, {cache: 'no-store'});
+            if (!r.ok) {
+                lastErr = new Error('HTTP ' + r.status);
+                continue;
+            }
             let t = await r.text();
-            if(t.match(/<html/i) || t.match(/<!DOCTYPE/i)) throw new Error('Proxy HTML Redirect');
+            if(t.match(/<html/i) || t.match(/<!DOCTYPE/i)) {
+                lastErr = new Error('HTML Redirect');
+                continue;
+            }
             return t;
-        } catch(finalErr) {
-            throw new Error('Ağ hatası veya proxy erişimi sağlanamadı.');
+        } catch(e) {
+            lastErr = e;
         }
     }
+    throw new Error('Ağ hatası veya proxy erişimi sağlanamadı: ' + (lastErr ? lastErr.message : ''));
 }
 
 function escapeHTML(str) {
