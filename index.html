@@ -1652,14 +1652,14 @@ function openMalzemeListModal(title, filterKey, filterValue) {
     if (mdl) {
         const h2 = mdl.querySelector('h2');
         if (h2) h2.innerText = title;
-        $('gen-mdl-content').innerHTML = \`
+        $('gen-mdl-content').innerHTML = `
             <div class="overflow-auto max-h-[60vh] rounded border border-border custom-scrollbar">
                 <table class="w-full text-left border-collapse">
-                    <thead>\${thHtml}</thead>
-                    <tbody>\${tbHtml}</tbody>
+                    <thead>${thHtml}</thead>
+                    <tbody>${tbHtml}</tbody>
                 </table>
             </div>
-        \`;
+        `;
         mdl.classList.remove('hidden');
         mdl.classList.add('flex');
         setTimeout(() => mdl.classList.remove('opacity-0'), 10);
@@ -1874,7 +1874,9 @@ function openGenericModal(idx, type = 'deneme') {
 
     $('gen-mdl-content').innerHTML = html + actionHtml;
     const el = $('generic-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
-}function closeGenericModal() { const el = $('generic-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300); }
+}
+
+function closeGenericModal() { const el = $('generic-modal'); el.classList.add('opacity-0'); setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300); }
 
 async function deleteGenericRecord(index, sheetName) {
     if(!confirm(`Bu kaydı (${sheetName}) SİLMEK istediğinize emin misiniz?`)) return;
