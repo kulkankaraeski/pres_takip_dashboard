@@ -502,9 +502,9 @@
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim1" required min="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
-                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus1" min="0" value="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus1" min="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                 </div>
-                                <div class="grid grid-cols-1 gap-2 mt-2">
+                                <div class="grid grid-cols-1 gap-2 mt-2 hidden">
                                     <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruşsuz 1 Vardiyalık Üretim Adedi 1</label><input type="number" id="f-durussuz1" min="0" step="0.01" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                 </div>
                             </div>
@@ -518,9 +518,9 @@
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Üretim</label><input type="number" id="f-uretim2" min="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
-                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus2" min="0" value="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
+                                    <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruş (Dk)</label><input type="number" id="f-durus2" min="0" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                 </div>
-                                <div class="grid grid-cols-1 gap-2 mt-2">
+                                <div class="grid grid-cols-1 gap-2 mt-2 hidden">
                                     <div><label class="block text-[10px] font-semibold text-text3 mb-1 uppercase">Duruşsuz 1 Vardiyalık Üretim Adedi 2</label><input type="number" id="f-durussuz2" min="0" step="0.01" class="w-full bg-bg2 border border-border/80 text-text rounded-lg p-2.5 text-xs outline-none focus:border-accent shadow-inner"></div>
                                 </div>
                             </div>
@@ -2001,11 +2001,11 @@ function editProductionRecord(tarih, calisan) {
     $('f-pres1').value = rec.pres1 || '';
     $('f-fason1').value = rec.fason1 || '';
     $('f-uretim1').value = rec.uretim1 || '';
-    $('f-durus1').value = rec.durus1 || 0;
+    $('f-durus1').value = rec.durus1 || '';
     $('f-pres2').value = rec.pres2 || '';
     $('f-fason2').value = rec.fason2 || '';
     $('f-uretim2').value = rec.uretim2 || '';
-    $('f-durus2').value = rec.durus2 || 0;
+    $('f-durus2').value = rec.durus2 || '';
     
     $('form-title').innerHTML = '✎ ÜRETİM KAYDI DÜZENLEME';
     $('btn-submit-form').innerHTML = '💾 DEĞİŞİKLİKLERİ KAYDET';
@@ -2117,6 +2117,7 @@ async function submitForm(e){
     // DİKKAT: Sol taraftaki anahtar isimleri (Tarih, Çalışan vb.) Google Sheets'teki 
     // birinci satırda yer alan sütun başlıklarınızla HARFİ HARFİNE AYNI olmalıdır.
     const payload = {
+        "ID": editModeRecord && editModeRecord.id ? editModeRecord.id : "veri_" + Date.now(),
         "Tarih": trh,
         "Çalışan": cal,
         "Vardiya": $('f-vardiya').value,
