@@ -931,6 +931,9 @@ const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSN
 const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&gid=959090458';
 const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
 const MESAJ_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Mesajlar');
+const FASONLAR_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Fasonlar';
+
+let FASONLAR_RAW = [];
 
 // FORM İÇİN SABİT TANIMLAR (Kendinize Göre Değiştirebilirsiniz)
 const SABIT_CALISANLAR = ["Yusuf Yalçıntaş"];
@@ -2042,6 +2045,21 @@ function checkDuplicate(){
     else warn.classList.add('hidden');
 }
 
+function getIscilik(fasonName) {
+    if(!fasonName || !FASONLAR_RAW) return 0;
+    const fNameLower = fasonName.toLowerCase().trim();
+    for (let i = 0; i < FASONLAR_RAW.length; i++) {
+        const row = FASONLAR_RAW[i];
+        if (row && row.length > 2 && row[1]) {
+            if (row[1].toLowerCase().trim() === fNameLower) {
+                const valStr = String(row[2]).replace(',', '.');
+                return parseFloat(valStr) || 0;
+            }
+        }
+    }
+    return 0;
+}
+
 async function submitForm(e){
     e.preventDefault();
     const trh=$('f-tarih').value.split('-').reverse().join('.'); const cal=$('f-calisan').value;
@@ -2057,8 +2075,21 @@ async function submitForm(e){
     btn.innerHTML = '⏳ İŞLENİYOR...'; 
     btn.disabled = true;
 
-    const vDurussuz1 = parseFloat($('f-durussuz1').value) || 0;
-    const vDurussuz2 = parseFloat($('f-durussuz2').value) || 0;
+    let vDurussuz1 = parseFloat($('f-durussuz1').value) || 0;
+    let vDurussuz2 = parseFloat($('f-durussuz2').value) || 0;
+    
+    const vFason1 = $('f-fason1').value;
+    const vFason2 = $('f-fason2').value;
+    
+    if (vDurussuz1 === 0 && vFason1) {
+        const iscilik1 = getIscilik(vFason1);
+        if (iscilik1 > 0) vDurussuz1 = 450 / iscilik1;
+    }
+    if (vDurussuz2 === 0 && vFason2) {
+        const iscilik2 = getIscilik(vFason2);
+        if (iscilik2 > 0) vDurussuz2 = 450 / iscilik2;
+    }
+
     const vUretim1 = parseFloat($('f-uretim1').value) || 0;
     const vUretim2 = parseFloat($('f-uretim2').value) || 0;
     const vDurus1 = parseFloat($('f-durus1').value) || 0;
@@ -3243,14 +3274,16 @@ function fetchCSV(isBg = false) {
         getCSV(KALIP_URL).catch(()=>''),
         getCSV(DENEME_URL).catch(()=>''),
         getCSV(MALZEME_URL).catch(()=>''),
-        getCSV(MESAJ_URL).catch(()=>'')
-    ]).then(([t, k_text, d_text, m_text, msg_text]) => {
+        getCSV(MESAJ_URL).catch(()=>''),
+        getCSV(FASONLAR_URL).catch(()=>'')
+    ]).then(([t, k_text, d_text, m_text, msg_text, fason_text]) => {
         window.RAW_CSV_ROWS = parseCSV(t);
         RAW=parse(t);
         KALIP_RAW=parseGeneric(k_text);
         DENEME_RAW=parseGeneric(d_text);
         MALZEME_RAW=parseGeneric(m_text);
         MESAJ_RAW=parseGeneric(msg_text);
+        FASONLAR_RAW=parseGeneric(fason_text).r;
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
