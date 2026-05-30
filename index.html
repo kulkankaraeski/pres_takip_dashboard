@@ -1614,12 +1614,55 @@ function rMalzeme() {
         const sortedUrun = Object.entries(urunData).sort((a,b) => b[1] - a[1]);
         const topUrun = sortedUrun[0];
         
-        db.innerHTML = card('border-l-accent3 bg-accent3/5', '📦 TOPLAM MALZEME ÇIKIŞI', n(totalAdet), 'Adet Ürün', '') +
-                       card('border-l-accent bg-accent/5', '👑 EN ÇOK ALIM YAPAN', topPerson ? escapeHTML(topPerson[0].split(' ')[0]) : '-', topPerson ? n(topPerson[1].count) + ' Adet Toplam' : '', '') +
-                       card('border-l-accent4 bg-accent4/5', '🔥 EN ÇOK GİDEN ÜRÜN', topUrun ? escapeHTML(topUrun[0]) : '-', topUrun ? n(topUrun[1]) + ' Adet Tüketildi' : '', '');
+        const topPersonName = topPerson ? topPerson[0] : '';
+        const topUrunName = topUrun ? topUrun[0] : '';
+
+        const clkTotal = `openMalzemeListModal('📦 TÜM MALZEME ÇIKIŞLARI', 'all', '')`;
+        const clkPerson = topPersonName ? `openMalzemeListModal('👑 EN ÇOK ALIM YAPAN: ${safeAttr(topPersonName)}', 'person', '${safeAttr(topPersonName)}')` : '';
+        const clkUrun = topUrunName ? `openMalzemeListModal('🔥 EN ÇOK GİDEN ÜRÜN: ${safeAttr(topUrunName)}', 'urun', '${safeAttr(topUrunName)}')` : '';
+
+        db.innerHTML = card('border-l-accent3 bg-accent3/5', '📦 TOPLAM MALZEME ÇIKIŞI', n(totalAdet), 'Adet Ürün', clkTotal) +
+                       card('border-l-accent bg-accent/5', '👑 EN ÇOK ALIM YAPAN', topPersonName ? escapeHTML(topPersonName.split(' ')[0]) : '-', topPerson ? n(topPerson[1].count) + ' Adet Toplam' : '', clkPerson) +
+                       card('border-l-accent4 bg-accent4/5', '🔥 EN ÇOK GİDEN ÜRÜN', topUrunName ? escapeHTML(topUrunName) : '-', topUrun ? n(topUrun[1]) + ' Adet Tüketildi' : '', clkUrun);
         db.style.display = 'grid';
     } else {
         db.style.display = 'none';
+    }
+}
+
+function openMalzemeListModal(title, filterKey, filterValue) {
+    let data = MALZEME_RAW.r;
+    if (filterKey === 'person') {
+        const idx = MALZEME_RAW.h.findIndex(h => String(h).toLowerCase().trim().includes('personel') || String(h).toLowerCase().trim().includes('çalışan') || String(h).toLowerCase().trim().includes('ad'));
+        if (idx > -1) data = data.filter(row => String(row[idx]||'').trim() === filterValue);
+    } else if (filterKey === 'urun') {
+        const idx = MALZEME_RAW.h.findIndex(h => String(h).toLowerCase().trim().includes('ürün') || String(h).toLowerCase().trim().includes('malzeme'));
+        if (idx > -1) data = data.filter(row => String(row[idx]||'').trim() === filterValue);
+    }
+    
+    const validColIndices = [];
+    MALZEME_RAW.h.forEach((header, idx) => {
+        if (String(header).trim() !== '') validColIndices.push(idx);
+    });
+
+    const thHtml = `<tr>${validColIndices.map(idx=>`<th class="sticky-th px-3 py-2 text-left font-mono text-[10px] text-text3 border-b border-border uppercase whitespace-nowrap bg-bg3/90 backdrop-blur max-w-[150px] truncate" title="${escapeHTML(MALZEME_RAW.h[idx])}">${escapeHTML(MALZEME_RAW.h[idx])}</th>`).join('')}</tr>`;
+    const tbHtml = data.length ? data.map((row) => `<tr class="hover:bg-bg3 border-b border-border/50 text-[11px] transition-colors">${validColIndices.map(colIdx=>`<td class="px-3 py-2 whitespace-nowrap max-w-[150px] truncate" title="${escapeHTML(row[colIdx]||'')}">${escapeHTML(row[colIdx]||'-')}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${validColIndices.length}" class="p-4 text-center text-text3">Kayıt bulunamadı.</td></tr>`;
+    
+    const mdl = $('generic-modal');
+    if (mdl) {
+        const h2 = mdl.querySelector('h2');
+        if (h2) h2.innerText = title;
+        $('gen-mdl-content').innerHTML = \`
+            <div class="overflow-auto max-h-[60vh] rounded border border-border custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>\${thHtml}</thead>
+                    <tbody>\${tbHtml}</tbody>
+                </table>
+            </div>
+        \`;
+        mdl.classList.remove('hidden');
+        mdl.classList.add('flex');
+        setTimeout(() => mdl.classList.remove('opacity-0'), 10);
     }
 }
 
