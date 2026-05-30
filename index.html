@@ -461,6 +461,22 @@
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">FASON ÜRETİM (Çubuklara Tıklayın)</div><div class="h-[320px] relative"><canvas id="f1"></canvas></div></div>
                 <div class="bg-bg2 border border-border rounded p-4"><div class="font-bebas text-base text-text2 mb-2">FASON PERFORMANS</div><div class="h-[320px] relative"><canvas id="f2"></canvas></div></div>
             </div>
+
+            <!-- YENİ: FASON ANALİZİ -->
+            <div class="bg-bg2 border border-border rounded overflow-hidden mb-4 shadow-sm border-accent3/30">
+                <div class="p-4 border-b border-border bg-accent3/10 flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <span class="font-bebas text-lg text-accent3 tracking-[1px] flex items-center gap-2">🎯 FASON - PRES ANALİZİ VE ÖNERİ SİSTEMİ</span>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <input type="text" id="fas-analyze-input" placeholder="Fason Adı Yazın..." list="fas-list" class="bg-bg border border-border text-text rounded px-3 py-2 text-xs outline-none focus:border-accent w-full sm:w-56 shadow-inner" onchange="analyzeFason(this.value)" onkeyup="if(event.key==='Enter') analyzeFason(this.value)">
+                        <datalist id="fas-list"></datalist>
+                        <button onclick="analyzeFason($('fas-analyze-input').value)" class="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded text-xs font-bold transition-colors whitespace-nowrap shadow-sm">ANALİZ ET</button>
+                    </div>
+                </div>
+                <div id="fas-analyze-result" class="p-4 bg-bg3/30 hidden flex-col gap-3">
+                    <!-- Sonuçlar buraya gelecek -->
+                </div>
+            </div>
+
             <div class="bg-bg2 border border-border rounded overflow-hidden">
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">FASON LİSTESİ</span><input type="text" onkeyup="fT('tb-fas',this.value)" placeholder="Fason Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
                 <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-fas"><thead id="th-fas"></thead><tbody id="tb-fas"></tbody></table></div>
@@ -1511,6 +1527,89 @@ function rF(){
     mc('f2','bar',{labels:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.f),datasets:[{label:'Perf %',data:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.a),backgroundColor:cR('accent4',0.75)}]},{idx:'y'});
     $('th-fas').innerHTML=th(['Fason','Hedef (Adet)','Top.Üretim','Ort.Perf','Kayıt']);
     $('tb-fas').innerHTML=fl.map(x=>tr([`<b>${x.f}</b>`, n(x.b), n(x.u), pb(x.a), x.c])).join('');
+}
+
+function analyzeFason(fasonName) {
+    if(!fasonName) {
+        $('fas-analyze-result').classList.add('hidden');
+        return;
+    }
+    const fNameLower = fasonName.toLowerCase().trim();
+    
+    // Bütün kayıtlardan bu fasonun çalıştığı presleri bul
+    const pStats = {};
+    RAW.forEach(r => {
+        [1,2].forEach(i => {
+            const f = r['fason'+i];
+            const p = r['pres'+i];
+            if(f && p && f.toLowerCase().trim() === fNameLower) {
+                if(!pStats[p]) pStats[p] = { runs: 0, perfArr: [], durus: 0, uretim: 0, beklenen: 0 };
+                pStats[p].runs++;
+                if(r['perf'+i]) pStats[p].perfArr.push(Number(r['perf'+i]));
+                pStats[p].durus += Number(r['durus'+i]) || 0;
+                pStats[p].uretim += Number(r['uretim'+i]) || 0;
+                pStats[p].beklenen += Number(r['beklenen'+i]) || 0;
+            }
+        });
+    });
+
+    const presses = Object.entries(pStats).map(([p, v]) => {
+        const avgPerf = v.perfArr.length ? v.perfArr.reduce((a,b)=>a+b,0)/v.perfArr.length : 0;
+        const avgDurus = v.runs ? v.durus / v.runs : 0;
+        // Puanlama mantığı: Ortalama performans baz alınır, duruş süresi eksi puan
+        const score = (avgPerf * 100) - (avgDurus * 0.5); 
+        return { pres: p, runs: v.runs, perf: avgPerf, durus: avgDurus, score: score, uretim: v.uretim };
+    }).sort((a,b) => b.score - a.score);
+
+    const resDiv = $('fas-analyze-result');
+    resDiv.classList.remove('hidden');
+    resDiv.classList.add('flex');
+
+    if(presses.length === 0) {
+        resDiv.innerHTML = `<div class="text-accent2 text-sm font-semibold">⚠️ "${escapeHTML(fasonName)}" fasonu için geçmiş çalışma verisi bulunamadı.</div>`;
+        return;
+    }
+
+    const best = presses[0];
+    
+    let html = `
+    <div class="flex items-start gap-3 bg-accent3/10 p-3 md:p-4 rounded-xl border border-accent3/30">
+        <div class="text-3xl md:text-4xl text-accent3">💡</div>
+        <div class="flex-1">
+            <h3 class="text-accent3 font-bebas text-lg md:text-xl tracking-wider mb-1">PLANLAMA ÖNERİSİ: ${escapeHTML(best.pres)}</h3>
+            <p class="text-text2 text-xs md:text-sm leading-relaxed">
+                Tarihsel verilere göre <b>${escapeHTML(fasonName)}</b> fasonu en verimli <b>${escapeHTML(best.pres)}</b> makinesinde çalışmaktadır. 
+                Bu preste toplam <b>${best.runs}</b> kez çalışılmış olup, ortalama <b>${pb(best.perf)}</b> performans ve vardiya başına ortalama <b class="text-accent2">${Math.round(best.durus)} dk</b> duruş süresi gözlemlenmiştir. 
+                Planlamanızı bu prese yapmanız önerilir.
+            </p>
+        </div>
+    </div>
+    
+    <div class="mt-2">
+        <h4 class="font-bold text-text3 text-xs uppercase mb-2">Bu Fasonun Diğer Preslerdeki Kıyaslaması</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+    `;
+
+    presses.forEach((p, idx) => {
+        const isBest = idx === 0;
+        html += `
+            <div class="bg-bg border ${isBest ? 'border-accent3' : 'border-border/50'} rounded-lg p-3 flex flex-col gap-1 relative overflow-hidden shadow-sm">
+                ${isBest ? '<div class="absolute top-0 right-0 bg-accent3 text-bg font-bold text-[8px] px-1.5 py-0.5 rounded-bl-lg">EN İYİ</div>' : ''}
+                <span class="font-bold text-text text-sm">${escapeHTML(p.pres)}</span>
+                <div class="flex justify-between text-[10px] text-text2 border-t border-border/50 pt-1 mt-1">
+                    <span>Kayıt: <b class="text-text">${p.runs}</b> kez</span>
+                    <span>Ort. Perf: <b>${pb(p.perf)}</b></span>
+                </div>
+                <div class="flex justify-between text-[10px] text-text2">
+                    <span>Toplam Üretim: <b class="text-accent">${n(p.uretim)}</b></span>
+                    <span>Ort. Duruş: <b class="text-accent2">${Math.round(p.durus)} dk</b></span>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div></div>`;
+    resDiv.innerHTML = html;
 }
 
 function rKaliphane() {
