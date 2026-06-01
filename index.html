@@ -152,7 +152,7 @@
         }
     </style>
 </head>
-<body class="p-2 md:p-6 min-h-screen flex flex-col gap-4 md:gap-6 text-sm relative">
+<body class="p-2 md:p-6 min-h-screen flex flex-col gap-2 md:gap-4 text-sm relative overflow-hidden">
 
     <!-- GLOBAL YÜKLEME EKRANI -->
     <div id="global-loader" class="fixed inset-0 bg-[var(--bg)]/95 z-[9999] hidden flex-col items-center justify-center opacity-0 transition-opacity duration-300 backdrop-blur-sm">
@@ -242,7 +242,7 @@
         </div>
     </header>
 
-    <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-x-hidden">
+    <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-4 md:pb-0">
         <!-- YENİ: Geri Dön Butonu -->
         <div id="back-btn-container" class="hidden justify-start mb-4 px-2">
             <button onclick="swT('')" class="px-6 py-3 bg-accent hover:bg-accent/80 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 hover:-translate-x-1">
@@ -250,56 +250,56 @@
             </button>
         </div>
 
-        <nav class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 bg-transparent p-2 w-full max-w-7xl mx-auto my-auto" id="main-nav">
+        <nav class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6 bg-transparent p-2 w-full max-w-7xl mx-auto my-auto" id="main-nav" style="align-content:center">
             <!-- 1. Veri Giriş Formu -->
-            <div onclick="swT('form',this)" class="group cursor-pointer flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+            <div onclick="swT('form',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span class="text-3xl sm:text-5xl md:text-7xl mb-2 sm:mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📝</span>
+                <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📝</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">VERİ GİRİŞ FORMU</span>
             </div>
             
             <!-- 2. Üretim Planı -->
-            <div onclick="swT('plan',this)" class="group cursor-pointer flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+            <div onclick="swT('plan',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span class="text-3xl sm:text-5xl md:text-7xl mb-2 sm:mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📅</span>
+                <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📅</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">ÜRETİM PLANI</span>
             </div>
 
             <!-- 3. Veri Sayfası -->
-            <div onclick="swT('verisayfasi',this)" class="group cursor-pointer flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+            <div onclick="swT('verisayfasi',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span class="text-3xl sm:text-5xl md:text-7xl mb-2 sm:mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📋</span>
+                <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📋</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">VERİ SAYFASI</span>
             </div>
 
             <!-- 4. Üretim Takip Denemeleri -->
-            <div onclick="swT('kayitlar',this)" class="group cursor-pointer flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+            <div onclick="swT('kayitlar',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span class="text-3xl sm:text-5xl md:text-7xl mb-2 sm:mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">🧪</span>
+                <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">🧪</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10 uppercase">ÜRETİM TAKİP DENEMELERİ</span>
             </div>
 
             <!-- 5. Kalıphane -->
-            <div onclick="swT('kaliphane',this)" class="group cursor-pointer flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+            <div onclick="swT('kaliphane',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span class="text-3xl sm:text-5xl md:text-7xl mb-2 sm:mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">🛠️</span>
+                <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">🛠️</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">KALIPHANE</span>
             </div>
 
             <!-- 6. Pres Malzeme Takip -->
-            <div onclick="swT('malzeme',this)" class="group cursor-pointer flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+            <div onclick="swT('malzeme',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span class="text-3xl sm:text-5xl md:text-7xl mb-2 sm:mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📦</span>
+                <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📦</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10 uppercase">PRES MALZEME TAKİP</span>
             </div>
 
             <!-- 7. Alarmlar -->
-            <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="group cursor-pointer flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-accent2/50 hover:border-accent2 shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent2),0.4)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+            <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-accent2/50 hover:border-accent2 shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent2),0.4)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent2/0 to-accent2/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div class="absolute inset-0 bg-accent2/5 animate-pulse"></div>
                 <div class="relative z-10 flex flex-col items-center">
                     <div class="relative mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">
-                        <span class="text-3xl sm:text-5xl md:text-7xl animate-bounce inline-block" style="animation-duration: 2s;">🚨</span>
+                        <span class="text-2xl sm:text-4xl md:text-7xl animate-bounce inline-block" style="animation-duration: 2s;">🚨</span>
                         <span class="absolute -top-2 -right-4 bg-accent2 text-white px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-sm font-bold animate-pulse shadow-md border-2 border-bg">25</span>
                     </div>
                     <span class="text-accent2 font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg">ALARMLAR</span>
@@ -308,9 +308,9 @@
 
             <!-- 8. Raporlar -->
             <div class="relative group z-[9999]" id="nav-dropdown-raporlar">
-                <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex'); m.classList.toggle('opacity-100'); m.classList.toggle('scale-100');" class="w-full h-full cursor-pointer flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden outline-none">
+                <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex'); m.classList.toggle('opacity-100'); m.classList.toggle('scale-100');" class="w-full h-full cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden outline-none">
                     <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <span class="text-3xl sm:text-5xl md:text-7xl mb-2 sm:mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📊</span>
+                    <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📊</span>
                     <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10 flex items-center gap-2">RAPORLAR <span class="text-[12px] opacity-70 transition-transform duration-300 group-hover:translate-y-1">▼</span></span>
                 </button>
                 <div class="absolute left-1/2 -translate-x-1/2 top-[105%] hidden flex-col bg-bg/95 backdrop-blur-2xl border border-accent/40 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.7)] min-w-[280px] w-full md:w-auto z-[9999] overflow-hidden divide-y divide-border/30 transform opacity-0 scale-95 transition-all duration-300 origin-top">
@@ -325,14 +325,14 @@
             </div>
 
             <!-- 9. Yönetim Paneli -->
-            <div id="nav-admin" onclick="swT('admin',this)" class="group cursor-pointer hidden flex-col items-center justify-center p-3 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent hover:bg-accent/10 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+            <div id="nav-admin" onclick="swT('admin',this)" class="group cursor-pointer hidden flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent hover:bg-accent/10 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span class="text-3xl sm:text-5xl md:text-7xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10 group-hover:rotate-90">⚙️</span>
+                <span class="text-2xl sm:text-4xl md:text-7xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10 group-hover:rotate-90">⚙️</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">YÖNETİM PANELİ</span>
             </div>
         </nav>
 
-    <main class="flex-1 relative min-h-[500px]">
+    <main class="flex-1 relative flex flex-col min-h-0" id="main-content-area">
         <div class="panel hidden" id="panel-verisayfasi">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col h-[calc(100vh-100px)] shadow-sm relative">
                 <div class="p-3 md:p-4 border-b border-border flex justify-between items-center bg-bg3 shrink-0">
@@ -1177,25 +1177,26 @@ function swT(t,el){
         document.querySelectorAll('.panel').forEach(e=>{e.classList.remove('active','block');e.classList.add('hidden');});
         document.querySelectorAll('.nav-tab').forEach(e => e.classList.remove('nav-active'));
         $('main-nav').style.display = 'grid'; // Grid olduğu için flex yerine grid diyoruz
+        const mArea = $('main-content-area'); if(mArea) mArea.style.display = 'none';
         if ($('back-btn-container')) $('back-btn-container').classList.add('hidden');
         if ($('back-btn-container')) $('back-btn-container').classList.remove('flex');
         return;
     }
-    
+
     const url = new URL(window.location.href);
     url.searchParams.set('tab', t);
     window.history.replaceState({}, '', url);
-    
+
     document.querySelectorAll('.panel').forEach(e=>{e.classList.remove('active','block');e.classList.add('hidden');});
     document.querySelectorAll('.nav-tab').forEach(e => e.classList.remove('nav-active'));
     if(!el) el = document.querySelector(`.nav-tab[onclick*="'${t}'"]`);
     if(el) el.classList.add('nav-active');
-    
+
     const dropdownBtn = $('raporlar-btn');
     const dropdownMenu = dropdownBtn?.nextElementSibling;
-    if (dropdownMenu) { 
-        dropdownMenu.classList.add('hidden'); 
-        dropdownMenu.classList.remove('flex', 'opacity-100', 'scale-100'); 
+    if (dropdownMenu) {
+        dropdownMenu.classList.add('hidden');
+        dropdownMenu.classList.remove('flex', 'opacity-100', 'scale-100');
     }
     if (dropdownBtn && el && el.closest('#nav-dropdown-raporlar')) {
         dropdownBtn.classList.add('bg-accent/20', 'text-accent', 'border-accent');
@@ -1206,10 +1207,10 @@ function swT(t,el){
     }
 
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
-    
+
     // Hide main-nav and show back button
     $('main-nav').style.display = 'none';
-    if ($('back-btn-container')) {
+    const mArea = $('main-content-area'); if(mArea) mArea.style.display = 'flex';    if ($('back-btn-container')) {
         $('back-btn-container').classList.remove('hidden');
         $('back-btn-container').classList.add('flex');
     }
@@ -1553,7 +1554,7 @@ function checkSystemAlarms() {
                 <div class="absolute inset-0 bg-accent2/5 animate-pulse"></div>
                 <div class="relative z-10 flex flex-col items-center">
                     <div class="relative mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">
-                        <span class="text-3xl sm:text-5xl md:text-7xl animate-bounce inline-block" style="animation-duration: 2s;">🚨</span>
+                        <span class="text-2xl sm:text-4xl md:text-7xl animate-bounce inline-block" style="animation-duration: 2s;">🚨</span>
                         <span class="absolute -top-2 -right-4 bg-accent2 text-white px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-sm font-bold animate-pulse shadow-md border-2 border-bg">${alarmCount}</span>
                     </div>
                     <span class="text-accent2 font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg">ALARMLAR</span>
