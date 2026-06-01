@@ -1897,6 +1897,10 @@ function rP(){
 function rF(){
     const fM={}; RAW.forEach(r=>{[1,2].forEach(i=>{const f=r['fason'+i]; if(f){if(!fM[f])fM[f]={b:0,u:0,pp:[],c:0}; fM[f].b+=Number(r['beklenen'+i])||0; fM[f].u+=Number(r['uretim'+i])||0; if(r['perf'+i])fM[f].pp.push(Number(r['perf'+i])); fM[f].c++;}});});
     const fl=Object.entries(fM).map(([f,v])=>({f, b:v.b, u:v.u, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b,0)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
+    
+    const fasList = $('fas-list');
+    if(fasList) fasList.innerHTML = [...new Set(fl.map(x => x.f))].sort().map(f => `<option value="${escapeHTML(f)}">`).join('');
+
     mc('f1','bar',{labels:fl.slice(0,15).map(x=>x.f),datasets:[{label:'Üretim',data:fl.slice(0,15).map(x=>x.u),backgroundColor:cR('accent',0.75)}]},{idx:'y'});
     mc('f2','bar',{labels:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.f),datasets:[{label:'Perf %',data:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.a),backgroundColor:cR('accent4',0.75)}]},{idx:'y'});
     $('th-fas').innerHTML=th(['Fason','Hedef (Adet)','Top.Üretim','Ort.Perf','Kayıt']);
