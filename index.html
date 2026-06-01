@@ -3714,7 +3714,12 @@ function parse(t){
         let u1=tN(get('uretim1')), p1=tN(get('perf1')), u2=tN(get('uretim2')), p2=tN(get('perf2'));
         let b1=tN(get('hedef1')), b2=tN(get('hedef2'));
         let tU=tN(get('toplamUretim'))||(u1+u2), tB=b1+b2; if(!tU)continue;
-        p.push({tarih:tarih, calisan:cal, vardiya:get('vardiya')||'', pres1:get('pres1')||'', fason1:get('fason1')||'', beklenen1:b1, uretim1:u1, perf1:p1>0&&p1<=1?p1*100:p1, durus1:tN(get('durus1')), pres2:get('pres2')||'', fason2:get('fason2')||'', beklenen2:b2, uretim2:u2, perf2:p2>0&&p2<=1?p2*100:p2, durus2:tN(get('durus2')), tB:tB, tU:tU, tP:(p1&&p2?(p1+p2)/2:p1||p2||0)});
+        p1 = p1>0&&p1<=1?p1*100:p1;
+        p2 = p2>0&&p2<=1?p2*100:p2;
+        let isK1 = get('pres1') || get('fason1') || b1 > 0 || u1 > 0;
+        let isK2 = get('pres2') || get('fason2') || b2 > 0 || u2 > 0;
+        let calcTP = (isK1 && isK2) ? ((p1||0) + (p2||0)) / 2 : (isK1 ? (p1||0) : (isK2 ? (p2||0) : (p1||p2||0)));
+        p.push({tarih:tarih, calisan:cal, vardiya:get('vardiya')||'', pres1:get('pres1')||'', fason1:get('fason1')||'', beklenen1:b1, uretim1:u1, perf1:p1, durus1:tN(get('durus1')), pres2:get('pres2')||'', fason2:get('fason2')||'', beklenen2:b2, uretim2:u2, perf2:p2, durus2:tN(get('durus2')), tB:tB, tU:tU, tP:calcTP});
     } return p.map(x=>{if(x.tP>0&&x.tP<=1)x.tP*=100; return x;});
 }
 
