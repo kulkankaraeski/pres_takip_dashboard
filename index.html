@@ -307,21 +307,10 @@
             </div>
 
             <!-- 8. Raporlar -->
-            <div class="relative group z-[9999]" id="nav-dropdown-raporlar">
-                <button id="raporlar-btn" onclick="const m=this.nextElementSibling; m.classList.toggle('hidden'); m.classList.toggle('flex'); m.classList.toggle('opacity-100'); m.classList.toggle('scale-100');" class="w-full h-full cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden outline-none">
-                    <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📊</span>
-                    <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10 flex items-center gap-2">RAPORLAR <span class="text-[12px] opacity-70 transition-transform duration-300 group-hover:translate-y-1">▼</span></span>
-                </button>
-                <div class="absolute left-1/2 -translate-x-1/2 top-[105%] hidden flex-col bg-bg/95 backdrop-blur-2xl border border-accent/40 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.7)] min-w-[280px] w-full md:w-auto z-[9999] overflow-hidden divide-y divide-border/30 transform opacity-0 scale-95 transition-all duration-300 origin-top">
-                    <div onclick="swT('gunluk',this)" class="nav-tab border-0 rounded-none bg-transparent text-text hover:bg-accent hover:text-white w-full text-left px-6 py-4 transition-all duration-300 font-bold cursor-pointer flex items-center gap-4 hover:pl-8"><span class="text-2xl drop-shadow-md">📊</span> GÜNLÜK RAPOR</div>
-                    <div onclick="swT('haftalik',this)" class="nav-tab border-0 rounded-none bg-transparent text-text2 hover:bg-accent hover:text-white w-full text-left px-6 py-4 transition-all duration-300 font-semibold cursor-pointer flex items-center gap-4 hover:pl-8"><span class="text-2xl drop-shadow-md">📅</span> HAFTALIK RAPOR</div>
-                    <div onclick="swT('aylik',this)" class="nav-tab border-0 rounded-none bg-transparent text-text2 hover:bg-accent hover:text-white w-full text-left px-6 py-4 transition-all duration-300 font-semibold cursor-pointer flex items-center gap-4 hover:pl-8"><span class="text-2xl drop-shadow-md">🗓</span> AYLIK RAPOR</div>
-                    <div onclick="swT('genel',this)" class="nav-tab border-0 rounded-none bg-transparent text-text2 hover:bg-accent hover:text-white w-full text-left px-6 py-4 transition-all duration-300 font-semibold cursor-pointer flex items-center gap-4 hover:pl-8"><span class="text-2xl drop-shadow-md">📈</span> GENEL ÖZET</div>
-                    <div onclick="swT('calisan',this)" class="nav-tab border-0 rounded-none bg-transparent text-text2 hover:bg-accent hover:text-white w-full text-left px-6 py-4 transition-all duration-300 font-semibold cursor-pointer flex items-center gap-4 hover:pl-8"><span class="text-2xl drop-shadow-md">👥</span> ÇALIŞAN PERFORMANSI</div>
-                    <div onclick="swT('pres',this)" class="nav-tab border-0 rounded-none bg-transparent text-text2 hover:bg-accent hover:text-white w-full text-left px-6 py-4 transition-all duration-300 font-semibold cursor-pointer flex items-center gap-4 hover:pl-8"><span class="text-2xl drop-shadow-md">⚙️</span> PRES MAKİNE</div>
-                    <div onclick="swT('fason',this)" class="nav-tab border-0 rounded-none bg-transparent text-text2 hover:bg-accent hover:text-white w-full text-left px-6 py-4 transition-all duration-300 font-semibold cursor-pointer flex items-center gap-4 hover:pl-8"><span class="text-2xl drop-shadow-md">🏭</span> FASON DETAY</div>
-                </div>
+            <div id="nav-raporlar-btn" onclick="swT('raporlar_menu',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📊</span>
+                <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10 uppercase">RAPORLAR</span>
             </div>
 
             <!-- 9. Yönetim Paneli -->
@@ -333,6 +322,39 @@
         </nav>
 
     <main class="flex-1 relative flex flex-col min-h-0" id="main-content-area">
+        <div class="panel hidden" id="panel-raporlar_menu">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 p-2 md:p-6 w-full max-w-6xl mx-auto h-full items-center justify-center content-center">
+                <div onclick="swT('gunluk',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-4 md:p-8 rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group aspect-square">
+                    <span class="text-4xl md:text-7xl mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">📊</span>
+                    <span class="text-text font-bold text-center tracking-wider text-xs md:text-lg">GÜNLÜK RAPOR</span>
+                </div>
+                <div onclick="swT('haftalik',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-4 md:p-8 rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group aspect-square">
+                    <span class="text-4xl md:text-7xl mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">📅</span>
+                    <span class="text-text font-bold text-center tracking-wider text-xs md:text-lg">HAFTALIK RAPOR</span>
+                </div>
+                <div onclick="swT('aylik',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-4 md:p-8 rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group aspect-square">
+                    <span class="text-4xl md:text-7xl mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">🗓</span>
+                    <span class="text-text font-bold text-center tracking-wider text-xs md:text-lg">AYLIK RAPOR</span>
+                </div>
+                <div onclick="swT('genel',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-4 md:p-8 rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group aspect-square">
+                    <span class="text-4xl md:text-7xl mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">📈</span>
+                    <span class="text-text font-bold text-center tracking-wider text-xs md:text-lg">GENEL ÖZET</span>
+                </div>
+                <div onclick="swT('calisan',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-4 md:p-8 rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group aspect-square">
+                    <span class="text-4xl md:text-7xl mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">👥</span>
+                    <span class="text-text font-bold text-center tracking-wider text-xs md:text-lg">ÇALIŞAN PERFORMANSI</span>
+                </div>
+                <div onclick="swT('pres',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-4 md:p-8 rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group aspect-square">
+                    <span class="text-4xl md:text-7xl mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">⚙️</span>
+                    <span class="text-text font-bold text-center tracking-wider text-xs md:text-lg">PRES MAKİNE</span>
+                </div>
+                <div onclick="swT('fason',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-4 md:p-8 rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group aspect-square">
+                    <span class="text-4xl md:text-7xl mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">🏭</span>
+                    <span class="text-text font-bold text-center tracking-wider text-xs md:text-lg">FASON DETAY</span>
+                </div>
+            </div>
+        </div>
+
         <div class="panel hidden" id="panel-verisayfasi">
             <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col h-[calc(100vh-100px)] shadow-sm relative">
                 <div class="p-3 md:p-4 border-b border-border flex justify-between items-center bg-bg3 shrink-0">
@@ -1168,7 +1190,18 @@ function mc(id,t,d,o={}){
 }
 
 function swT(t,el){
-    cTab=t; 
+    cTab=t;
+
+    const appMain = $('app-main');
+    if(appMain) {
+        if (!t || t === 'raporlar_menu') {
+            appMain.classList.remove('overflow-y-auto');
+            appMain.classList.add('overflow-hidden');
+        } else {
+            appMain.classList.add('overflow-y-auto');
+            appMain.classList.remove('overflow-hidden');
+        }
+    }
 
     if (!t) {
         const url = new URL(window.location.href);
@@ -1192,33 +1225,19 @@ function swT(t,el){
     if(!el) el = document.querySelector(`.nav-tab[onclick*="'${t}'"]`);
     if(el) el.classList.add('nav-active');
 
-    const dropdownBtn = $('raporlar-btn');
-    const dropdownMenu = dropdownBtn?.nextElementSibling;
-    if (dropdownMenu) {
-        dropdownMenu.classList.add('hidden');
-        dropdownMenu.classList.remove('flex', 'opacity-100', 'scale-100');
-    }
-    if (dropdownBtn && el && el.closest('#nav-dropdown-raporlar')) {
-        dropdownBtn.classList.add('bg-accent/20', 'text-accent', 'border-accent');
-        dropdownBtn.classList.remove('bg-bg3', 'text-text2', 'border-border');
-    } else if (dropdownBtn) {
-        dropdownBtn.classList.remove('bg-accent/20', 'text-accent', 'border-accent');
-        dropdownBtn.classList.add('bg-bg3', 'text-text2', 'border-border');
-    }
-
     const p=$('panel-'+t); if(p){p.classList.remove('hidden'); setTimeout(()=>p.classList.add('active'),10);}
 
     // Hide main-nav and show back button
     $('main-nav').style.display = 'none';
-    const mArea = $('main-content-area'); if(mArea) mArea.style.display = 'flex';    if ($('back-btn-container')) {
+    const mArea = $('main-content-area'); if(mArea) mArea.style.display = 'flex';
+    if ($('back-btn-container')) {
         $('back-btn-container').classList.remove('hidden');
         $('back-btn-container').classList.add('flex');
     }
-        
-        if(t==='kaliphane') rKaliphane(); 
-        if(t==='malzeme') rMalzeme(); 
-        if(t==='kayitlar') rKayitlar(); 
-        if(t==='plan') rPlan(); 
+
+        if(t==='kaliphane') rKaliphane();
+        if(t==='malzeme') rMalzeme();
+        if(t==='kayitlar') rKayitlar();        if(t==='plan') rPlan(); 
         if(t==='admin') rAdmin();
         if(t==='verisayfasi') rVerisayfasi();
         
@@ -4115,7 +4134,8 @@ let voiceState = 'idle';
 let tempVoiceData = {};
 
 function applyVoiceFilter(tab, query) {
-    const pageDict = { 'malzeme': 'tb-malzeme', 'kaliphane': 'tb-kalip', 'fason': 'tb-fas', 'pres': 'tb-pre', 'calisan': 'tb-cal', 'aylik': 'tb-ay', 'haftalik': 'tb-haf', 'gunluk': 'tb-gun' };
+    if (!query) return;
+    const pageDict = { 'malzeme': 'tb-malzeme', 'kaliphane': 'tb-kalip', 'fason': 'tb-fas', 'pres': 'tb-pre', 'calisan': 'tb-cal', 'aylik': 'tb-ay', 'haftalik': 'tb-haf', 'gunluk': 'tb-gun', 'verisayfasi': 'tb-verisayfasi' };
     if (tab === 'kayitlar') {
         const sb = $('kayit-search');
         if (sb) { sb.value = query; filterKayitlar(query); }
@@ -4173,12 +4193,12 @@ function extractEntities(text) {
   // PERSON EXTRACTION (Fuzzy / Substring match allowing suffixes like "yusuf'un")
   const allNames = [...new Set([...RAW.map(r => r.calisan), ...Object.keys(USER_DATA)])];
   // Remove apostrophes for easier matching
-  const cleanText = text.replace(/'[a-z]+/g, '').toLowerCase(); 
+  const cleanTextForPerson = text.replace(/'[a-z]+/g, '').toLowerCase(); 
   let foundPerson = null;
   for (const name of allNames) {
       const nameParts = name.toLowerCase().split(' ');
       // If any part of the name (longer than 2 chars) is in the clean text
-      if (nameParts.some(part => part.length > 2 && cleanText.includes(part))) {
+      if (nameParts.some(part => part.length > 2 && cleanTextForPerson.includes(part))) {
           foundPerson = name;
           break;
       }
@@ -4198,6 +4218,18 @@ function extractEntities(text) {
   const numMatch = text.match(/(\d+)\s*(bin)?(?:\s*adet)?/);
   if (numMatch) entities.number = parseInt(numMatch[1]) * (numMatch[2] ? 1000 : 1);
   
+  // GENERIC SEARCH QUERY EXTRACTION
+  const searchMatch = text.match(/(?:bana\s+)?(.+?)\s*(?:bul|ara|göster|getir)/i);
+  if (searchMatch) {
+      let q = searchMatch[1];
+      const stopWords = ['günlük', 'bugün', 'haftalık', 'aylık', 'alarm', 'çalışan', 'personel', 'pres', 'makine', 'fason', 'form', 'plan', 'yönetim', 'admin', 'kalıphane', 'kalıp', 'kalıbı', 'kalıbını', 'kalıbında', 'malzeme', 'deneme', 'kayıtlar', 'kayıtlarda', 'kayıtlarında', 'genel', 'sayfasında', 'sayfasını', 'sayfasından', 'sayfasına', 'sayfası', 'sekmesinde', 'sekmesini', 'sekmesinden', 'sekmesine', 'sekmesi', 'bölümü', 'bölümünü', 'bölümünde', 'tablosunda', 'tablosunu', 'tablosu', 'listesinde', 'listesini', 'listesi', 'içinde', 'içinden', 'verilerinde', 'verilerini', 'verileri', 'verilerde', 'kısmında', 'kısmından', 'kısmını', 've', 'ile', 'bana', 'bizi', 'hemen', 'lütfen', 'hızlıca', 'şimdi', 'bütün', 'tüm'];
+      for (const word of stopWords) {
+          const regex = new RegExp(`\\b${word}(da|de|ta|te|nda|nde|na|ne|ı|i|u|ü|lar|ler|larda|lerde)?\\b`, 'gi');
+          q = q.replace(regex, ' ');
+      }
+      entities.searchQuery = q.trim();
+  }
+
   return entities;
 }
 
@@ -4328,20 +4360,21 @@ const VOICE_COMMANDS = [
   {
     name: 'navigate',
     patterns: [
-      { kw: ['günlük', 'bugün'],          tab: 'gunluk' },
-      { kw: ['haftalık', 'bu hafta'],     tab: 'haftalik' },
-      { kw: ['aylık', 'bu ay'],           tab: 'aylik' },
-      { kw: ['alarm', 'uyarı'],           tab: 'alarm' },
-      { kw: ['çalışan', 'personel'],      tab: 'calisan' },
-      { kw: ['pres', 'makine', 'tezgah'], tab: 'pres' },
-      { kw: ['fason'],                    tab: 'fason' },
-      { kw: ['form', 'kayıt gir'],        tab: 'form' },
-      { kw: ['plan', 'üretim planı'],     tab: 'plan' },
-      { kw: ['yönetim', 'admin'],         tab: 'admin',  adminOnly: true },
-      { kw: ['kalıphane', 'kalıp'],       tab: 'kaliphane' },
-      { kw: ['malzeme'],                  tab: 'malzeme' },
-      { kw: ['deneme', 'kayıtlar'],       tab: 'kayitlar' },
-      { kw: ['genel özet', 'tüm veriler'],tab: 'genel' }
+      { kw: ['günlük', 'bugün', 'günlük rapor'],          tab: 'gunluk' },
+      { kw: ['haftalık', 'bu hafta', 'haftalık rapor'],     tab: 'haftalik' },
+      { kw: ['aylık', 'bu ay', 'aylık rapor'],           tab: 'aylik' },
+      { kw: ['alarm', 'uyarı', 'alarmlar'],           tab: 'alarm' },
+      { kw: ['çalışan', 'personel', 'çalışan performansı', 'kişi performansı'],      tab: 'calisan' },
+      { kw: ['pres', 'makine', 'tezgah', 'presler', 'pres makine'], tab: 'pres' },
+      { kw: ['fason', 'fasonlar', 'fason detay'],                    tab: 'fason' },
+      { kw: ['form', 'kayıt gir', 'veri giriş', 'veri girişi'],        tab: 'form' },
+      { kw: ['plan', 'üretim planı', 'planlar'],     tab: 'plan' },
+      { kw: ['yönetim', 'admin', 'ayarlar', 'yönetici'],         tab: 'admin',  adminOnly: true },
+      { kw: ['kalıphane', 'kalıp', 'kalıplar'],       tab: 'kaliphane' },
+      { kw: ['malzeme', 'malzemeler', 'pres malzeme'],                  tab: 'malzeme' },
+      { kw: ['deneme', 'kayıtlar', 'üretim takip', 'üretim takip denemeleri'],       tab: 'kayitlar' },
+      { kw: ['veri sayfası', 'veri listesi', 'veriler'],       tab: 'verisayfasi' },
+      { kw: ['genel özet', 'tüm veriler', 'genel'],tab: 'genel' }
     ],
     handler(match, entities) {
       if (match.adminOnly && LOGGED_IN_USER?.role !== 'admin') {
@@ -4350,8 +4383,12 @@ const VOICE_COMMANDS = [
       const el = document.querySelector(`.nav-tab[onclick*="'${match.tab}'"]`);
       if (el) swT(match.tab, el);
       speakText(`${el ? el.innerText.replace(/[^a-zA-ZçğıöşüÇĞIÖŞÜ ]/g, '').trim() : match.tab} sayfası açıldı.`);
-      if (entities.person) setTimeout(() => applyVoiceFilter(match.tab, entities.person), 500);
-      if (entities.machine) setTimeout(() => applyVoiceFilter(match.tab, entities.machine), 500);
+      
+      let queryToApply = entities.searchQuery || entities.person || entities.machine;
+      if (queryToApply) {
+          setTimeout(() => applyVoiceFilter(match.tab, queryToApply), 500);
+          speakText(`Sayfa içinde ${queryToApply} aranıyor.`);
+      }
     }
   },
   {
