@@ -1217,6 +1217,10 @@ function swT(t,el){
         const mArea = $('main-content-area'); if(mArea) mArea.style.display = 'none';
         if ($('back-btn-container')) $('back-btn-container').classList.add('hidden');
         if ($('back-btn-container')) $('back-btn-container').classList.remove('flex');
+        if (appHeader) {
+            appHeader.classList.remove('hidden');
+            appHeader.classList.add('flex');
+        }
         return;
     }
 
