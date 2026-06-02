@@ -2730,7 +2730,7 @@ function cancelEdit() {
 
 async function deleteProductionRecord(tarih, calisan) {
     if(!confirm(`${tarih} tarihli ${calisan} kaydÄ±nÄ± SÄ°LMEK istediÄŸinize emin misiniz?`)) return;
-    const payload = { action: "deleteRecord", Tarih: tarih, Ã‡alÄ±ÅŸan: calisan };
+    const payload = { action: "deleteRecord", Tarih: tarih, "\u00c7al\u0131\u015fan": calisan };
     try {
         toast('Siliniyor...', 'warn');
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
@@ -4833,5 +4833,20 @@ function processVoiceCommand(command) {
   showVoiceOverlay(command, 'unknown', entities);
 }
 </script>
+  <script>
+    window.addEventListener('unhandledrejection', function (event) {
+      const reason = event.reason;
+      if (!reason) return;
+
+      const msg = typeof reason === 'string' ? reason : (reason.message || '');
+      const isExtensionNoise = (
+        reason.name === 'n' && reason.code === 403 ||
+        String(msg).includes('chrome-extension://') ||
+        String(msg).includes('message channel closed before a response was received')
+      );
+
+      if (isExtensionNoise) event.preventDefault();
+    });
+  </script>
 </body>
 </html>
