@@ -3728,13 +3728,13 @@ function parse(t){
         calisan: headers.findIndex(h => h.includes('çalışan') || h.includes('calisan') || h.includes('ad')),
         vardiya: headers.findIndex(h => h.includes('vardiya')),
         pres1: headers.findIndex(h => h === 'pres1' || h.includes('pres 1')),
-        fason1: headers.findIndex(h => h === 'fason1' || h.includes('fason 1')),
-        uretim1: headers.findIndex(h => h.includes('üretilen adet 1') || h.includes('uretilen adet 1')),
-        durus1: headers.findIndex(h => h.includes('duruş süresi 1') || h.includes('durus suresi 1') || h.includes('duruş 1')),
+            fason1: headers.findIndex(h => h === 'fason1' || h.includes('fason 1') || h === 'fason' || h.includes('ürün 1') || h === 'ürün'),
+            uretim1: headers.findIndex(h => h.includes('üretilen adet 1') || h.includes('uretilen adet 1') || h === 'üretim 1'),
+            durus1: headers.findIndex(h => h.includes('duruş süresi 1') || h.includes('durus suresi 1') || h.includes('duruş 1') || h === 'duruş'),
         pres2: headers.findIndex(h => h === 'pres2' || h.includes('pres 2')),
-        fason2: headers.findIndex(h => h === 'fason2' || h.includes('fason 2')),
-        uretim2: headers.findIndex(h => h.includes('üretilen adet 2') || h.includes('uretilen adet 2')),
-        durus2: headers.findIndex(h => h.includes('duruş süresi 2') || h.includes('durus suresi 2') || h.includes('duruş 2')),
+            fason2: headers.findIndex(h => h === 'fason2' || h.includes('fason 2') || h.includes('ürün 2')),
+            uretim2: headers.findIndex(h => h.includes('üretilen adet 2') || h.includes('uretilen adet 2') || h === 'üretim 2'),
+            durus2: headers.findIndex(h => h.includes('duruş süresi 2') || h.includes('durus suresi 2') || h.includes('duruş 2') || h === 'duruş'),
         perf1: headers.findIndex(h => h.includes('yüzdesi (performans)') && !h.includes('2')),
         perf2: headers.findIndex(h => h.includes('yüzdesi (performans)2') || (h.includes('performans') && h.includes('2'))),
         hedef1: headers.findIndex(h => (h.includes('üretilmesi gereken') && h.includes('1')) || h === 'hedef 1'),
@@ -3790,13 +3790,17 @@ function fetchCSV(isBg = false) {
         ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
     }
     const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
+        
+        // CANLI VERİ İÇİN CACHE BUSTER (Zaman damgası ekleyerek tarayıcı ve sunucu önbelleğini kırar)
+        const ts = '&_t=' + Date.now();
+        
     Promise.all([
-        getCSV(SHEET_URL),
-        getCSV(KALIP_URL).catch(()=>''),
-        getCSV(DENEME_URL).catch(()=>''),
-        getCSV(MALZEME_URL).catch(()=>''),
-        getCSV(MESAJ_URL).catch(()=>''),
-        getCSV(FASONLAR_URL).catch(()=>'')
+            getCSV(SHEET_URL + ts),
+            getCSV(KALIP_URL + ts).catch(()=>''),
+            getCSV(DENEME_URL + ts).catch(()=>''),
+            getCSV(MALZEME_URL + ts).catch(()=>''),
+            getCSV(MESAJ_URL + ts).catch(()=>''),
+            getCSV(FASONLAR_URL + ts).catch(()=>'')
     ]).then(([t, k_text, d_text, m_text, msg_text, fason_text]) => {
         window.RAW_CSV_ROWS = parseCSV(t);
         RAW=parse(t);
