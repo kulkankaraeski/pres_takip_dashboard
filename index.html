@@ -1210,6 +1210,8 @@ function swT(t,el){
         }
     }
 
+    const appHeader = $('app-header');
+
     if (!t) {
         const url = new URL(window.location.href);
         url.searchParams.delete('tab');
@@ -1240,6 +1242,11 @@ function swT(t,el){
     if ($('back-btn-container')) {
         $('back-btn-container').classList.remove('hidden');
         $('back-btn-container').classList.add('flex');
+    }
+    
+    if (appHeader) {
+        appHeader.classList.add('hidden');
+        appHeader.classList.remove('flex');
     }
 
         if(t==='kaliphane') rKaliphane();
