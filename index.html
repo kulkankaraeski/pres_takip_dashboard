@@ -1045,9 +1045,37 @@
 
 <script src="utils.js"></script>
 <script>
-// Chrome Eklentilerinden veya üçüncü parti araçlardan (örn: content.js) kaynaklanan Promise hatalarını konsolda gizle.
+// Chrome eklentileri / üçüncü taraf içerikleri kaynaklı gürültülü Promise hatalarını (ör. content.js, message channel kapanması)
+// konsolda göstermemek ve uygulama içi gerçek hataları korumak için filtrele.
+function isLikelyNoisePromiseReason(reason) {
+    if (!reason) return true;
+
+    const safeText = (value) => {
+        if (typeof value === 'string') return value;
+        if (value instanceof Error) return `${value.message || ''}\n${value.stack || ''}`;
+        if (value && typeof value === 'object') {
+            if (typeof value.message === 'string') return `${value.message}\n${value.stack || ''}\n${JSON.stringify(value)}`;
+            return String(value);
+        }
+        return String(value);
+    };
+
+    const text = safeText(reason).toLowerCase();
+    return text.includes('content.js') ||
+        text.includes('chrome-extension://') ||
+        text.includes('a listener indicated an asynchronous response by returning true') ||
+        text.includes('message channel closed before a response was received') ||
+        text === '[object object]';
+}
+
 window.addEventListener('unhandledrejection', function(event) {
-    if (event.reason && (String(event.reason.stack || event.reason).includes('content.js') || String(event.reason) === '[object Object]')) {
+    if (isLikelyNoisePromiseReason(event.reason)) {
+        event.preventDefault();
+    }
+});
+
+window.addEventListener('error', function(event) {
+    if (isLikelyNoisePromiseReason(event.error || event.message || event.reason)) {
         event.preventDefault();
     }
 });
