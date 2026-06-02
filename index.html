@@ -159,7 +159,7 @@
         }
     </style>
 </head>
-<body class="p-2 md:p-6 min-h-screen flex flex-col gap-2 md:gap-4 text-sm relative overflow-hidden">
+<body class="p-2 md:p-6 h-[100dvh] w-full flex flex-col gap-2 md:gap-4 text-sm relative overflow-hidden">
 
     <!-- GLOBAL YÜKLEME EKRANI -->
     <div id="global-loader" class="fixed inset-0 bg-[var(--bg)]/95 z-[9999] hidden flex-col items-center justify-center opacity-0 transition-opacity duration-300 backdrop-blur-sm">
@@ -185,7 +185,7 @@
         </div>
     </div>
 
-    <header id="app-header" class="hidden flex-col 2xl:flex-row gap-3 md:gap-4 justify-between items-center bg-bg2/90 backdrop-blur-md border border-border/50 p-3 md:p-5 rounded-2xl shadow-xl relative overflow-hidden w-full">
+    <header id="app-header" class="hidden flex-col 2xl:flex-row gap-3 md:gap-4 justify-between items-center bg-bg2/90 backdrop-blur-md border border-border/50 p-3 md:p-5 rounded-2xl shadow-xl relative overflow-hidden w-full shrink-0 z-10">
         <div class="absolute top-0 left-0 w-1 h-full bg-accent"></div>
         
         <div class="flex flex-col items-center 2xl:items-start bg-bg3/80 border border-border/50 rounded-xl p-3 shadow-sm shrink-0 w-full sm:w-auto transition-transform hover:-translate-y-0.5">
@@ -328,7 +328,7 @@
             </div>
         </nav>
 
-    <main class="flex-1 relative flex flex-col min-h-0" id="main-content-area">
+    <main class="flex-none w-full relative flex flex-col min-h-full" id="main-content-area">
         <div class="panel hidden h-full w-full" id="panel-raporlar_menu">
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6 p-2 md:p-6 w-full max-w-6xl mx-auto h-full" style="grid-auto-rows: minmax(0, 1fr); align-content: stretch;">
                 <div onclick="swT('gunluk',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
