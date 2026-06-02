@@ -1393,19 +1393,14 @@ async function getCSVFromGVizScript(url) {
 
 async function getCSV(url) {
     const proxies = [
-        '',
-        'https://r.jina.ai/http://',
-        'https://r.jina.ai/https://',
-        'https://corsproxy.io/?',
-        'https://api.allorigins.win/raw?url=',
-        'https://thingproxy.freeboard.io/fetch/'
+        '', // Önce doğrudan istek (CORS kapalıysa hata verir, hemen geçer)
+        'https://api.allorigins.win/raw?url=' // Güvenilir tek proxy
     ];
 
     if (typeof url === 'string' && url.includes('/gviz/tq')) {
         try {
             return await getCSVFromGVizScript(url);
         } catch (e) {
-            // proxy zinciri yine denensin
             console.warn('GViz script fallback başarısız oldu, proxy zinciri deneniyor:', e.message);
         }
     }
@@ -1413,20 +1408,12 @@ async function getCSV(url) {
     const normalizeTextPayload = (text) => {
         if (!text || typeof text !== 'string') return '';
         let t = text.trim();
-
-        // r.jina.ai -> "Markdown Content:" bloğu
-        const mdMarker = 'Markdown Content:';
-        if (t.includes(mdMarker)) t = t.split(mdMarker)[1].trim();
-
-        // Bazı proxy servisleri JSON içerir
         if (t.startsWith('{')) {
             try {
                 const parsed = JSON.parse(t);
                 t = (parsed.contents || parsed.data?.contents || '').trim();
             } catch {}
         }
-
-        // HTML dönen durumlar gerçek CSV olmaz
         if (t.includes('<html') || t.includes('<!DOCTYPE')) return '';
         return t;
     };
@@ -1444,19 +1431,23 @@ async function getCSV(url) {
         const proxyUrl = (() => {
             const p = proxies[i];
             if (!p) return url;
-            if (p.includes('r.jina.ai/')) return p + url;
             return p + encodeURIComponent(url);
         })();
 
         try {
-            let r = await fetch(proxyUrl, {cache: 'no-store'});
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000); // 6 saniye zaman aşımı
+            
+            let r = await fetch(proxyUrl, {cache: 'no-store', signal: controller.signal});
+            clearTimeout(timeoutId);
+            
             if (!r.ok) {
                 lastErr = new Error('HTTP ' + r.status);
                 continue;
             }
             let t = normalizeTextPayload(await r.text());
             if (!looksLikeCSV(t)) {
-                lastErr = new Error('HTML Redirect');
+                lastErr = new Error('Geçersiz Veri Formatı');
                 continue;
             }
             return t;
@@ -1464,7 +1455,7 @@ async function getCSV(url) {
             lastErr = e;
         }
     }
-    throw new Error('Ağ hatası veya proxy erişimi sağlanamadı: ' + (lastErr ? lastErr.message : ''));
+    throw new Error('Ağ hatası veya veri erişimi sağlanamadı: ' + (lastErr ? lastErr.message : ''));
 }
 
 function escapeHTML(str) {
