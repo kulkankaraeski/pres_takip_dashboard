@@ -824,7 +824,7 @@
                             <form id="admin-u-form" onsubmit="saveUserObj(event)" class="space-y-3">
                                 <div><label class="block text-[10px] text-text3 mb-1 uppercase">Ad Soyad</label><input type="text" id="admin-u-name" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
                                 <div><label class="block text-[10px] text-text3 mb-1 uppercase">Åifre</label><input type="text" id="admin-u-pass" required class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Rol</label><select id="admin-u-role" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="user">Ãœye (Normal)</option><option value="admin">YÃ¶netici</option></select></div>
+                                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Rol</label><select id="admin-u-role" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"><option value="user">Ãœye (Normal)</option><option value="admin">YÃ¶netici</option><option value="planlama">Planlama</option><option value="misafir">Misafir</option><option value="operator">OperatÃ¶r</option></select></div>
                                 <div><label class="block text-[10px] text-text3 mb-1 uppercase">FotoÄŸraf URL (Ä°steÄŸe BaÄŸlÄ±)</label><input type="url" id="admin-u-photo" placeholder="https://..." class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
                                 <div class="flex gap-2 pt-2">
                                     <button type="submit" class="flex-1 px-3 py-2 bg-accent hover:bg-accent/80 text-bg2 rounded font-mono text-[10px] font-bold transition-colors">KAYDET</button>
@@ -1155,6 +1155,52 @@ function normalizeField(value) {
         .replace(/\u00A0/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
+}
+
+const ROLE_OPTIONS = {
+    admin: { label: 'YÖNETİCİ', isAdmin: true, shortLabel: 'YÖNETİCİ', tooltip: 'Tam Yetki: Tüm sayfalara erişim, Ekle/Sil/Düzenle' },
+    user: { label: 'ÜYE', isAdmin: false, shortLabel: 'ÜYE', tooltip: 'Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar' },
+    planlama: { label: 'PLANLAMA', isAdmin: false, shortLabel: 'PLANLAMA', tooltip: 'Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar' },
+    misafir: { label: 'MİSAFİR', isAdmin: false, shortLabel: 'MİSAFİR', tooltip: 'Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar' },
+    operator: { label: 'OPERATÖR', isAdmin: false, shortLabel: 'OPERATÖR', tooltip: 'Kısıtlı Yetki: Yalnızca veri girişi ve atanmış raporlar' }
+};
+
+function normalizeRole(value) {
+    const normalized = normalizeText(value || 'user');
+    if (normalized.includes('yonetici') || normalized.includes('admin')) return 'admin';
+    if (normalized.includes('planlama') || normalized === 'plan' || normalized === 'planner') return 'planlama';
+    if (normalized.includes('misafir') || normalized === 'guest' || normalized === 'ziyaretci') return 'misafir';
+    if (normalized.includes('operator') || normalized === 'operat' || normalized === 'op') return 'operator';
+    if (normalized.includes('uye') || normalized.includes('user') || normalized === 'personel' || normalized === 'calisan' || normalized === 'normal') return 'user';
+    return 'user';
+}
+
+function getRoleMeta(role) {
+    return ROLE_OPTIONS[normalizeRole(role)] || ROLE_OPTIONS.user;
+}
+
+function renderRoleBadge(role, compact = false) {
+    const meta = getRoleMeta(role);
+    if (compact) {
+        return meta.isAdmin
+            ? `<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold cursor-help" title="${meta.tooltip}">${meta.shortLabel}</span>`
+            : `<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px] cursor-help" title="${meta.tooltip}">${meta.shortLabel}</span>`;
+    }
+    return meta.isAdmin
+        ? `<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="${meta.tooltip}">${meta.shortLabel}</span>`
+        : `<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="${meta.tooltip}">${meta.shortLabel}</span>`;
+}
+
+function roleLabel(role) {
+    return getRoleMeta(role).label;
+}
+
+function normalizeUserRoles() {
+    Object.keys(USER_DATA || {}).forEach(name => {
+        if (USER_DATA[name]) {
+            USER_DATA[name].role = normalizeRole(USER_DATA[name].role);
+        }
+    });
 }
 
 function normalizeFasonKey(value) {
@@ -3372,7 +3418,7 @@ function renderContacts(filter) {
     users.sort().forEach(u => {
         const uInfo = USER_DATA[u];
         const avatar = uInfo.photo ? `<img src="${uInfo.photo}" class="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-bg2 shadow-sm">` : `<div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 border-2 border-bg2 flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm">${u.slice(0,2).toUpperCase()}</div>`;
-        html += `<div class="flex items-center gap-3 p-3 hover:bg-bg3 cursor-pointer border-b border-border/50" onclick="hideNewChatSelector(); openChat('${safeAttr(u)}');">${avatar}<div class="flex flex-col"><span class="font-bold text-sm text-text">${u}</span><span class="text-[10px] text-text3 capitalize">${uInfo.role === 'admin' ? 'YÃ¶netici' : 'Ãœye'}</span></div></div>`;
+        html += `<div class="flex items-center gap-3 p-3 hover:bg-bg3 cursor-pointer border-b border-border/50" onclick="hideNewChatSelector(); openChat('${safeAttr(u)}');">${avatar}<div class="flex flex-col"><span class="font-bold text-sm text-text">${u}</span><span class="text-[10px] text-text3 capitalize">${roleLabel(uInfo.role)}</span></div></div>`;
     });
     $('new-chat-contacts').innerHTML = html;
 }
@@ -3473,7 +3519,7 @@ async function saveProfileFromModal(e) {
 
         const name = LOGGED_IN_USER.name;
         const pass = USER_DATA[name]?.pass || '1234';
-        const role = USER_DATA[name]?.role || 'user';
+        const role = normalizeRole(USER_DATA[name]?.role || 'user');
         
         // ArtÄ±k photo deÄŸiÅŸkeni uzun bir kod deÄŸil, kÄ±sa bir link olduÄŸu iÃ§in Google Sheets'e sorunsuz kaydedilir.
         const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
@@ -3529,11 +3575,7 @@ async function fetchUsers() {
                 let name = cols[nameIdx];
                 let pass = cols[passIdx] || '1234';
                 let role = 'user';
-                if (roleIdx !== -1 && cols[roleIdx]) {
-                    let r = cols[roleIdx].toLowerCase().trim();
-                    if (r.includes('yÃ¶netici') || r.includes('admin')) role = 'admin';
-                    else if (r.includes('Ã¼ye') || r.includes('user')) role = 'user';
-                }
+                if (roleIdx !== -1 && cols[roleIdx]) role = normalizeRole(cols[roleIdx]);
                 let photo = (photoIdx !== -1 && cols[photoIdx]) ? cols[photoIdx] : '';
                 if (photo && !photo.startsWith('http') && !photo.startsWith('data:')) photo = '';
                 
@@ -3547,13 +3589,14 @@ async function fetchUsers() {
             }
             
             if (USER_DATA["Yusuf YalÃ§Ä±ntaÅŸ"]) USER_DATA["Yusuf YalÃ§Ä±ntaÅŸ"].role = "admin"; // SÃ¼imiÅŸ Ana YÃ¶netici GÃ¼vencesi
-            
+            normalizeUserRoles();
             localStorage.setItem('cachedUsers', JSON.stringify(USER_DATA));
         }
     } catch(e) {
         console.error("KullanÄ±cÄ± listesi Ã§ekilemedi, Ã¶nbellek kullanÄ±lÄ±yor.", e);
         // Offline durumunda Ã¶nbellekten al
         USER_DATA = safeJSON(localStorage.getItem('cachedUsers'), {});
+        normalizeUserRoles();
         if (USER_DATA["Yusuf YalÃ§Ä±ntaÅŸ"]) USER_DATA["Yusuf YalÃ§Ä±ntaÅŸ"].role = "admin";
     }
 }
@@ -3612,7 +3655,7 @@ function login(e) {
     const userKey = Object.keys(USER_DATA).find(k => k.toLowerCase() === user.toLowerCase());
 
     if (userKey && String(USER_DATA[userKey].pass) === pass) {
-        LOGGED_IN_USER = { name: userKey, role: USER_DATA[userKey].role };
+        LOGGED_IN_USER = { name: userKey, role: normalizeRole(USER_DATA[userKey].role) };
         localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
         errorEl.innerText = '';
         const el = $('login-modal'); el.classList.add('opacity-0'); el.querySelector('div').classList.remove('scale-100'); el.querySelector('div').classList.add('scale-95');
@@ -3623,7 +3666,7 @@ function login(e) {
         
         $('app-header').classList.remove('hidden'); $('app-header').classList.add('flex');
         $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
-        const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: TÃ¼m sayfalara eriÅŸim, Ekle/Sil/DÃ¼zenle">YÃ–NETÄ°CÄ°</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="KÄ±sÄ±tlÄ± Yetki: YalnÄ±zca veri giriÅŸi ve atanmÄ±ÅŸ raporlar">ÃœYE</span>';
+        const roleBadge = renderRoleBadge(LOGGED_IN_USER.role);
         $('user-name').innerHTML = `ğŸ‘¤ ${user} ${roleBadge}`;
         
         if(USER_DATA[userKey].photo) {
@@ -3682,7 +3725,7 @@ function rAdmin() {
         const hasNotif = notifMsg ? `<span class="px-1.5 py-0.5 bg-accent/20 text-accent rounded text-[9px] ml-2 cursor-help border border-accent/50" title="Son MesajÄ±: ${escapeHTML(notifMsg[3])}">ğŸ’¬ MESAJ</span>` : '';
         
         const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border-2 border-bg2 shadow-sm">` : `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 flex items-center justify-center font-bold text-white text-[10px] shadow-sm border border-bg2">${u.slice(0,2).toUpperCase()}</div>`;
-        const roleBadge = role === 'admin' ? '<span class="px-2 py-0.5 bg-accent/20 text-accent rounded-full text-[10px] font-bold cursor-help" title="Tam Yetki: TÃ¼m sayfalara eriÅŸim, Ekle/Sil/DÃ¼zenle">YÃ–NETÄ°CÄ°</span>' : '<span class="px-2 py-0.5 bg-bg border border-border text-text3 rounded-full text-[10px] cursor-help" title="KÄ±sÄ±tlÄ± Yetki: YalnÄ±zca veri giriÅŸi ve atanmÄ±ÅŸ raporlar">ÃœYE</span>';
+        const roleBadge = renderRoleBadge(role, true);
         return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3"><div class="flex items-center gap-2"><span class="font-bold text-text">${u}</span>${hasNotif}</div></td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÃœZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SÄ°L</button></div></td></tr>`;
     }).join('');
     
@@ -3694,7 +3737,7 @@ async function saveUserObj(e) {
     const name = $('admin-u-name').value.trim();
     if(!name) return;
     const pass = $('admin-u-pass').value.trim();
-    const role = $('admin-u-role').value;
+    const role = normalizeRole($('admin-u-role').value);
     const photo = $('admin-u-photo').value.trim();
     
     const payload = { action: "saveUser", name: name, pass: pass, role: role, photo: photo };
@@ -3710,9 +3753,9 @@ async function saveUserObj(e) {
             rAdmin();
             
             if (LOGGED_IN_USER && LOGGED_IN_USER.name === name) {
-                LOGGED_IN_USER.role = role;
+                LOGGED_IN_USER.role = normalizeRole(role);
                 localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
-                const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold ml-2 cursor-help" title="Tam Yetki: TÃ¼m sayfalara eriÅŸim, Ekle/Sil/DÃ¼zenle">YÃ–NETÄ°CÄ°</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded ml-2 border border-border cursor-help" title="KÄ±sÄ±tlÄ± Yetki: YalnÄ±zca veri giriÅŸi ve atanmÄ±ÅŸ raporlar">ÃœYE</span>';
+                const roleBadge = renderRoleBadge(LOGGED_IN_USER.role);
                 $('user-name').innerHTML = `${LOGGED_IN_USER.name} ${roleBadge}`;
                 if (photo) {
                     $('user-avatar').src = photo;
@@ -3739,7 +3782,7 @@ function editUser(name) {
     const u = USER_DATA[name]; if(!u) return;
     $('admin-u-name').value = name;
     $('admin-u-pass').value = u.pass || '';
-    $('admin-u-role').value = u.role || 'user';
+    $('admin-u-role').value = normalizeRole(u.role || 'user');
     $('admin-u-photo').value = u.photo || '';
     $('admin-u-form').scrollIntoView({behavior: 'smooth', block: 'center'});
     $('admin-u-name').focus();
@@ -4046,14 +4089,15 @@ function fetchCSV(isBg = false) {
 }
 
 // OTOMATÄ°K GÃœNCELLEME VE OTURUM KONTROLÃœ
-const savedUser = localStorage.getItem('loggedUser');
+    const savedUser = localStorage.getItem('loggedUser');
 if(savedUser && savedUser !== "undefined") {
     LOGGED_IN_USER = safeJSON(savedUser, null);
+    if (LOGGED_IN_USER) LOGGED_IN_USER.role = normalizeRole(LOGGED_IN_USER.role);
     if (LOGGED_IN_USER) {
         $('app-header').classList.remove('hidden'); $('app-header').classList.add('flex');
         $('app-main').classList.remove('hidden'); $('app-main').classList.add('flex');
         
-        const roleBadge = LOGGED_IN_USER.role === 'admin' ? '<span class="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-bold cursor-help" title="Tam Yetki: TÃ¼m sayfalara eriÅŸim, Ekle/Sil/DÃ¼zenle">YÃ–NETÄ°CÄ°</span>' : '<span class="text-[10px] bg-bg text-text3 px-1.5 py-0.5 rounded border border-border cursor-help" title="KÄ±sÄ±tlÄ± Yetki: YalnÄ±zca veri giriÅŸi ve atanmÄ±ÅŸ raporlar">ÃœYE</span>';
+        const roleBadge = renderRoleBadge(LOGGED_IN_USER.role);
         $('user-name').innerHTML = `${LOGGED_IN_USER.name} ${roleBadge}`;
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         fetchUsers().then(() => {
