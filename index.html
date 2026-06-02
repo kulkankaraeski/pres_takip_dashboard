@@ -1201,13 +1201,8 @@ function swT(t,el){
 
     const appMain = $('app-main');
     if(appMain) {
-        if (!t || t === 'raporlar_menu') {
-            appMain.classList.remove('overflow-y-auto');
-            appMain.classList.add('overflow-hidden');
-        } else {
             appMain.classList.add('overflow-y-auto');
             appMain.classList.remove('overflow-hidden');
-        }
     }
 
     const appHeader = $('app-header');
