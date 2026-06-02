@@ -1278,22 +1278,59 @@ function resolveFasonInput(rawInput) {
 async function getCSV(url) {
     const proxies = [
         '',
+        'https://r.jina.ai/http://',
+        'https://r.jina.ai/https://',
         'https://corsproxy.io/?',
         'https://api.allorigins.win/raw?url=',
         'https://thingproxy.freeboard.io/fetch/'
     ];
+
+    const normalizeTextPayload = (text) => {
+        if (!text || typeof text !== 'string') return '';
+        let t = text.trim();
+
+        // r.jina.ai -> "Markdown Content:" bloğu
+        const mdMarker = 'Markdown Content:';
+        if (t.includes(mdMarker)) t = t.split(mdMarker)[1].trim();
+
+        // Bazı proxy servisleri JSON içerir
+        if (t.startsWith('{')) {
+            try {
+                const parsed = JSON.parse(t);
+                t = (parsed.contents || parsed.data?.contents || '').trim();
+            } catch {}
+        }
+
+        // HTML dönen durumlar gerçek CSV olmaz
+        if (t.includes('<html') || t.includes('<!DOCTYPE')) return '';
+        return t;
+    };
+
+    const looksLikeCSV = (text) => {
+        const normalized = (text || '').trim();
+        if (!normalized) return false;
+        const firstLine = normalized.split(/\r?\n/)[0].trim();
+        if (!firstLine || firstLine.startsWith('URL Source:') || firstLine.startsWith('Title:')) return false;
+        return firstLine.includes(',') || firstLine.includes('\t');
+    };
     
     let lastErr;
     for (let i = 0; i < proxies.length; i++) {
-        const proxyUrl = proxies[i] ? proxies[i] + encodeURIComponent(url) : url;
+        const proxyUrl = (() => {
+            const p = proxies[i];
+            if (!p) return url;
+            if (p.includes('r.jina.ai/')) return p + url;
+            return p + encodeURIComponent(url);
+        })();
+
         try {
             let r = await fetch(proxyUrl, {cache: 'no-store'});
             if (!r.ok) {
                 lastErr = new Error('HTTP ' + r.status);
                 continue;
             }
-            let t = await r.text();
-            if(t.match(/<html/i) || t.match(/<!DOCTYPE/i)) {
+            let t = normalizeTextPayload(await r.text());
+            if (!looksLikeCSV(t)) {
                 lastErr = new Error('HTML Redirect');
                 continue;
             }
@@ -4007,13 +4044,23 @@ function fetchCSV(isBg = false) {
             getCSV(MESAJ_URL + ts).catch(()=>''),
             getCSV(FASONLAR_URL + ts).catch(()=>'')
     ]).then(([t, k_text, d_text, m_text, msg_text, fason_text]) => {
-        window.RAW_CSV_ROWS = parseCSV(t);
-        RAW=parse(t);
-        KALIP_RAW=parseGeneric(k_text);
-        DENEME_RAW=parseGeneric(d_text);
-        MALZEME_RAW=parseGeneric(m_text);
-        MESAJ_RAW=parseGeneric(msg_text);
-        FASONLAR_RAW=parseGeneric(fason_text).r;
+        const nextRawCsvRows = parseCSV(t);
+        if (!nextRawCsvRows || nextRawCsvRows.length === 0) throw new Error('Veri sayfası okunamadı veya boş döndü.');
+
+        const nextRaw = parse(t);
+        const nextK = parseGeneric(k_text);
+        const nextD = parseGeneric(d_text);
+        const nextM = parseGeneric(m_text);
+        const nextMsg = parseGeneric(msg_text);
+        const nextF = parseGeneric(fason_text);
+
+        window.RAW_CSV_ROWS = nextRawCsvRows;
+        RAW = nextRaw;
+        KALIP_RAW = nextK;
+        DENEME_RAW = nextD;
+        MALZEME_RAW = nextM;
+        MESAJ_RAW = nextMsg;
+        FASONLAR_RAW = nextF.r;
         DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
         WEEKS=[...new Set(DATES.map(isoW))].sort();
