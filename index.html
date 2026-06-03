@@ -1393,8 +1393,10 @@ async function getCSVFromGVizScript(url) {
 
 async function getCSV(url) {
     const proxies = [
-        '', // Önce doğrudan istek (CORS kapalıysa hata verir, hemen geçer)
-        'https://api.allorigins.win/raw?url=' // Güvenilir tek proxy
+        '', // Önce doğrudan istek
+        'https://corsproxy.io/?url=',
+        'https://api.allorigins.win/raw?url=',
+        'https://thingproxy.freeboard.io/fetch/'
     ];
 
     if (typeof url === 'string' && url.includes('/gviz/tq')) {
@@ -1425,7 +1427,7 @@ async function getCSV(url) {
         if (!firstLine || firstLine.startsWith('URL Source:') || firstLine.startsWith('Title:')) return false;
         return firstLine.includes(',') || firstLine.includes('\t');
     };
-    
+
     let lastErr;
     for (let i = 0; i < proxies.length; i++) {
         const proxyUrl = (() => {
@@ -1436,11 +1438,11 @@ async function getCSV(url) {
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 6000); // 6 saniye zaman aşımı
-            
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 saniye zaman aşımı (uzatıldı)
+
             let r = await fetch(proxyUrl, {cache: 'no-store', signal: controller.signal});
             clearTimeout(timeoutId);
-            
+
             if (!r.ok) {
                 lastErr = new Error('HTTP ' + r.status);
                 continue;
@@ -1457,7 +1459,6 @@ async function getCSV(url) {
     }
     throw new Error('Ağ hatası veya veri erişimi sağlanamadı: ' + (lastErr ? lastErr.message : ''));
 }
-
 function escapeHTML(str) {
     if (str === null || str === undefined) return '';
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
