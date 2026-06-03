@@ -2255,12 +2255,15 @@ function analyzeFason(fasonName) {
             const f = normalizeField(r['fason'+i]);
             const p = r['pres'+i];
             if(f && p && normalizeFasonKey(f) === fKey) {
-                if(!pStats[p]) pStats[p] = { runs: 0, perfArr: [], durus: 0, uretim: 0, beklenen: 0 };
+                if(!pStats[p]) pStats[p] = { runs: 0, perfArr: [], durus: 0, uretim: 0, beklenen: 0, netMins: 0 };
                 pStats[p].runs++;
                 if(r['perf'+i]) pStats[p].perfArr.push(Number(r['perf'+i]));
-                pStats[p].durus += Number(r['durus'+i]) || 0;
+                const d = Number(r['durus'+i]) || 0;
+                pStats[p].durus += d;
                 pStats[p].uretim += Number(r['uretim'+i]) || 0;
                 pStats[p].beklenen += Number(r['beklenen'+i]) || 0;
+                // Duruş eksiye düşürmesin diye min 1 dakika çalışma sayıyoruz
+                pStats[p].netMins += Math.max(450 - d, 1);
             }
         });
     });
@@ -2270,10 +2273,8 @@ function analyzeFason(fasonName) {
         const avgDurus = v.runs ? v.durus / v.runs : 0;
         
         // Puanlama mantığı: Dakikada Üretilen Adet
-        // Vardiya başına 450 dakika varsayımıyla net çalışma süresi:
-        const totalMins = v.runs * 450;
-        const netMins = totalMins - v.durus;
-        const piecesPerMin = netMins > 0 ? (v.uretim / netMins) : 0;
+        // Eksik/hatalı girişlere karşı her bir kaydın duruşu maksimum 449 dakika sayılarak netMins toplanmıştır.
+        const piecesPerMin = v.uretim / v.netMins;
 
         return { pres: p, runs: v.runs, perf: avgPerf, durus: avgDurus, score: piecesPerMin, uretim: v.uretim, ppm: piecesPerMin };
     }).sort((a,b) => b.score - a.score);
@@ -4033,11 +4034,11 @@ function parse(t){
         pres1: headerKey.findIndex(h => h === 'pres1' || h.includes('pres1')),
         fason1: headerKey.findIndex(h => h === 'fason1' || h.includes('fason1') || h === 'fason' || h.includes('urun1') || h === 'urun'),
         uretim1: headerKey.findIndex(h => ((h.includes('uretilen') || h === 'uretim1') && h.includes('1') && !h.includes('gereken') && !h.includes('durussuz'))),
-        durus1: headerKey.findIndex(h => h.includes('durus') && h.includes('1')),
+        durus1: headerKey.findIndex(h => h.includes('durus') && h.includes('1') && !h.includes('durussuz')),
         pres2: headerKey.findIndex(h => h === 'pres2' || h.includes('pres2')),
         fason2: headerKey.findIndex(h => h === 'fason2' || h.includes('fason2') || h.includes('urun2')),
         uretim2: headerKey.findIndex(h => ((h.includes('uretilen') || h === 'uretim2') && h.includes('2') && !h.includes('gereken') && !h.includes('durussuz'))),
-        durus2: headerKey.findIndex(h => h.includes('durus') && h.includes('2')),
+        durus2: headerKey.findIndex(h => h.includes('durus') && h.includes('2') && !h.includes('durussuz')),
         perf1: headerKey.findIndex(h => (h.includes('performans') || h.includes('yuzde') || h === 'perf1') && h.includes('1') && !h.includes('2')),
         perf2: headerKey.findIndex(h => (h.includes('performans') || h.includes('yuzde') || h === 'perf2') && h.includes('2')),
         hedef1: headerKey.findIndex(h => (h.includes('uretilmesi') && h.includes('1')) || h === 'hedef1'),
