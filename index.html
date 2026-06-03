@@ -770,12 +770,12 @@
                         <button onclick="zoomPlan(0.1)" class="px-2 md:px-3 py-1.5 bg-bg hover:bg-border text-text2 rounded font-mono text-[10px] md:text-xs transition-colors border border-border flex items-center" title="Yakınlaştır">🔍+</button>
                         <button onclick="zoomPlan(-0.1)" class="px-2 md:px-3 py-1.5 bg-bg hover:bg-border text-text2 rounded font-mono text-[10px] md:text-xs transition-colors border border-border flex items-center" title="Uzaklaştır">🔍-</button>
                         <button id="fs-btn" onclick="toggleFullScreen('plan-container')" class="px-3 py-1.5 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">⛶ TAM EKRAN</button>
-                        <a href="https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?usp=sharing" target="_blank" class="px-3 py-1.5 bg-accent/20 text-accent hover:bg-accent hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">🔗 YENİ SEKMEDE AÇ</a>
+                        <a href="https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?usp=sharing" target="_blank" rel="noopener" class="px-3 py-1.5 bg-accent/20 text-accent hover:bg-accent hover:text-bg2 rounded font-mono text-[10px] md:text-xs transition-colors flex items-center gap-1">🔗 YENİ SEKMEDE AÇ</a>
                     </div>
                 </div>
                 <div class="flex-1 w-full bg-white relative overflow-hidden">
                     <!-- Iframe arka planı E-Tablo renkleri bozulmasın diye bg-white (beyaz) ayarlandı -->
-                    <iframe id="plan-frame" src="" class="absolute top-0 left-0 w-full h-full border-none bg-white origin-top-left transition-transform duration-200"></iframe>
+                    <iframe id="plan-frame" src="" referrerpolicy="no-referrer" class="absolute top-0 left-0 w-full h-full border-none bg-white origin-top-left transition-transform duration-200"></iframe>
                 </div>
             </div>
         </div>
@@ -1144,6 +1144,12 @@ function normalizeText(value) {
     return String(value || '')
         .replace(/\u00A0/g, ' ')
         .trim()
+        .replace(/[ıİ]/g, 'i')
+        .replace(/[şŞ]/g, 's')
+        .replace(/[ğĞ]/g, 'g')
+        .replace(/[üÜ]/g, 'u')
+        .replace(/[öÖ]/g, 'o')
+        .replace(/[çÇ]/g, 'c')
         .normalize('NFKD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
@@ -2570,8 +2576,6 @@ function openMalzemeListModal(title, filterKey, filterValue) {
 function rPlan() {
     const frame = $('plan-frame');
     if(frame && !frame.getAttribute('src')) {
-        // rm=minimal parametresi Google E-Tabloların üst menülerini gizler, daha profesyonel görünür.
-        frame.setAttribute('src', "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/edit?rm=minimal");
         // Google E-Tablolar /edit ucu iframe içinde engellendiğinden resmi embed ucu (/htmlembed) kullanıyoruz.
         // NOT: İframe'in çalışması için tablonun paylaşım ayarlarından "Bağlantıya sahip herkes görüntüleyebilir" seçili olmalıdır.
         frame.setAttribute('src', "https://docs.google.com/spreadsheets/d/1mUsX0-7J116EbvNpcW9WiZUrTy5CzHTILHwwPsht9IM/htmlembed?widget=true&chrome=false");
@@ -4079,11 +4083,11 @@ function parse(t){
         vardiya: headerKey.findIndex(h => h.includes('vardiya')),
         pres1: headerKey.findIndex(h => h === 'pres1' || h.includes('pres1')),
         fason1: headerKey.findIndex(h => h === 'fason1' || h.includes('fason1') || h === 'fason' || h.includes('urun1') || h === 'urun'),
-        uretim1: headerKey.findIndex(h => (h.includes('uretim') && h.includes('1')) || (h.includes('uretilen') && h.includes('1')) || h === 'uretim1'),
+        uretim1: headerKey.findIndex(h => ((h.includes('uretilen') || h === 'uretim1') && h.includes('1') && !h.includes('gereken') && !h.includes('durussuz'))),
         durus1: headerKey.findIndex(h => h.includes('durus') && h.includes('1')),
         pres2: headerKey.findIndex(h => h === 'pres2' || h.includes('pres2')),
         fason2: headerKey.findIndex(h => h === 'fason2' || h.includes('fason2') || h.includes('urun2')),
-        uretim2: headerKey.findIndex(h => (h.includes('uretim') && h.includes('2')) || (h.includes('uretilen') && h.includes('2')) || h === 'uretim2'),
+        uretim2: headerKey.findIndex(h => ((h.includes('uretilen') || h === 'uretim2') && h.includes('2') && !h.includes('gereken') && !h.includes('durussuz'))),
         durus2: headerKey.findIndex(h => h.includes('durus') && h.includes('2')),
         perf1: headerKey.findIndex(h => (h.includes('performans') || h.includes('yuzde') || h === 'perf1') && h.includes('1') && !h.includes('2')),
         perf2: headerKey.findIndex(h => (h.includes('performans') || h.includes('yuzde') || h === 'perf2') && h.includes('2')),
@@ -4092,6 +4096,16 @@ function parse(t){
         toplamUretim: headerKey.findIndex(h => h.includes('toplam') && h.includes('uretilen')),
         toplamPerf: headerKey.findIndex(h => (h.includes('gunluk') && h.includes('performans')) || h === 'toplamperformans'),
     };
+
+    if (idx.perf1 < 0) {
+        idx.perf1 = headerKey.findIndex(h => (h.includes('performans') || h.includes('yuzde')) && !h.includes('2'));
+    }
+    if (idx.uretim1 < 0) {
+        idx.uretim1 = headerKey.findIndex(h => h.includes('uretim') && h.includes('1') && !h.includes('gereken') && !h.includes('durussuz'));
+    }
+    if (idx.uretim2 < 0) {
+        idx.uretim2 = headerKey.findIndex(h => h.includes('uretim') && h.includes('2') && !h.includes('gereken') && !h.includes('durussuz'));
+    }
 
     if (idx.fason1 < 0 && idx.fason2 < 0 && possibleFasonCols.length > 0) {
         idx.fason1 = possibleFasonCols[0].i;
