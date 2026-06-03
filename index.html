@@ -1829,9 +1829,10 @@ function rH(){
             const wU = adminSettings.weights?.u ?? 40;
             const wP = adminSettings.weights?.p ?? 40;
             const wC = adminSettings.weights?.c ?? 20;
+            const wD = adminSettings.weights?.d ?? 0.1;
             
             empStats.forEach(e => {
-                e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC);
+                e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC) - (e.d * wD);
             });
             
             const best = empStats.sort((a, b) => b.score - a.score)[0];
@@ -3845,6 +3846,7 @@ function rAdmin() {
         <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim Ağırlığı</label><input type="number" id="admin-w-u" value="${adminSettings.weights?.u ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
         <div><label class="block text-[10px] text-text3 mb-1 uppercase">Performans Ağırlığı</label><input type="number" id="admin-w-p" value="${adminSettings.weights?.p ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
         <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kayıt Sayısı Ağırlığı</label><input type="number" id="admin-w-c" value="${adminSettings.weights?.c ?? 20}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+        <div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk) Ceza Puanı</label><input type="number" step="0.01" id="admin-w-d" value="${adminSettings.weights?.d ?? 0.1}" title="Her 1 dakikalık duruş için toplam puandan düşülecek değer. Örn: 0.1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
     `;
 
     $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
@@ -3981,7 +3983,8 @@ function saveAdminSettings() {
     const u = parseInt($('admin-w-u').value) || 40;
     const p = parseInt($('admin-w-p').value) || 40;
     const c = parseInt($('admin-w-c').value) || 20;
-    adminSettings = { hiddenTabs, weights: {u, p, c} };
+    const d = parseFloat($('admin-w-d').value) || 0;
+    adminSettings = { hiddenTabs, weights: {u, p, c, d} };
     localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
     toast('Yönetim ayarları başarıyla kaydedildi!', 'ok');
     applyRoleRestrictions();
@@ -4056,11 +4059,11 @@ function parse(t){
         pres1: headerKey.findIndex(h => h === 'pres1' || h.includes('pres1')),
         fason1: headerKey.findIndex(h => h === 'fason1' || h.includes('fason1') || h === 'fason' || h.includes('urun1') || h === 'urun'),
         uretim1: headerKey.findIndex(h => ((h.includes('uretilen') || h === 'uretim1') && h.includes('1') && !h.includes('gereken') && !h.includes('durussuz'))),
-        durus1: headerKey.findIndex(h => h.includes('durus') && h.includes('1') && !h.includes('durussuz')),
+        durus1: headerKey.findIndex(h => h.includes('durus') && h.includes('1') && !h.includes('durussuz') && !h.includes('baslangic') && !h.includes('bitis')),
         pres2: headerKey.findIndex(h => h === 'pres2' || h.includes('pres2')),
         fason2: headerKey.findIndex(h => h === 'fason2' || h.includes('fason2') || h.includes('urun2')),
         uretim2: headerKey.findIndex(h => ((h.includes('uretilen') || h === 'uretim2') && h.includes('2') && !h.includes('gereken') && !h.includes('durussuz'))),
-        durus2: headerKey.findIndex(h => h.includes('durus') && h.includes('2') && !h.includes('durussuz')),
+        durus2: headerKey.findIndex(h => h.includes('durus') && h.includes('2') && !h.includes('durussuz') && !h.includes('baslangic') && !h.includes('bitis')),
         perf1: headerKey.findIndex(h => (h.includes('performans') || h.includes('yuzde') || h === 'perf1') && h.includes('1') && !h.includes('2')),
         perf2: headerKey.findIndex(h => (h.includes('performans') || h.includes('yuzde') || h === 'perf2') && h.includes('2')),
         hedef1: headerKey.findIndex(h => (h.includes('uretilmesi') && h.includes('1')) || h === 'hedef1'),
@@ -4190,10 +4193,10 @@ function fetchCSV(isBg = false) {
                 const wU = adminSettings.weights?.u ?? 40;
                 const wP = adminSettings.weights?.p ?? 40;
                 const wC = adminSettings.weights?.c ?? 20;
+                const wD = adminSettings.weights?.d ?? 0.1;
                 
-                // Ağırlıklı Puan: Yönetici ayarlarından gelen yüzdeler (Varsayılan %40, %40, %20)
                 empStats.forEach(e => {
-                    e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC);
+                    e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC) - (e.d * wD);
                 });
                 
                 const best = empStats.sort((a, b) => b.score - a.score)[0];
