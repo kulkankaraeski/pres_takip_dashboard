@@ -447,9 +447,16 @@
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-haf-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
                 <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-haf-kiyas"><thead id="th-haf-kiyas"></thead><tbody id="tb-haf-kiyas"></tbody></table></div>
             </div>
-            <div class="bg-bg2 border border-border rounded overflow-hidden">
-                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">HAFTALIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-haf',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-haf"><thead id="th-haf"></thead><tbody id="tb-haf"></tbody></table></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="bg-bg2 border border-border rounded overflow-hidden lg:col-span-2 flex flex-col">
+                    <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">HAFTALIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-haf',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                    <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-haf"><thead id="th-haf"></thead><tbody id="tb-haf"></tbody></table></div>
+                </div>
+                
+                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-sm border-accent2/30">
+                    <div class="p-4 border-b border-border bg-accent2/10"><span class="font-bebas text-base text-accent2 tracking-[1px] flex items-center gap-2">⚠️ EN ÇOK DURUŞ YAPANLAR</span></div>
+                    <div class="overflow-auto max-h-[60vh] custom-scrollbar"><table class="w-full text-left border-collapse" id="t-haf-durus"><thead id="th-haf-durus"></thead><tbody id="tb-haf-durus"></tbody></table></div>
+                </div>
             </div>
         </div>
 
@@ -485,9 +492,16 @@
                 <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">MAKİNE & VARDİYA PERFORMANS KIYASLAMASI</span><input type="text" onkeyup="fT('tb-ay-kiyas',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
                 <div class="overflow-auto max-h-[40vh]"><table class="w-full text-left border-collapse" id="t-ay-kiyas"><thead id="th-ay-kiyas"></thead><tbody id="tb-ay-kiyas"></tbody></table></div>
             </div>
-            <div class="bg-bg2 border border-border rounded overflow-hidden">
-                <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">AYLIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-ay',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
-                <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-ay"><thead id="th-ay"></thead><tbody id="tb-ay"></tbody></table></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="bg-bg2 border border-border rounded overflow-hidden lg:col-span-2 flex flex-col">
+                    <div class="p-4 border-b border-border flex justify-between"><span class="font-bebas text-base text-text2">AYLIK ÇALIŞANLAR</span><input type="text" onkeyup="fT('tb-ay',this.value)" placeholder="Ara..." class="bg-bg3 border text-text2 text-xs rounded px-2 py-1 outline-none"></div>
+                    <div class="overflow-auto max-h-[60vh]"><table class="w-full text-left border-collapse" id="t-ay"><thead id="th-ay"></thead><tbody id="tb-ay"></tbody></table></div>
+                </div>
+                
+                <div class="bg-bg2 border border-border rounded overflow-hidden flex flex-col shadow-sm border-accent2/30">
+                    <div class="p-4 border-b border-border bg-accent2/10"><span class="font-bebas text-base text-accent2 tracking-[1px] flex items-center gap-2">⚠️ EN ÇOK DURUŞ YAPANLAR</span></div>
+                    <div class="overflow-auto max-h-[60vh] custom-scrollbar"><table class="w-full text-left border-collapse" id="t-ay-durus"><thead id="th-ay-durus"></thead><tbody id="tb-ay-durus"></tbody></table></div>
+                </div>
             </div>
         </div>
 
@@ -1748,6 +1762,10 @@ function rW(){
 
     $('th-haf').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
+
+    const badW = [...ws].filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
+    $('th-haf-durus').innerHTML=th(['Çalışan','Toplam Duruş']);
+    $('tb-haf-durus').innerHTML=badW.length ? badW.map((w,i)=>tr([`<div class="flex gap-1 items-center"><span class="text-[10px] text-text3 font-mono">${i+1}.</span> <b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b></div>`, `<span class="text-accent2 font-mono font-bold">${n(w.d)} dk</span>`])).join('') : `<tr><td colspan="2" class="p-4 text-center text-text3 text-xs">Duruş kaydı yok.</td></tr>`;
 }
 
 function rM(){
@@ -1783,6 +1801,10 @@ function rM(){
 
     $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
+
+    const badM = [...ws].filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
+    $('th-ay-durus').innerHTML=th(['Çalışan','Toplam Duruş']);
+    $('tb-ay-durus').innerHTML=badM.length ? badM.map((w,i)=>tr([`<div class="flex gap-1 items-center"><span class="text-[10px] text-text3 font-mono">${i+1}.</span> <b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b></div>`, `<span class="text-accent2 font-mono font-bold">${n(w.d)} dk</span>`])).join('') : `<tr><td colspan="2" class="p-4 text-center text-text3 text-xs">Duruş kaydı yok.</td></tr>`;
 }
 
 function rH(){
