@@ -1,8 +1,10 @@
 ﻿{
   "name": "Pres Üretim Takip Dashboard",
   "short_name": "Üretim Takip",
+  "id": "/pres-dashboard/",
   "description": "Pres üretim, personel performansı ve fason takip sistemi.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#090e17",
   "theme_color": "#121410",
