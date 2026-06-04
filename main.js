@@ -89,6 +89,47 @@ function isoW(d){const[D,M,Y]=d.split('.').map(Number);const dt=new Date(Y,M-1,D
 function calc(arr){const u=arr.reduce((s,r)=>s+r.tU,0);const b=arr.reduce((s,r)=>s+r.tB,0);return{u:u,b:b,p:b>0?(u/b)*100:(arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0),d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
 const cR=(v,a=1)=>`rgba(${getComputedStyle(document.documentElement).getPropertyValue('--c-'+v).trim()},${a})`;
 
+function getLeaderWeights() {
+    const w = (adminSettings && adminSettings.weights) ? adminSettings.weights : {};
+    const toNum = (v, f) => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : f;
+    };
+
+    return {
+        u: toNum(w.u, 40),
+        p: toNum(w.p, 40),
+        c: toNum(w.c, 20),
+        d: toNum(w.d, 0.1)
+    };
+}
+
+function rankByLeaderScore(stats) {
+    if (!Array.isArray(stats) || stats.length === 0) return [];
+
+    const w = getLeaderWeights();
+    const maxU = Math.max(...stats.map(e => Number(e.u) || 0)) || 1;
+    const maxP = Math.max(...stats.map(e => Number(e.p) || 0)) || 1;
+    const maxC = Math.max(...stats.map(e => Number(e.c) || 0)) || 1;
+
+    return stats.map(e => {
+        const u = Number(e.u) || 0;
+        const p = Number(e.p) || 0;
+        const c = Number(e.c) || 0;
+        const d = Number(e.d) || 0;
+
+        return {
+            ...e,
+            score: ((u / maxU) * w.u) + ((p / maxP) * w.p) + ((c / maxC) * w.c) - (d * w.d)
+        };
+    }).sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.u !== a.u) return b.u - a.u;
+        if (b.p !== a.p) return b.p - a.p;
+        return b.c - a.c;
+    });
+}
+
 function normalizeText(value) {
     return String(value || '')
         .replace(/\u00A0/g, ' ')
@@ -741,26 +782,24 @@ function rM(){
     const sab=md.filter(r=>r.vardiya==='08:00-16:00').length, aks=md.filter(r=>r.vardiya==='16:00-24:00').length;
     mc('m4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,md.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
-    const ws=[...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
-        
-        const bestM = [...ws].sort((a,b) => b.p - a.p)[0];
-        if(bestM && bestM.p > 0) {
-            window.bestMonthEmp = bestM.w;
-            if($('m-best-name')) $('m-best-name').textContent = bestM.w;
-            if($('m-best-perf')) $('m-best-perf').textContent = bestM.p.toFixed(1) + '%';
-            if($('m-best')) {
-                $('m-best').classList.remove('hidden');
-                $('m-best').classList.add('flex');
-            }
-        } else {
-            if($('m-best')) {
-                $('m-best').classList.add('hidden');
-                $('m-best').classList.remove('flex');
-            }
+    const ws = rankByLeaderScore([...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))}));
+    const bestM = ws[0];
+    if(bestM) {
+        window.bestMonthEmp = bestM.w;
+        if($('m-best-name')) $('m-best-name').textContent = bestM.w;
+        if($('m-best-perf')) $('m-best-perf').textContent = `${bestM.score.toFixed(1)} Puan`;
+        if($('m-best')) {
+            $('m-best').classList.remove('hidden');
+            $('m-best').classList.add('flex');
         }
-
-    $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
-    $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
+    } else {
+        if($('m-best')) {
+            $('m-best').classList.add('hidden');
+            $('m-best').classList.remove('flex');
+        }
+    }
+    $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Puan','Duruş (Dk)']);
+    $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), w.score.toFixed(1), n(w.d)])).join('');
 
     const badM = [...ws].filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
     $('th-ay-durus').innerHTML=th(['Çalışan','Toplam Duruş']);
@@ -772,7 +811,7 @@ function rH(){
     const dt=DATES.map(d=>({l:d.slice(0,5), ...calc(RAW.filter(r=>r.tarih===d))}));
     mc('h1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
     mc('h2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
-    const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u).slice(0,10);
+    const ws=rankByLeaderScore([...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).slice(0,10);
     // FIX #4: x.w.calisan her zaman undefined'dı (x.w zaten string). Düzeltildi.
     mc('h3','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
         
@@ -781,21 +820,7 @@ function rH(){
             const mData = RAW.filter(r => r.tarih.endsWith(m));
             if(mData.length === 0) return '';
             
-            let empStats = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }));
-            const maxU = Math.max(...empStats.map(e => e.u)) || 1;
-            const maxP = Math.max(...empStats.map(e => e.p)) || 1;
-            const maxC = Math.max(...empStats.map(e => e.c)) || 1;
-            
-            const wU = adminSettings.weights?.u ?? 40;
-            const wP = adminSettings.weights?.p ?? 40;
-            const wC = adminSettings.weights?.c ?? 20;
-            const wD = adminSettings.weights?.d ?? 0.1;
-            
-            empStats.forEach(e => {
-                e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC) - (e.d * wD);
-            });
-            
-            const best = empStats.sort((a, b) => b.score - a.score)[0];
+            const best = rankByLeaderScore([...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }))[0];
             if(!best) return '';
 
             const uInfo = USER_DATA[best.w] || {};
@@ -817,7 +842,7 @@ function rH(){
                     </div>
                 </div>
                 <div class="flex flex-col items-end">
-                    <span class="text-xs font-bold text-accent4">⭐ ${best.score.toFixed(1)}</span>
+                    <span class="text-xs font-bold text-accent4">⭐ ${best.score.toFixed(1)} Puan</span>
                     <span class="text-[9px] text-text2">${n(best.u)} Adet</span>
                 </div>
             </div>`;
@@ -3144,33 +3169,24 @@ function fetchCSV(isBg = false) {
         if(sM) {
             const mData = RAW.filter(r => r.tarih.endsWith(sM));
             if(mData.length > 0) {
-                let empStats = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }));
-                
-                // Normalizasyon için o ayın en yüksek değerlerini bul
-                const maxU = Math.max(...empStats.map(e => e.u)) || 1;
-                const maxP = Math.max(...empStats.map(e => e.p)) || 1;
-                const maxC = Math.max(...empStats.map(e => e.c)) || 1;
-                
-                const wU = adminSettings.weights?.u ?? 40;
-                const wP = adminSettings.weights?.p ?? 40;
-                const wC = adminSettings.weights?.c ?? 20;
-                const wD = adminSettings.weights?.d ?? 0.1;
-                
-                empStats.forEach(e => {
-                    e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC) - (e.d * wD);
-                });
-                
-                const best = empStats.sort((a, b) => b.score - a.score)[0];
-                window.bestEmpName = best.w;
-                if($('hdr-best-name')) $('hdr-best-name').textContent = best.w.toUpperCase();
-                if($('hdr-best-det')) $('hdr-best-det').innerHTML = `<span class="text-accent4 font-bold" title="Adil Puan">⭐ ${best.score.toFixed(1)} Puan</span> | <span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?'text-accent':'text-accent2'}">${best.p.toFixed(1)}%</span> Perf`;
-                if($('hdr-best')) {
-                    $('hdr-best').classList.remove('hidden');
-                    $('hdr-best').classList.add('flex');
+                const best = rankByLeaderScore([...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }))[0];
+                if(best) {
+                    window.bestEmpName = best.w;
+                    if($('hdr-best-name')) $('hdr-best-name').textContent = best.w.toUpperCase();
+                    if($('hdr-best-det')) $('hdr-best-det').innerHTML = `<span class="text-accent4 font-bold" title="Adil Puan">&#11088; ${best.score.toFixed(1)} Puan</span> | <span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?"text-accent":"text-accent2"}">${best.p.toFixed(1)}%</span> Perf`;
+                    if($('hdr-best')) {
+                        $('hdr-best').classList.remove('hidden');
+                        $('hdr-best').classList.add('flex');
+                    }
+                } else if($('hdr-best')) {
+                    $('hdr-best').classList.add('hidden');
+                    $('hdr-best').classList.remove('flex');
                 }
+            } else if($('hdr-best')) {
+                $('hdr-best').classList.add('hidden');
+                $('hdr-best').classList.remove('flex');
             }
         }
-        
         const s=calc(RAW); $('hdr-total').innerText=n(s.u); $('hdr-perf').innerText=s.p.toFixed(1)+'%'; $('hdr-workers').innerText=new Set(RAW.map(r=>r.calisan)).size;
         if (!isBg) popF(); // Form için verileri doldur (arkaplan yenilemede açık olan dropdownları bozmamak için)
         checkNotifs();
