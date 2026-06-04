@@ -1757,7 +1757,7 @@ function popF(){
     const vC = calisanInput.value, vP1 = $('f-pres1').value, vP2 = $('f-pres2').value, vF1 = $('f-fason1').value, vF2 = $('f-fason2').value;
 
     if (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') {
-        const emps=[...new Set([...Object.keys(USER_DATA), ...RAW.map(r=>r.calisan)])].filter(x=>x).sort();
+        const emps=[...new Set(Object.keys(USER_DATA))].filter(x=>x).sort();
         const dl = $('form-user-list');
         if (dl) dl.innerHTML = emps.map(e=>`<option value="${e}">`).join('');
         calisanInput.disabled = false;
