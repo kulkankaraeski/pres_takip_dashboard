@@ -1,0 +1,132 @@
+        :root {
+            --bg: #090e17; --bg2: #111827; --bg3: #1f2937; --border: #374151;
+            --text: #f3f4f6; --text2: #9ca3af; --text3: #6b7280;
+            --accent: #3b82f6; --accent2: #ef4444; --accent3: #f59e0b; --accent4: #10b981;
+            --c-accent: 59, 130, 246; --c-accent2: 239, 68, 68; --c-accent3: 245, 158, 11; --c-accent4: 16, 185, 129; --c-border: 55, 65, 81; --c-text3: 107, 114, 128;
+        }
+        .light-mode {
+            --bg: #f9fafb; --bg2: #ffffff; --bg3: #f3f4f6; --border: #000000;
+            --text: #111827; --text2: #4b5563; --text3: #9ca3af;
+            --accent: #2563eb; --accent2: #dc2626; --accent3: #d97706; --accent4: #059669;
+            --c-accent: 37, 99, 235; --c-accent2: 220, 38, 38; --c-accent3: 217, 119, 6; --c-accent4: 5, 150, 105; --c-border: 0, 0, 0; --c-text3: 156, 163, 175;
+        }
+        body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.4s ease, color 0.4s ease;}
+        ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:var(--bg); border-radius: 4px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px; transition: background 0.3s;} ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
+        
+        .panel { display: none; opacity: 0; }
+        .panel.active { display: block; opacity: 1; animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(15px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        
+        .skeleton{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:skel 1.5s infinite;border-radius:8px}
+        @keyframes skel{0%{background-position:200% 0} 100%{background-position:-200% 0}}
+        
+        .emp-link{cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-color:#2a3024;transition:all 0.2s}
+        .emp-link:hover{color:#a8e063;text-decoration-color:#a8e063}
+        
+        /* Panel Görünümlü Navigasyon Butonları (Mobil Uyumlu) */
+        .nav-btn { flex: 1 1 auto; text-align: center; padding: 10px 14px; font-family: 'Poppins', sans-serif; font-weight: 600; letter-spacing: 0.5px; font-size: 13px; border-radius: 8px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-width: 1px; white-space: nowrap; user-select: none; position: relative; overflow: hidden; }
+        .nav-btn:active { transform: scale(0.95); }
+        .nav-btn::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg); transition: left 0.5s ease-in-out; z-index: 1; pointer-events: none;
+        }
+        .nav-btn:hover::after { left: 150%; }
+        .nav-btn.nav-active { background-color: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; box-shadow: 0 4px 12px -2px rgba(var(--c-accent), 0.4), 0 2px 6px -1px rgba(var(--c-accent), 0.2) !important; transform: translateY(-1px); }
+        @media (max-width: 768px) { .nav-btn { font-size: 11px; padding: 6px 8px; flex-basis: 30%; } }
+        
+        /* Tablo Başlık Sabitleme & Renkler */
+        .sticky-th { position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .th-bg { background-color: var(--bg3); }
+        .kafa1 { background-color: rgba(var(--c-accent), 0.08); color: var(--accent); }
+        .kafa2 { background-color: rgba(var(--c-accent3), 0.08); color: var(--accent3); }
+        .kafa1-th { background-color: rgba(var(--c-accent), 0.15); color: var(--accent); }
+        .kafa2-th { background-color: rgba(var(--c-accent3), 0.15); color: var(--accent3); }
+
+        /* Ayın Elemanı Animasyonları */
+        .ayin-elemani { background: linear-gradient(90deg, #f5c842, #ff9b44, #f5c842); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shineText 3s linear infinite; }
+        @keyframes shineText { to { background-position: 200% center; } }
+        .ayin-elemani-kutu { border: 1px solid rgba(245, 200, 66, 0.4); box-shadow: 0 0 15px rgba(245, 200, 66, 0.15); animation: pulseBox 2s infinite; }
+        @keyframes pulseBox { 0% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } 50% { box-shadow: 0 0 20px rgba(245,200,66,0.3); } 100% { box-shadow: 0 0 10px rgba(245,200,66,0.1); } }
+
+        /* Login Modal Stilleri */
+        /* FIX #1: .main-content blur artık JS querySelector ile yönetiliyor */
+        #login-modal { backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .main-content.blurred { filter: blur(5px); pointer-events: none; transition: filter 0.3s; }
+
+        /* YAZDIRMA (CTRL+P) AYARLARI: Tamamen Ekran Görüntüsü Kalitesinde */
+        @media print {
+            body { 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+                background-color: #0f172a !important; 
+                color: #f8fafc !important; 
+            }
+            .panel:not(.active) { display: none !important; opacity: 0 !important; }
+            .panel.active { display: block !important; opacity: 1 !important; position: static !important; }
+            #main-nav, header button, #emp-modal, #recs-modal, #login-modal, #generic-modal, #generic-form-modal, #notif-modal, #user-info { display: none !important; }
+            .overflow-auto { max-height: none !important; overflow: visible !important; }
+            canvas { max-height: 250px !important; }
+            .admin-only-btn { display: none !important; }
+        }
+        
+        /* Toast Bildirimleri (Kritik #1 Fix) */
+        .toast-el {
+            position: fixed; top: 24px; right: 24px; z-index: 9999;
+            padding: 12px 20px; border-radius: 8px; font-family: 'Fira Code', monospace;
+            font-size: 12px; color: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            transition: opacity 0.35s, transform 0.35s; pointer-events: none;
+            max-width: 320px; border-left: 4px solid;
+        }
+        .toast-ok   { background: #0f2a1a; border-color: #10b981; }
+        .toast-err  { background: #2a0f0f; border-color: #ef4444; }
+        .toast-warn { background: #2a1f0f; border-color: #f59e0b; }
+        
+        /* Üretim Takip Denemeleri kart animasyonu */
+        .kayit-card .kayit-detail { animation: slideDown 0.25s ease-out; }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+        
+        /* Genel UI İyileştirmeleri */
+        input, select, textarea { transition: all 0.3s ease; }
+        input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px rgba(var(--c-accent), 0.3); }
+        button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        button:active { transform: scale(0.95); }
+        .glass-panel { background: rgba(var(--c-bg2), 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(var(--c-border), 0.5); }
+        
+        /* Form elemanları okunurluk düzeltmesi */
+        select:required:invalid {
+            color: var(--text2);
+        }
+        option {
+            background: var(--bg2);
+            color: var(--text);
+        }
+        input::placeholder, textarea::placeholder {
+            color: var(--text2);
+            opacity: 1;
+        }
+
+        /* Mobil Yan Ekran (Landscape) Optimizasyonları */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body { padding: 4px !important; gap: 4px !important; }
+            #app-header { flex-direction: row !important; flex-wrap: wrap !important; padding: 4px 8px !important; gap: 4px !important; border-radius: 8px !important; }
+            #app-header > div:first-child { flex-direction: row !important; width: auto !important; padding: 4px 8px !important; align-items: center !important; gap: 6px !important; }
+            #app-header > div:first-child h1 { font-size: 14px !important; margin: 0 !important; }
+            #app-header > div:first-child div { margin-top: 0 !important; }
+            #app-header > div:nth-child(2) { flex-wrap: nowrap !important; overflow-x: auto !important; justify-content: flex-start !important; padding-bottom: 0px; }
+            #app-header > div:nth-child(2)::-webkit-scrollbar { display: none; }
+            #app-header > div:nth-child(2) > div { padding: 2px 6px !important; flex-direction: row !important; gap: 6px !important; width: auto !important; flex: 0 0 auto !important; }
+            #app-header > div:nth-child(2) span.text-xl { font-size: 14px !important; line-height: 1 !important; }
+            #app-header > div:nth-child(2) span.text-lg { font-size: 12px !important; line-height: 1 !important; }
+            #main-nav { flex-wrap: wrap !important; overflow: hidden !important; padding: 4px !important; border-radius: 8px !important; display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 4px !important; }
+            #main-nav::-webkit-scrollbar { display: none; }
+            #main-nav > div { padding: 4px !important; border-radius: 8px !important; }
+            #main-nav span.text-7xl, #main-nav span.text-4xl, #main-nav span.text-2xl { font-size: 22px !important; margin-bottom: 2px !important; }
+            #main-nav span.text-lg, #main-nav span.text-sm, #main-nav span.text-\[10px\] { font-size: 9px !important; line-height: 1.1 !important; }
+            #panel-raporlar_menu > div { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 4px !important; padding: 4px !important; }
+            #panel-raporlar_menu .nav-tab { padding: 4px !important; border-radius: 8px !important; }
+            #panel-raporlar_menu .nav-tab > span:first-child { font-size: 22px !important; margin-bottom: 2px !important; }
+            #panel-raporlar_menu .nav-tab > span:last-child { font-size: 9px !important; line-height: 1.1 !important; }
+            .h-\[240px\], .h-\[260px\], .h-\[320px\] { height: 180px !important; }
+            #user-info { flex-direction: row !important; flex-wrap: nowrap !important; flex: 0 0 auto !important; }
+        }
