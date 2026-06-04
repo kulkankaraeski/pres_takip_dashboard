@@ -71,13 +71,13 @@ const MALZEME_DOC_ID = '1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c';
 const matchMalz = MALZEME_DOC_ID.match(/\/d\/([a-zA-Z0-9-_]+)/);
 const extMalzemeId = matchMalz ? matchMalz[1] : MALZEME_DOC_ID;
 
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/export?format=csv&sheet=' + encodeURIComponent('veri sayfası');
-const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/export?format=csv&sheet=' + encodeURIComponent('Kalıphane Lokasyonları');
-const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/export?format=csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
-const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/export?format=csv&gid=959090458';
-const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/export?format=csv&sheet=' + encodeURIComponent('Çalışanlar');
-const MESAJ_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/export?format=csv&sheet=' + encodeURIComponent('Mesajlar');
-const FASONLAR_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/export?format=csv&sheet=Fasonlar';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('veri sayfası');
+const KALIP_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Kalıphane+Lokasyonları';
+const DENEME_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Üretim Takip Denemeleri');
+const MALZEME_URL = 'https://docs.google.com/spreadsheets/d/' + extMalzemeId + '/gviz/tq?tqx=out:csv&gid=959090458';
+const USERS_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Çalışanlar');
+const MESAJ_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('Mesajlar');
+const FASONLAR_URL = 'https://docs.google.com/spreadsheets/d/1ATveln1EB7AkFBLHTWSNm0nt8U4syYNYEgfRYHwDg7c/gviz/tq?tqx=out:csv&sheet=Fasonlar';
 
 let FASONLAR_RAW = [];
 
@@ -2651,37 +2651,23 @@ async function fetchUsers() {
         
         const rows = parseCSV(text);
         if (rows.length > 1) {
-            const headers = rows[0].map(x => String(x).toLocaleLowerCase('tr-TR').trim());
-            
-            let nameIdx = headers.findIndex(h => h === 'çalışan' || h === 'ad' || h === 'ad soyad' || h === 'isim' || h === 'personel');
-            if (nameIdx === -1) nameIdx = headers.findIndex(h => h.includes('çalışan') || h.includes('ad') || h.includes('isim') || h.includes('personel'));
-            
-            let passIdx = headers.findIndex(h => h === 'şifre' || h === 'sifre' || h === 'parola');
-            if (passIdx === -1) passIdx = headers.findIndex(h => h.includes('şifre') || h.includes('sifre') || h.includes('parola'));
-            
-            let roleIdx = headers.findIndex(h => h === 'rol' || h === 'yetki' || h === 'görev');
-            if (roleIdx === -1) roleIdx = headers.findIndex(h => h.includes('rol') || h.includes('yetki') || h.includes('görev'));
-            
-            let photoIdx = headers.findIndex(h => h === 'fotoğraf' || h === 'fotograf' || h === 'resim');
-            if (photoIdx === -1) photoIdx = headers.findIndex(h => h.includes('fotoğraf') || h.includes('fotograf') || h.includes('resim'));
+            const headers = rows[0].map(x => String(x).toLowerCase());
+            let nameIdx = headers.findIndex(h => h.includes('çalışan') || h.includes('ad'));
+            let passIdx = headers.findIndex(h => h.includes('şifre') || h.includes('sifre'));
+            let roleIdx = headers.findIndex(h => h.includes('rol') || h.includes('yetki'));
+            let photoIdx = headers.findIndex(h => h.includes('fotoğraf') || h.includes('fotograf') || h.includes('resim'));
             
             if (nameIdx === -1) nameIdx = 0;
             if (passIdx === -1) passIdx = 1;
             
             USER_DATA = {};
             for(let i=1; i<rows.length; i++) {
-                let nameRaw = rows[i][nameIdx];
-                if (nameRaw === undefined || nameRaw === null) continue;
-                let name = String(nameRaw).trim();
-                if (name === '') continue;
-                
-                let passRaw = rows[i][passIdx];
-                let pass = (passRaw !== undefined && passRaw !== null && String(passRaw).trim() !== '') ? String(passRaw).trim() : '1234';
-                
+                let name = rows[i][nameIdx];
+                if (!name) continue;
+                let pass = rows[i][passIdx] || '1234';
                 let role = 'user';
                 if (roleIdx !== -1 && rows[i][roleIdx]) role = normalizeRole(rows[i][roleIdx]);
-                
-                let photo = (photoIdx !== -1 && rows[i][photoIdx]) ? String(rows[i][photoIdx]).trim() : '';
+                let photo = (photoIdx !== -1 && rows[i][photoIdx]) ? rows[i][photoIdx] : '';
                 if (photo && !photo.startsWith('http') && !photo.startsWith('data:')) photo = '';
                 
                 // Aynı cihazda kalıcılık için yerel depolama yedeği (Google Sheet'ten gelmezse)
@@ -2690,7 +2676,7 @@ async function fetchUsers() {
                     photo = lu[name].photo;
                 }
                 
-                USER_DATA[name] = { pass: pass, role: role, photo: photo };
+                if (name) USER_DATA[name] = { pass: String(pass), role: role, photo: photo };
             }
             
             if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
@@ -2757,9 +2743,9 @@ function login(e) {
     const errorEl = $('login-error');
     if(!user) { errorEl.innerText = 'Lütfen bir kullanıcı seçin.'; return; }
 
-        const userKey = Object.keys(USER_DATA).find(k => k.toLocaleLowerCase('tr-TR') === user.toLocaleLowerCase('tr-TR'));
+    const userKey = Object.keys(USER_DATA).find(k => k.toLowerCase() === user.toLowerCase());
 
-        if (userKey && String(USER_DATA[userKey].pass).trim() === pass) {
+    if (userKey && String(USER_DATA[userKey].pass) === pass) {
         LOGGED_IN_USER = { name: userKey, role: normalizeRole(USER_DATA[userKey].role) };
         localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
         errorEl.innerText = '';
@@ -3362,3 +3348,4 @@ function editGenericRecord(idx, type) {
     closeGenericModal();
     setTimeout(() => openGenericFormModal(type, idx), 300);
 }
+
