@@ -650,13 +650,14 @@ function rG(){
     const dd=RAW.filter(r=>r.tarih===sD), s=calc(dd), sab=dd.filter(r=>r.vardiya==='08:00-16:00').length, aks=dd.filter(r=>r.vardiya==='16:00-24:00').length;
     $('g-kpi').innerHTML=card('border-l-accent','Üretim',n(s.u),'Adet',`showKpiDet('g','u')`)+card('border-l-accent4','Performans',s.p.toFixed(1)+'%',s.c+' Kayıt',`showKpiDet('g','p')`)+card('border-l-accent2','Duruş',n(s.d),'Dk',`showKpiDet('g','d')`)+card('border-l-accent','Çalışan',new Set(dd.map(r=>r.calisan)).size,'Kişi',`showKpiDet('g','c')`)+card('border-l-accent3','Düşük Perf',dd.filter(r=>r.tP>0&&r.tP<80).length,'Kayıt',`showKpiDet('g','lo')`)+card('border-l-accent','Yüksek Perf',dd.filter(r=>r.tP>=110).length,'Kayıt',`showKpiDet('g','hi')`);
     
-    const empStats = [...new Set(dd.map(r => r.calisan))].map(w => ({ w, ...calc(dd.filter(r => r.calisan === w)) }));
-    const scoredStats = calculateEmployeeScores(empStats);
+    // Aynı gün çift form dolduranları tek bar'da birleştir
+    const eM={}; dd.forEach(r=>{if(!eM[r.calisan])eM[r.calisan]={pSum:0,c:0}; eM[r.calisan].pSum+=r.tP; eM[r.calisan].c++;});
+    const sr=Object.entries(eM).map(([c,v])=>({calisan:c, tP:v.pSum/v.c})).sort((a,b)=>b.tP-a.tP);
     
-    if(scoredStats.length > 0 && scoredStats[0].score > -Infinity) {
-        window.bestDayEmp = scoredStats[0].w;
-        if($('d-best-name')) $('d-best-name').textContent = scoredStats[0].w;
-        if($('d-best-perf')) $('d-best-perf').textContent = `⭐ ${scoredStats[0].score.toFixed(1)}`;
+    if(sr.length > 0 && sr[0].tP > 0) {
+        window.bestDayEmp = sr[0].calisan;
+        if($('d-best-name')) $('d-best-name').textContent = sr[0].calisan;
+        if($('d-best-perf')) $('d-best-perf').textContent = sr[0].tP.toFixed(1) + '%';
         if($('d-best')) {
             $('d-best').classList.remove('hidden');
             $('d-best').classList.add('flex');
@@ -668,7 +669,6 @@ function rG(){
         }
     }
 
-    const sr = scoredStats.map(s => ({ calisan: s.w, tP: s.p }));
     mc('c1','bar',{labels:sr.map(r=>r.calisan),datasets:[{label:'Ort. Perf %',data:sr.map(r=>r.tP),backgroundColor:sr.map(r=>r.tP>=110?cR('accent',0.75):r.tP>=90?cR('accent4',0.75):r.tP>=70?cR('accent3',0.75):cR('accent2',0.75))}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
     mc('c2','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,dd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
@@ -704,13 +704,11 @@ function rW(){
     
     const ws=[...new Set(wd.map(r=>r.calisan))].map(w=>({w,...calc(wd.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
     
-    const scoredStats = calculateEmployeeScores([...ws]);
-    const bestW = scoredStats[0];
-
-    if(bestW && bestW.score > -Infinity) {
+    const bestW = [...ws].sort((a,b) => b.p - a.p)[0];
+    if(bestW && bestW.p > 0) {
         window.bestWeekEmp = bestW.w;
         if($('w-best-name')) $('w-best-name').textContent = bestW.w;
-        if($('w-best-perf')) $('w-best-perf').textContent = `⭐ ${bestW.score.toFixed(1)}`;
+        if($('w-best-perf')) $('w-best-perf').textContent = bestW.p.toFixed(1) + '%';
         if($('w-best')) {
             $('w-best').classList.remove('hidden');
             $('w-best').classList.add('flex');
@@ -745,13 +743,11 @@ function rM(){
     
     const ws=[...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
         
-        const scoredStats = calculateEmployeeScores([...ws]);
-        const bestM = scoredStats[0];
-
-        if(bestM && bestM.score > -Infinity) {
+        const bestM = [...ws].sort((a,b) => b.p - a.p)[0];
+        if(bestM && bestM.p > 0) {
             window.bestMonthEmp = bestM.w;
             if($('m-best-name')) $('m-best-name').textContent = bestM.w;
-            if($('m-best-perf')) $('m-best-perf').textContent = `⭐ ${bestM.score.toFixed(1)}`;
+            if($('m-best-perf')) $('m-best-perf').textContent = bestM.p.toFixed(1) + '%';
             if($('m-best')) {
                 $('m-best').classList.remove('hidden');
                 $('m-best').classList.add('flex');
@@ -769,28 +765,6 @@ function rM(){
     const badM = [...ws].filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
     $('th-ay-durus').innerHTML=th(['Çalışan','Toplam Duruş']);
     $('tb-ay-durus').innerHTML=badM.length ? badM.map((w,i)=>tr([`<div class="flex gap-1 items-center"><span class="text-[10px] text-text3 font-mono">${i+1}.</span> <b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b></div>`, `<span class="text-accent2 font-mono font-bold">${n(w.d)} dk</span>`])).join('') : `<tr><td colspan="2" class="p-4 text-center text-text3 text-xs">Duruş kaydı yok.</td></tr>`;
-
-    // YENİ: Aylık Liderlik Sıralaması
-    if ($('th-ay-puan')) {
-        $('th-ay-puan').innerHTML = th(['Sıra', 'Çalışan', '🏆 Puan', 'Top. Üretim', 'Ort. Perf', 'Kayıt', 'Duruş (Dk)']);
-    }
-    if ($('tb-ay-puan')) {
-        $('tb-ay-puan').innerHTML = scoredStats.map((e, i) => {
-            const rank = i + 1;
-            let rankBadge = '';
-            if (rank === 1) rankBadge = '🥇';
-            else if (rank === 2) rankBadge = '🥈';
-            else if (rank === 3) rankBadge = '🥉';
-            else rankBadge = rank;
-
-            return tr([
-                `<div class="font-bold text-center">${rankBadge}</div>`,
-                `<b class="emp-link" onclick="openModal('${safeAttr(e.w)}')">${escapeHTML(e.w)}</b>`,
-                `<b class="text-accent3 font-mono">${e.score.toFixed(1)}</b>`,
-                n(e.u), pb(e.p), e.c, n(e.d)
-            ]);
-        }).join('');
-    }
 }
 
 function rH(){
@@ -808,8 +782,20 @@ function rH(){
             if(mData.length === 0) return '';
             
             let empStats = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }));
-            const scoredStats = calculateEmployeeScores(empStats);
-            const best = scoredStats[0];
+            const maxU = Math.max(...empStats.map(e => e.u)) || 1;
+            const maxP = Math.max(...empStats.map(e => e.p)) || 1;
+            const maxC = Math.max(...empStats.map(e => e.c)) || 1;
+            
+            const wU = adminSettings.weights?.u ?? 40;
+            const wP = adminSettings.weights?.p ?? 40;
+            const wC = adminSettings.weights?.c ?? 20;
+            const wD = adminSettings.weights?.d ?? 0.1;
+            
+            empStats.forEach(e => {
+                e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC) - (e.d * wD);
+            });
+            
+            const best = empStats.sort((a, b) => b.score - a.score)[0];
             if(!best) return '';
 
             const uInfo = USER_DATA[best.w] || {};
@@ -3159,8 +3145,22 @@ function fetchCSV(isBg = false) {
             const mData = RAW.filter(r => r.tarih.endsWith(sM));
             if(mData.length > 0) {
                 let empStats = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }));
-                const scoredStats = calculateEmployeeScores(empStats);
-                const best = scoredStats[0];
+                
+                // Normalizasyon için o ayın en yüksek değerlerini bul
+                const maxU = Math.max(...empStats.map(e => e.u)) || 1;
+                const maxP = Math.max(...empStats.map(e => e.p)) || 1;
+                const maxC = Math.max(...empStats.map(e => e.c)) || 1;
+                
+                const wU = adminSettings.weights?.u ?? 40;
+                const wP = adminSettings.weights?.p ?? 40;
+                const wC = adminSettings.weights?.c ?? 20;
+                const wD = adminSettings.weights?.d ?? 0.1;
+                
+                empStats.forEach(e => {
+                    e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC) - (e.d * wD);
+                });
+                
+                const best = empStats.sort((a, b) => b.score - a.score)[0];
                 window.bestEmpName = best.w;
                 if($('hdr-best-name')) $('hdr-best-name').textContent = best.w.toUpperCase();
                 if($('hdr-best-det')) $('hdr-best-det').innerHTML = `<span class="text-accent4 font-bold" title="Adil Puan">⭐ ${best.score.toFixed(1)} Puan</span> | <span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?'text-accent':'text-accent2'}">${best.p.toFixed(1)}%</span> Perf`;
