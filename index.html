@@ -11,10 +11,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <script>
+      <script>
         const originalWarn = console.warn;
-        console.warn = (...args) => { if(typeof args[0]==='string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) return; originalWarn(...args); };
-    </script>
+        console.warn = function() {
+            if (typeof arguments[0] === 'string' && arguments[0].indexOf('cdn.tailwindcss.com should not be used in production') !== -1) return;
+            originalWarn.apply(console, arguments);
+        };
+      </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -69,9 +72,9 @@
             <div class="flex flex-col items-center justify-center bg-bg3/80 border border-border/50 rounded-xl p-2 md:px-4 md:py-2 shadow-sm flex-1 min-w-[30%] sm:min-w-[100px] 2xl:max-w-[140px] transition-transform hover:-translate-y-0.5"><span class="text-[9px] md:text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Ort. Perf</span><span id="hdr-perf" class="text-lg md:text-xl font-bold text-accent4">-</span></div>
             <div class="flex flex-col items-center justify-center bg-bg3/80 border border-border/50 rounded-xl p-2 md:px-4 md:py-2 shadow-sm flex-1 min-w-[30%] sm:min-w-[100px] 2xl:max-w-[140px] transition-transform hover:-translate-y-0.5"><span class="text-[9px] md:text-[10px] uppercase tracking-wider text-text3 whitespace-nowrap">Çalışan</span><span id="hdr-workers" class="text-lg md:text-xl font-bold text-text">-</span></div>
             
-            <!-- AYIN YILDIZI -->
+            <!-- ÜRETİM LİDERLİĞİ -->
             <div id="hdr-best" class="hidden flex-col items-center justify-center p-2 md:px-5 md:py-2 ayin-elemani-kutu rounded-xl bg-bg3/80 cursor-pointer transition-transform hover:scale-105 shadow-sm flex-1 min-w-[45%] sm:min-w-[140px] 2xl:max-w-[220px]" onclick="if(window.bestEmpName) openModal(window.bestEmpName)">
-                <span class="text-[9px] md:text-[10px] tracking-wider text-accent3 font-bold uppercase mb-0.5 text-center">🏆 AYIN YILDIZI</span>
+                <span class="text-[9px] md:text-[10px] tracking-wider text-accent3 font-bold uppercase mb-0.5 text-center">🏆 ÜRETİM LİDERLİĞİ</span>
                 <span id="hdr-best-name" class="text-sm md:text-lg font-bebas tracking-[1px] ayin-elemani leading-tight text-center">YÜKLENİYOR...</span>
                 <span id="hdr-best-det" class="text-[8px] md:text-[9px] text-text2 font-mono whitespace-nowrap mt-0.5 hidden sm:block">-</span>
             </div>
@@ -333,7 +336,7 @@
                 <div class="flex flex-col md:flex-row items-center gap-3">
                     <div class="flex items-center gap-3"><span id="c-month" class="font-bebas text-2xl tracking-wider text-accent drop-shadow-sm"></span><input type="month" id="m-pick" class="bg-bg3 border border-border text-text2 text-xs rounded-lg p-2 outline-none focus:border-accent transition-colors cursor-pointer" onchange="pkM(this.value)"></div>
                     <div id="m-best" class="hidden items-center gap-2 px-3 py-1.5 bg-accent3/10 border border-accent3/30 rounded-lg cursor-pointer hover:bg-accent3/20 transition-transform hover:scale-105 shadow-sm" onclick="if(window.bestMonthEmp) openModal(window.bestMonthEmp)">
-                        <span class="text-[10px] text-accent3 font-bold uppercase tracking-wider">🌟 AYIN YILDIZI</span>
+                        <span class="text-[10px] text-accent3 font-bold uppercase tracking-wider">🌟 ÜRETİM LİDERLİĞİ</span>
                         <span id="m-best-name" class="font-bebas text-sm md:text-base text-text uppercase"></span>
                         <span id="m-best-perf" class="text-[10px] font-bold text-accent4 bg-bg3/50 px-1.5 py-0.5 rounded"></span>
                     </div>
@@ -690,7 +693,7 @@
                 
                 <!-- Ağırlık Ayarları (weights) -->
                 <div>
-                    <h3 class="font-bebas text-xl text-accent3 mb-4 border-b border-border/50 pb-1">AYIN YILDIZI AĞIRLIKLARI (%)</h3>
+                    <h3 class="font-bebas text-xl text-accent3 mb-4 border-b border-border/50 pb-1">ÜRETİM LİDERLİĞİ AĞIRLIKLARI (%)</h3>
                     <div class="space-y-3 p-4 bg-bg3 border border-border rounded" id="admin-weights-list">
                     </div>
                 </div>

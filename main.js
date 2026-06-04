@@ -104,24 +104,72 @@ function getLeaderWeights() {
     };
 }
 
+function uniqValues(arr) {
+    const out = [];
+    const seen = {};
+    for (let i = 0; i < arr.length; i++) {
+        const v = arr[i];
+        if (v === undefined || v === null) continue;
+        const key = String(v);
+        if (!seen[key]) {
+            seen[key] = true;
+            out.push(v);
+        }
+    }
+    return out;
+}
+
+function buildEmployeeRows(rows) {
+    const names = uniqValues(rows.map(r => r.calisan));
+    return names.map(name => {
+        const s = calc(rows.filter(r => r.calisan === name));
+        return { w: name, u: s.u, b: s.b, p: s.p, d: s.d, c: s.c };
+    });
+}
+
+function buildDateRows(rows, labelLen) {
+    const dates = uniqValues(rows.map(r => r.tarih)).sort((a, b) => (
+        a.split('.').reverse().join('') < b.split('.').reverse().join('') ? -1 : 1
+    ));
+    return dates.map(d => {
+        const s = calc(rows.filter(r => r.tarih === d));
+        return { l: d.slice(0, labelLen), u: s.u, b: s.b, p: s.p, d: s.d, c: s.c };
+    });
+}
+
 function rankByLeaderScore(stats) {
     if (!Array.isArray(stats) || stats.length === 0) return [];
 
     const w = getLeaderWeights();
-    const maxU = Math.max(...stats.map(e => Number(e.u) || 0)) || 1;
-    const maxP = Math.max(...stats.map(e => Number(e.p) || 0)) || 1;
-    const maxC = Math.max(...stats.map(e => Number(e.c) || 0)) || 1;
+    let maxU = 0;
+    let maxP = 0;
+    let maxC = 0;
+
+    for (let i = 0; i < stats.length; i++) {
+        const v = Number(stats[i].u) || 0;
+        const p = Number(stats[i].p) || 0;
+        const c = Number(stats[i].c) || 0;
+        if (v > maxU) maxU = v;
+        if (p > maxP) maxP = p;
+        if (c > maxC) maxC = c;
+    }
+    if (!maxU) maxU = 1;
+    if (!maxP) maxP = 1;
+    if (!maxC) maxC = 1;
 
     return stats.map(e => {
+        const o = {};
+        for (const k in e) {
+            if (Object.prototype.hasOwnProperty.call(e, k)) o[k] = e[k];
+        }
+
         const u = Number(e.u) || 0;
         const p = Number(e.p) || 0;
         const c = Number(e.c) || 0;
         const d = Number(e.d) || 0;
 
-        return {
-            ...e,
-            score: ((u / maxU) * w.u) + ((p / maxP) * w.p) + ((c / maxC) * w.c) - (d * w.d)
-        };
+        o.score = ((u / maxU) * w.u) + ((p / maxP) * w.p) + ((c / maxC) * w.c) - (d * w.d);
+        return o;
     }).sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         if (b.u !== a.u) return b.u - a.u;
@@ -720,21 +768,42 @@ function rG(){
     renderShiftComparison('c4', 'tb-gun-kiyas', 'th-gun-kiyas', dd);
     
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
-    $('th-gun').innerHTML=thD(['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf', ...(isAdmin ? ['İşlem'] : [])]);
-    $('tb-gun').innerHTML=dd.map((r,i)=>trD([
-        i+1, `<b class="emp-link" onclick="openModal('${safeAttr(r.calisan)}')"> ${escapeHTML(r.calisan)}</b>`, escapeHTML(r.vardiya)||'-',
-        escapeHTML(r.pres1)||'-', escapeHTML(r.fason1)||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
-        escapeHTML(r.pres2)||'-', escapeHTML(r.fason2)||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
-        n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP),
-        ...(isAdmin ? [`<div class="flex gap-2 items-center"><button onclick="editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:underline font-bold text-[14px]" title="Düzenle">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:underline font-bold text-[14px]" title="Sil">🗑</button></div>`] : [])
-    ])).join('');
+    const thHeaders = ['#','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf'];
+    if (isAdmin) thHeaders.push('İşlem');
+    $('th-gun').innerHTML = thD(thHeaders);
+    $('tb-gun').innerHTML = dd.map((r, i) => {
+        const row = [
+            i + 1,
+            `<b class="emp-link" onclick="openModal('${safeAttr(r.calisan)}')"> ${escapeHTML(r.calisan)}</b>`,
+            escapeHTML(r.vardiya)||'-',
+            escapeHTML(r.pres1)||'-',
+            escapeHTML(r.fason1)||'-',
+            n(r.beklenen1),
+            n(r.uretim1),
+            r.perf1>0 ? pb(r.perf1) : '-',
+            r.durus1>0 ? `<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>` : '-',
+            escapeHTML(r.pres2)||'-',
+            escapeHTML(r.fason2)||'-',
+            n(r.beklenen2),
+            n(r.uretim2),
+            r.perf2>0 ? pb(r.perf2) : '-',
+            r.durus2>0 ? `<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>` : '-',
+            n(r.tB),
+            `<b class="text-accent">${n(r.tU)}</b>`,
+            pb(r.tP)
+        ];
+        if (isAdmin) {
+            row.push(`<div class="flex gap-2 items-center"><button onclick="editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:underline font-bold text-[14px]" title="Düzenle">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:underline font-bold text-[14px]" title="Sil">🗑</button></div>`);
+        }
+        return trD(row);
+    }).join('');
 }
 
 function rW(){
     if(!sW)return; $('c-week').innerText=sW.replace('-W',' / ')+'. Hafta'; $('w-pick').value=sW;
     const wd=RAW.filter(r=>isoW(r.tarih)===sW), s=calc(wd);
     $('w-kpi').innerHTML=card('border-l-accent','Haftalık Üretim',n(s.u),'Adet',`showKpiDet('w','u')`)+card('border-l-accent4','Haftalık Perf',s.p.toFixed(1)+'%',s.c+' Kayıt',`showKpiDet('w','p')`)+card('border-l-accent2','Haftalık Duruş',n(s.d),'Dk',`showKpiDet('w','d')`)+card('border-l-accent3','Çalışılan Gün',new Set(wd.map(r=>r.tarih)).size,'Gün',`showKpiDet('w','c')`);
-    const dt=[...new Set(wd.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,5), ...calc(wd.filter(r=>r.tarih===d))}));
+    const dt = buildDateRows(wd, 5);
     mc('w1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
     mc('w2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
     
@@ -743,9 +812,9 @@ function rW(){
     const sab=wd.filter(r=>r.vardiya==='08:00-16:00').length, aks=wd.filter(r=>r.vardiya==='16:00-24:00').length;
     mc('w4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,wd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
-    const ws=[...new Set(wd.map(r=>r.calisan))].map(w=>({w,...calc(wd.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
+    const ws = buildEmployeeRows(wd).sort((a,b)=>b.u-a.u);
     
-    const bestW = [...ws].sort((a,b) => b.p - a.p)[0];
+    const bestW = ws.slice().sort((a,b) => b.p - a.p)[0];
     if(bestW && bestW.p > 0) {
         window.bestWeekEmp = bestW.w;
         if($('w-best-name')) $('w-best-name').textContent = bestW.w;
@@ -764,7 +833,7 @@ function rW(){
     $('th-haf').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
 
-    const badW = [...ws].filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
+    const badW = ws.slice().filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
     $('th-haf-durus').innerHTML=th(['Çalışan','Toplam Duruş']);
     $('tb-haf-durus').innerHTML=badW.length ? badW.map((w,i)=>tr([`<div class="flex gap-1 items-center"><span class="text-[10px] text-text3 font-mono">${i+1}.</span> <b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b></div>`, `<span class="text-accent2 font-mono font-bold">${n(w.d)} dk</span>`])).join('') : `<tr><td colspan="2" class="p-4 text-center text-text3 text-xs">Duruş kaydı yok.</td></tr>`;
 }
@@ -773,7 +842,7 @@ function rM(){
     if(!sM)return; const [m,y]=sM.split('.'); $('c-month').innerText=`${m}/${y}`; $('m-pick').value=`${y}-${m}`;
     const md=RAW.filter(r=>r.tarih.endsWith(sM)), s=calc(md);
     $('m-kpi').innerHTML=card('border-l-accent','Aylık Üretim',n(s.u),'Adet',`showKpiDet('m','u')`)+card('border-l-accent4','Aylık Perf',s.p.toFixed(1)+'%',s.c+' Kayıt',`showKpiDet('m','p')`)+card('border-l-accent2','Aylık Duruş',n(s.d),'Dk',`showKpiDet('m','d')`)+card('border-l-accent3','Çalışılan Gün',new Set(md.map(r=>r.tarih)).size,'Gün',`showKpiDet('m','c')`);
-    const dt=[...new Set(md.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,2), ...calc(md.filter(r=>r.tarih===d))}));
+    const dt = buildDateRows(md, 2);
     mc('m1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
     mc('m2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
     
@@ -782,7 +851,7 @@ function rM(){
     const sab=md.filter(r=>r.vardiya==='08:00-16:00').length, aks=md.filter(r=>r.vardiya==='16:00-24:00').length;
     mc('m4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,md.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
     
-    const ws = rankByLeaderScore([...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))}));
+    const ws = rankByLeaderScore(buildEmployeeRows(md));
     const bestM = ws[0];
     if(bestM) {
         window.bestMonthEmp = bestM.w;
@@ -801,7 +870,7 @@ function rM(){
     $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Puan','Duruş (Dk)']);
     $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), w.score.toFixed(1), n(w.d)])).join('');
 
-    const badM = [...ws].filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
+    const badM = ws.slice().filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
     $('th-ay-durus').innerHTML=th(['Çalışan','Toplam Duruş']);
     $('tb-ay-durus').innerHTML=badM.length ? badM.map((w,i)=>tr([`<div class="flex gap-1 items-center"><span class="text-[10px] text-text3 font-mono">${i+1}.</span> <b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b></div>`, `<span class="text-accent2 font-mono font-bold">${n(w.d)} dk</span>`])).join('') : `<tr><td colspan="2" class="p-4 text-center text-text3 text-xs">Duruş kaydı yok.</td></tr>`;
 }
@@ -814,10 +883,10 @@ function rH(){
         safeSetText('hdr-total', n(s.u));
         safeSetText('hdr-perf', s.p.toFixed(1)+'%');
         safeSetText('hdr-workers', new Set(RAW.map(r=>r.calisan)).size);
-    const dt=DATES.map(d=>({l:d.slice(0,5), ...calc(RAW.filter(r=>r.tarih===d))}));
+    const dt = buildDateRows(RAW, 5);
     mc('h1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
     mc('h2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
-    const ws=rankByLeaderScore([...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).slice(0,10);
+    const ws=rankByLeaderScore(buildEmployeeRows(RAW)).slice(0,10);
     // FIX #4: x.w.calisan her zaman undefined'dı (x.w zaten string). Düzeltildi.
     mc('h3','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
         
@@ -826,7 +895,7 @@ function rH(){
             const mData = RAW.filter(r => r.tarih.endsWith(m));
             if(mData.length === 0) return '';
             
-            const best = rankByLeaderScore([...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }))[0];
+            const best = rankByLeaderScore(buildEmployeeRows(mData))[0];
             if(!best) return '';
 
             const uInfo = USER_DATA[best.w] || {};
@@ -1213,7 +1282,7 @@ function rAlarm() {
 }
 
 function rC(){
-    const ws=[...new Set(RAW.map(r=>r.calisan))].map(w=>({w,...calc(RAW.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
+    const ws = buildEmployeeRows(RAW).sort((a,b)=>b.u-a.u);
     mc('ca1','bar',{labels:ws.map(x=>x.w),datasets:[{label:'Üretim',data:ws.map(x=>x.u),backgroundColor:cR('accent',0.75)}]}, { x: { ticks: { callback: function(v) { return String(this.getLabelForValue(v)).split(' ')[0]; } } } });
     $('th-cal').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
     $('tb-cal').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
@@ -1244,10 +1313,11 @@ function rF(){
     const fl=Object.entries(fM).map(([k,v])=>({f:v.f, b:v.b, u:v.u, c:v.c, a:v.pp.length?v.pp.reduce((a,b)=>a+b,0)/v.pp.length:0})).sort((a,b)=>b.u-a.u);
     
     const fasList = $('fas-list');
-    if(fasList) fasList.innerHTML = [...new Set(fl.map(x => x.f))].sort().map(f => `<option value="${escapeHTML(f)}">`).join('');
+    if(fasList) fasList.innerHTML = uniqValues(fl.map(x => x.f)).sort().map(f => `<option value="${escapeHTML(f)}">`).join('');
 
     mc('f1','bar',{labels:fl.slice(0,15).map(x=>x.f),datasets:[{label:'Üretim',data:fl.slice(0,15).map(x=>x.u),backgroundColor:cR('accent',0.75)}]},{idx:'y'});
-    mc('f2','bar',{labels:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.f),datasets:[{label:'Perf %',data:[...fl].sort((a,b)=>b.a-a.a).slice(0,15).map(x=>x.a),backgroundColor:cR('accent4',0.75)}]},{idx:'y'});
+    const flByPerf = fl.slice().sort((a,b)=>b.a-a.a);
+    mc('f2','bar',{labels:flByPerf.slice(0,15).map(x=>x.f),datasets:[{label:'Perf %',data:flByPerf.slice(0,15).map(x=>x.a),backgroundColor:cR('accent4',0.75)}]},{idx:'y'});
     $('th-fas').innerHTML=th(['Fason','Hedef (Adet)','Top.Üretim','Ort.Perf','Kayıt']);
     $('tb-fas').innerHTML=fl.map(x=>tr([`<b>${x.f}</b>`, n(x.b), n(x.u), pb(x.a), x.c])).join('');
 }
@@ -1637,14 +1707,21 @@ function openRecsModal(title, data) {
     $('recs-stats').innerHTML = cCard('TOPLAM ÜRETİM', n(s.u)+' Adet', s.c+' Kayıt', n(s.b)+' Hedef') + cCard('ORTALAMA PERF.', (Number(s.p)||0).toFixed(1)+'%', '', '') + cCard('TOPLAM DURUŞ', n(s.d)+' Dk', '', '') + cCard('ÇALIŞAN', new Set(data.map(r=>r.calisan)).size+' Kişi', '', '');
     
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
-    $('t-recs').innerHTML = `<thead>${thD(['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf', ...(isAdmin ? ['İşlem'] : [])])}</thead><tbody id="recs-body" class="text-xs">` + 
-        data.map(r => trD([
+    const recHeaders = ['Tarih','Çalışan','Vardiya','Pres 1','Fason 1','Hdf 1','Ürt 1','Perf 1','Dur 1','Pres 2','Fason 2','Hdf 2','Ürt 2','Perf 2','Dur 2','Top.Hdf','Top.Ürt','Ort.Perf'];
+    if (isAdmin) recHeaders.push('İşlem');
+    $('t-recs').innerHTML = `<thead>${thD(recHeaders)}</thead><tbody id="recs-body" class="text-xs">` + 
+        data.map(r => {
+            const row = [
             r.tarih, `<a class="emp-link font-bold" onclick="closeRecsModal(); setTimeout(()=>openModal('${safeAttr(r.calisan)}'), 300);">${escapeHTML(r.calisan)}</a>`, r.vardiya||'-', 
             r.pres1||'-', r.fason1||'-', n(r.beklenen1), n(r.uretim1), r.perf1>0?pb(r.perf1):'-', r.durus1>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus1} dk</span>`:'-',
             r.pres2||'-', r.fason2||'-', n(r.beklenen2), n(r.uretim2), r.perf2>0?pb(r.perf2):'-', r.durus2>0?`<span class="px-1.5 py-0.5 bg-accent2/20 text-accent2 rounded-full text-[10px] font-bold">${r.durus2} dk</span>`:'-',
-            n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP),
-            ...(isAdmin ? [`<div class="flex gap-2"><button onclick="closeRecsModal(); editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:underline text-[14px]">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:underline text-[14px]">🗑</button></div>`] : [])
-        ])).join('') + `</tbody>`;
+            n(r.tB), `<b class="text-accent">${n(r.tU)}</b>`, pb(r.tP)
+            ];
+            if (isAdmin) {
+                row.push(`<div class="flex gap-2"><button onclick="closeRecsModal(); editProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent hover:underline text-[14px]">✎</button><button onclick="deleteProductionRecord('${r.tarih}','${safeAttr(r.calisan)}')" class="text-accent2 hover:underline text-[14px]">🗑</button></div>`);
+            }
+            return trD(row);
+        }).join('') + `</tbody>`;
     
     const el = $('recs-modal'); el.classList.remove('hidden'); el.classList.add('flex'); setTimeout(()=>el.classList.remove('opacity-0'),10);
 }
@@ -1665,7 +1742,9 @@ function openModal(emp) {
     $('mdl-stats').innerHTML = cCard(`GÜNLÜK (${sD})`, calc(data.filter(r => r.tarih === sD))) + cCard('HAFTALIK', calc(data.filter(r => isoW(r.tarih) === sW))) + cCard(`AYLIK (${sM})`, calc(data.filter(r => r.tarih.endsWith(sM)))) + cCard('TÜM ZAMANLAR', calc(data));
     
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
-    $('mdl-th').innerHTML = th(['Tarih','Vardiya','Presler','Hedef','Üretim','Performans','Duruş', ...(isAdmin ? ['İşlem'] : [])]);
+    const mdlHeaders = ['Tarih','Vardiya','Presler','Hedef','Üretim','Performans','Duruş'];
+    if (isAdmin) mdlHeaders.push('İşlem');
+    $('mdl-th').innerHTML = th(mdlHeaders);
     const monthData = sM ? data.filter(r => r.tarih.endsWith(sM)) : data;
     $('mdl-history').innerHTML = monthData.map(r => { const topD = r.durus1 + r.durus2; return `
         <tr class="border-b border-border/50 hover:bg-bg2">
@@ -1788,7 +1867,7 @@ function popF(){
     const vC = calisanInput.value, vP1 = $('f-pres1').value, vP2 = $('f-pres2').value, vF1 = $('f-fason1').value, vF2 = $('f-fason2').value;
 
     if (LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin') {
-        const emps=[...new Set(Object.keys(USER_DATA))].filter(x=>x).sort();
+        const emps=Object.keys(USER_DATA).filter(x=>x).sort();
         const dl = $('form-user-list');
         if (dl) dl.innerHTML = emps.map(e=>`<option value="${e}">`).join('');
         calisanInput.disabled = false;
@@ -1797,7 +1876,7 @@ function popF(){
         calisanInput.disabled = true;
     }
 
-    const presses=[...new Set([...RAW.map(r=>r.pres1), ...RAW.map(r=>r.pres2)])].filter(x=>x).sort();
+    const presses=uniqValues(RAW.map(r=>r.pres1).concat(RAW.map(r=>r.pres2))).filter(x=>x).sort();
     const fasonFromSheet = [];
     if (Array.isArray(FASONLAR_RAW)) {
         FASONLAR_RAW.forEach((row, rowIdx) => {
@@ -1812,7 +1891,7 @@ function popF(){
             else if (row[0]) fasonFromSheet.push(row[0]);
         });
     }
-    const fasons = [...new Set([...RAW.map(r => normalizeField(r.fason1)), ...RAW.map(r => normalizeField(r.fason2)), ...fasonFromSheet])].filter(x=>x).sort();
+    const fasons = uniqValues(RAW.map(r => normalizeField(r.fason1)).concat(RAW.map(r => normalizeField(r.fason2)).concat(fasonFromSheet))).filter(x=>x).sort();
     
     const pOpts='<option value="">Seçiniz...</option>'+presses.map(p=>`<option value="${p}">${p}</option>`).join('');
     $('f-pres1').innerHTML=pOpts; $('f-pres2').innerHTML=pOpts.replace('Seçiniz...','Yok/Seçiniz...');
@@ -3196,9 +3275,9 @@ function fetchCSV(isBg = false) {
         MALZEME_RAW = nextM;
         MESAJ_RAW = nextMsg;
         FASONLAR_RAW = nextF.r;
-        DATES=[...new Set(RAW.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
-        MONTHS=[...new Set(DATES.map(d=>d.slice(3)))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
-        WEEKS=[...new Set(DATES.map(isoW))].sort();
+        DATES=uniqValues(RAW.map(r=>r.tarih)).sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
+        MONTHS=uniqValues(DATES.map(d=>d.slice(3))).sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1);
+        WEEKS=uniqValues(DATES.map(isoW)).sort();
         
         if (!sD || !DATES.includes(sD)) sD = DATES.length ? DATES[DATES.length-1] : '';
         if (!sM || !MONTHS.includes(sM)) sM = MONTHS.length ? MONTHS[MONTHS.length-1] : '';
@@ -3208,7 +3287,7 @@ function fetchCSV(isBg = false) {
         if(sM) {
             const mData = RAW.filter(r => r.tarih.endsWith(sM));
             if(mData.length > 0) {
-                const best = rankByLeaderScore([...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }))[0];
+                const best = rankByLeaderScore(buildEmployeeRows(mData))[0];
                 if(best) {
                     window.bestEmpName = best.w;
                     if($('hdr-best-name')) $('hdr-best-name').textContent = best.w.toUpperCase();
@@ -3405,9 +3484,13 @@ async function saveGenericForm(e) {
     const formData = {};
     $('gen-form-fields').querySelectorAll('input, textarea, select').forEach(el => formData[el.name] = el.value);
     
-    const payload = editIdx !== '' 
-        ? { action: "editGenericRecord", sheet: sheetName, rowIndex: parseInt(editIdx) + 2, data: formData } 
-        : { action: "addRecord", sheet: sheetName, ...formData };
+    let payload;
+    if (editIdx !== '') {
+        payload = { action: "editGenericRecord", sheet: sheetName, rowIndex: parseInt(editIdx) + 2, data: formData };
+    } else {
+        payload = { action: "addRecord", sheet: sheetName };
+        for (const k in formData) { if (Object.prototype.hasOwnProperty.call(formData, k)) payload[k] = formData[k]; }
+    }
         
     try {
         toast('Kaydediliyor...', 'warn');
