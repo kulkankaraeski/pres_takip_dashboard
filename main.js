@@ -1236,8 +1236,8 @@ function analyzeFason(fasonName) {
     RAW.forEach(r => {
         [1,2].forEach(i => {
             const f = normalizeField(r['fason'+i]);
-            const p = r['pres'+i];
-            if(f && p && normalizeFasonKey(f) === fKey) {
+            const p = r['pres'+i] || 'Belirtilmeyen Pres';
+            if(f && normalizeFasonKey(f) === fKey) {
                 if(!pStats[p]) pStats[p] = { runs: 0, perfArr: [], durus: 0, uretim: 0, beklenen: 0, netMins: 0 };
                 pStats[p].runs++;
                 if(r['perf'+i]) pStats[p].perfArr.push(Number(r['perf'+i]));
