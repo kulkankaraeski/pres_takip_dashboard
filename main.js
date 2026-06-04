@@ -1,4 +1,4 @@
-// Chrome eklentileri / üçüncü taraf içerikleri kaynaklı gürültülü Promise hatalarını (ör. content.js, message channel kapanması)
+﻿// Chrome eklentileri / üçüncü taraf içerikleri kaynaklı gürültülü Promise hatalarını (ör. content.js, message channel kapanması)
 // konsolda göstermemek ve uygulama içi gerçek hataları korumak için filtrele.
 function isLikelyNoisePromiseReason(reason) {
     if (!reason) return true;
@@ -807,7 +807,13 @@ function rM(){
 }
 
 function rH(){
-    const s=calc(RAW); $('h-kpi').innerHTML=card('border-l-accent','Genel Üretim',n(s.u),'Tümü',`showKpiDet('h','u')`)+card('border-l-accent4','Genel Perf',s.p.toFixed(1)+'%',s.c+' Kayıt',`showKpiDet('h','p')`)+card('border-l-accent2','Genel Duruş',n(s.d),'Dk',`showKpiDet('h','d')`)+card('border-l-accent3','Kayıtlı Gün',DATES.length,'Gün',`showKpiDet('h','c')`);
+        const s=calc(RAW);
+        safeSetText('hdr-total', n(s.u));
+        safeSetText('hdr-perf', s.p.toFixed(1)+'%');
+        safeSetText('hdr-workers', new Set(RAW.map(r=>r.calisan)).size);
+        safeSetText('hdr-total', n(s.u));
+        safeSetText('hdr-perf', s.p.toFixed(1)+'%');
+        safeSetText('hdr-workers', new Set(RAW.map(r=>r.calisan)).size);
     const dt=DATES.map(d=>({l:d.slice(0,5), ...calc(RAW.filter(r=>r.tarih===d))}));
     mc('h1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
     mc('h2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
@@ -3114,6 +3120,18 @@ function showLoader() {
     }
 }
 
+function safeSetText(id, value) {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = value ?? '';
+}
+
+function safeSetStyle(id, prop, value) {
+    const el = $(id);
+    if (!el || !el.style) return;
+    el.style[prop] = value;
+}
+
 function hideLoader() {
     const el = $('global-loader');
     if (el) {
@@ -3127,7 +3145,28 @@ function fetchCSV(isBg = false) {
         showLoader();
         ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
     }
-    const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
+    const b = $('btn-refresh') || { innerText: '', disabled: false };
+    b.innerText = 'Yükleniyor..';
+    b.disabled = true;
+    safeSetText('src-status', 'Bağlanıyor..');
+    safeSetStyle('src-status', 'color', '#f5c842');
+    const finish = (() => {
+        let done = false;
+        return () => {
+            if (done) return;
+            done = true;
+            b.innerText = '↻ GÜNCELLE';
+            b.disabled = false;
+            if(!isBg) hideLoader();
+        };
+    })();
+    const timeoutHandle = setTimeout(() => {
+        safeSetText('src-status', '● BAĞLANTI ZAMAN AŞIMI');
+        safeSetStyle('src-status', 'color', '#e86d3a');
+        safeSetText('src-info', 'Veri çekilemedi, daha sonra otomatik tekrar denenecek.');
+        if(!isBg) toast('Sunucuya bağlanma zaman aşımı. Uygulama kullanılabilir halde kalıyor.', 'warn');
+        finish();
+    }, isBg ? 45000 : 30000);
         
         // CANLI VERİ İÇİN CACHE BUSTER (Zaman damgası ekleyerek tarayıcı ve sunucu önbelleğini kırar)
         const ts = '&_t=' + Date.now();
@@ -3187,11 +3226,16 @@ function fetchCSV(isBg = false) {
                 $('hdr-best').classList.remove('flex');
             }
         }
-        const s=calc(RAW); $('hdr-total').innerText=n(s.u); $('hdr-perf').innerText=s.p.toFixed(1)+'%'; $('hdr-workers').innerText=new Set(RAW.map(r=>r.calisan)).size;
+        const s=calc(RAW);
+        safeSetText('hdr-total', n(s.u));
+        safeSetText('hdr-perf', s.p.toFixed(1)+'%');
+        safeSetText('hdr-workers', new Set(RAW.map(r=>r.calisan)).size);
         if (!isBg) popF(); // Form için verileri doldur (arkaplan yenilemede açık olan dropdownları bozmamak için)
         checkNotifs();
         checkSystemAlarms();
-        $('src-status').innerText='● CANLI VERİ'; $('src-status').style.color='#a8e063'; $('src-info').innerText=`${RAW.length} kayıt`;
+        safeSetText('src-status', '● CANLI VERİ');
+        safeSetStyle('src-status', 'color', '#a8e063');
+        safeSetText('src-info', `${RAW.length} kayıt`);
         
         if (isBg) {
             // Arkaplan güncellemesinde sekmeyi baştan yükleme (animasyon ve scroll sıfırlamasını engeller), sadece içeriği güncelle
@@ -3214,12 +3258,16 @@ function fetchCSV(isBg = false) {
         }
     }).catch(e=>{
         console.error('Veri İşleme Hatası:', e);
-        $('src-status').innerText='● BAĞLANTI HATASI'; $('src-status').style.color='#e86d3a';
-        $('src-info').innerText='Veri okunamadı. İzinleri kontrol edin.';
+        safeSetText('src-status', '● BAĞLANTI HATASI');
+        safeSetStyle('src-status', 'color', '#e86d3a');
+        safeSetText('src-info', 'Veri okunamadı. İzinleri kontrol edin.');
         if(!isBg) {
             toast(e.message || 'Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
         }
-    }).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false; if(!isBg) hideLoader();});
+    }).finally(() => {
+        clearTimeout(timeoutHandle);
+        finish();
+    });
 }
 
 // OTOMATİK GÜNCELLEME VE OTURUM KONTROLÜ
@@ -3234,22 +3282,31 @@ if(savedUser && savedUser !== "undefined") {
         const roleBadge = renderRoleBadge(LOGGED_IN_USER.role);
         $('user-name').innerHTML = `${LOGGED_IN_USER.name} ${roleBadge}`;
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
-        fetchUsers().then(() => {
-            if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
-                $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
-                $('user-avatar').classList.remove('hidden');
-                if($('user-initials')) $('user-initials').classList.add('hidden');
-            } else {
-                $('user-avatar').classList.add('hidden');
-                if($('user-initials')) {
-                    $('user-initials').innerText = LOGGED_IN_USER.name.slice(0,2).toUpperCase();
-                    $('user-initials').classList.remove('hidden');
+        const bootMain = () => {
+            try {
+                if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
+                    $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
+                    $('user-avatar').classList.remove('hidden');
+                    if($('user-initials')) $('user-initials').classList.add('hidden');
+                } else {
+                    $('user-avatar').classList.add('hidden');
+                    if($('user-initials')) {
+                        $('user-initials').innerText = LOGGED_IN_USER.name.slice(0,2).toUpperCase();
+                        $('user-initials').classList.remove('hidden');
+                    }
                 }
+                applyRoleRestrictions();
+                checkNotifs();
+                fetchCSV();
+            } catch(err) {
+                console.error('Auto login initialize error:', err);
+                throw err;
             }
-            applyRoleRestrictions();
-            checkNotifs();
-            fetchCSV();
-    }).catch(err => console.error('Auto login fetchUsers error:', err));
+        };
+        fetchUsers().then(bootMain).catch(err => {
+            console.error('Auto login fetchUsers error:', err);
+            showLogin();
+        });
     } else {
         showLogin();
     }
