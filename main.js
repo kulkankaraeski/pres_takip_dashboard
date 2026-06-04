@@ -2651,23 +2651,37 @@ async function fetchUsers() {
         
         const rows = parseCSV(text);
         if (rows.length > 1) {
-            const headers = rows[0].map(x => String(x).toLowerCase());
-            let nameIdx = headers.findIndex(h => h.includes('çalışan') || h.includes('ad'));
-            let passIdx = headers.findIndex(h => h.includes('şifre') || h.includes('sifre'));
-            let roleIdx = headers.findIndex(h => h.includes('rol') || h.includes('yetki'));
-            let photoIdx = headers.findIndex(h => h.includes('fotoğraf') || h.includes('fotograf') || h.includes('resim'));
+            const headers = rows[0].map(x => String(x).toLocaleLowerCase('tr-TR').trim());
+            
+            let nameIdx = headers.findIndex(h => h === 'çalışan' || h === 'ad' || h === 'ad soyad' || h === 'isim' || h === 'personel');
+            if (nameIdx === -1) nameIdx = headers.findIndex(h => h.includes('çalışan') || h.includes('ad') || h.includes('isim') || h.includes('personel'));
+            
+            let passIdx = headers.findIndex(h => h === 'şifre' || h === 'sifre' || h === 'parola');
+            if (passIdx === -1) passIdx = headers.findIndex(h => h.includes('şifre') || h.includes('sifre') || h.includes('parola'));
+            
+            let roleIdx = headers.findIndex(h => h === 'rol' || h === 'yetki' || h === 'görev');
+            if (roleIdx === -1) roleIdx = headers.findIndex(h => h.includes('rol') || h.includes('yetki') || h.includes('görev'));
+            
+            let photoIdx = headers.findIndex(h => h === 'fotoğraf' || h === 'fotograf' || h === 'resim');
+            if (photoIdx === -1) photoIdx = headers.findIndex(h => h.includes('fotoğraf') || h.includes('fotograf') || h.includes('resim'));
             
             if (nameIdx === -1) nameIdx = 0;
             if (passIdx === -1) passIdx = 1;
             
             USER_DATA = {};
             for(let i=1; i<rows.length; i++) {
-                let name = rows[i][nameIdx];
-                if (!name) continue;
-                let pass = rows[i][passIdx] || '1234';
+                let nameRaw = rows[i][nameIdx];
+                if (nameRaw === undefined || nameRaw === null) continue;
+                let name = String(nameRaw).trim();
+                if (name === '') continue;
+                
+                let passRaw = rows[i][passIdx];
+                let pass = (passRaw !== undefined && passRaw !== null && String(passRaw).trim() !== '') ? String(passRaw).trim() : '1234';
+                
                 let role = 'user';
                 if (roleIdx !== -1 && rows[i][roleIdx]) role = normalizeRole(rows[i][roleIdx]);
-                let photo = (photoIdx !== -1 && rows[i][photoIdx]) ? rows[i][photoIdx] : '';
+                
+                let photo = (photoIdx !== -1 && rows[i][photoIdx]) ? String(rows[i][photoIdx]).trim() : '';
                 if (photo && !photo.startsWith('http') && !photo.startsWith('data:')) photo = '';
                 
                 // Aynı cihazda kalıcılık için yerel depolama yedeği (Google Sheet'ten gelmezse)
@@ -2676,7 +2690,7 @@ async function fetchUsers() {
                     photo = lu[name].photo;
                 }
                 
-                if (name) USER_DATA[name] = { pass: String(pass), role: role, photo: photo };
+                USER_DATA[name] = { pass: pass, role: role, photo: photo };
             }
             
             if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
@@ -2743,9 +2757,9 @@ function login(e) {
     const errorEl = $('login-error');
     if(!user) { errorEl.innerText = 'Lütfen bir kullanıcı seçin.'; return; }
 
-    const userKey = Object.keys(USER_DATA).find(k => k.toLowerCase() === user.toLowerCase());
+        const userKey = Object.keys(USER_DATA).find(k => k.toLocaleLowerCase('tr-TR') === user.toLocaleLowerCase('tr-TR'));
 
-    if (userKey && String(USER_DATA[userKey].pass) === pass) {
+        if (userKey && String(USER_DATA[userKey].pass).trim() === pass) {
         LOGGED_IN_USER = { name: userKey, role: normalizeRole(USER_DATA[userKey].role) };
         localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
         errorEl.innerText = '';
@@ -3348,4 +3362,3 @@ function editGenericRecord(idx, type) {
     closeGenericModal();
     setTimeout(() => openGenericFormModal(type, idx), 300);
 }
-
