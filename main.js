@@ -2708,6 +2708,7 @@ function togglePassword() {
 }
 
 function showLogin() {
+    hideLoader();
     const mc = document.querySelector('.main-content');
     if(mc) mc.classList.add('blurred');
     if($('app-header')) { $('app-header').classList.add('hidden'); $('app-header').classList.remove('flex'); }
@@ -3348,4 +3349,3 @@ function editGenericRecord(idx, type) {
     closeGenericModal();
     setTimeout(() => openGenericFormModal(type, idx), 300);
 }
-
