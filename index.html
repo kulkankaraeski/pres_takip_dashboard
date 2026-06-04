@@ -1126,7 +1126,7 @@ function $(id){return document.getElementById(id);}
 function n(v){const val=Number(v)||0; return val>0?val.toLocaleString('tr-TR'):'-';}
 function pb(p){const val=Number(p)||0; const c=val>=120?'bg-accent/20 text-accent':val>=90?'bg-accent4/20 text-accent4':val>=70?'bg-accent2/20 text-accent2':'bg-accent3/20 text-accent3'; return `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${c}">${val.toFixed(1)}%</span>`;}
 function isoW(d){const[D,M,Y]=d.split('.').map(Number);const dt=new Date(Y,M-1,D);dt.setDate(dt.getDate()+4-(dt.getDay()||7));return `${dt.getFullYear()}-W${String(Math.ceil((((dt-new Date(dt.getFullYear(),0,1))/86400000)+1)/7)).padStart(2,'0')}`;}
-function calc(arr){return{u:arr.reduce((s,r)=>s+r.tU,0),b:arr.reduce((s,r)=>s+r.tB,0),p:arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0,d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
+function calc(arr){const u=arr.reduce((s,r)=>s+r.tU,0);const b=arr.reduce((s,r)=>s+r.tB,0);return{u:u,b:b,p:b>0?(u/b)*100:(arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0),d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
 const cR=(v,a=1)=>`rgba(${getComputedStyle(document.documentElement).getPropertyValue('--c-'+v).trim()},${a})`;
 
 function normalizeText(value) {
@@ -2414,7 +2414,7 @@ function rKayitlar() {
 
     // Verileri ters çevir (yeni kayıtlar en üstte) ama orijinal indeksleri koru
     const mapped = DENEME_RAW.r.map((r, i) => ({ idx: i, data: r })).reverse();
-    renderKayitTable(mapped.slice(0, 100), displayCols);
+    renderKayitTable(mapped, displayCols);
 }
 
 function renderKayitTable(items, displayCols) {
@@ -2447,11 +2447,11 @@ function filterKayitlar(q) {
         }
 
         if (!f) {
-            renderKayitTable(mapped.slice(0, 100), displayCols);
+            renderKayitTable(mapped, displayCols);
             return;
         }
         const filtered = mapped.filter(item => item.data.join(' ').toLowerCase().includes(f));
-        renderKayitTable(filtered.slice(0, 100), displayCols);
+        renderKayitTable(filtered, displayCols);
     }, 300);
 }
 function rMalzeme() {
@@ -2675,7 +2675,7 @@ function openModal(emp) {
     
     const isAdmin = LOGGED_IN_USER && LOGGED_IN_USER.role === 'admin';
     $('mdl-th').innerHTML = th(['Tarih','Vardiya','Presler','Hedef','Üretim','Performans','Duruş', ...(isAdmin ? ['İşlem'] : [])]);
-    const monthData = sM ? data.filter(r => r.tarih.endsWith(sM)) : data.slice(0, 30);
+    const monthData = sM ? data.filter(r => r.tarih.endsWith(sM)) : data;
     $('mdl-history').innerHTML = monthData.map(r => { const topD = r.durus1 + r.durus2; return `
         <tr class="border-b border-border/50 hover:bg-bg2">
             <td class="p-3 font-mono">${r.tarih}</td>
@@ -4103,12 +4103,12 @@ function parse(t){
         let tarih=get('tarih'), cal=get('calisan'); if(!tarih||!cal)continue;
         let u1=tN(get('uretim1')), p1=tN(get('perf1')), u2=tN(get('uretim2')), p2=tN(get('perf2'));
         let b1=tN(get('hedef1')), b2=tN(get('hedef2'));
-        let tU=tN(get('toplamUretim'))||(u1+u2), tB=b1+b2; if(!tU)continue;
+        let tU=tN(get('toplamUretim'))||(u1+u2), tB=b1+b2; if(tU === 0 && tB === 0 && tN(get('durus1')) === 0 && tN(get('durus2')) === 0)continue;
         p1 = p1>0&&p1<=1?p1*100:p1;
         p2 = p2>0&&p2<=1?p2*100:p2;
         let isK1 = get('pres1') || get('fason1') || b1 > 0 || u1 > 0;
         let isK2 = get('pres2') || get('fason2') || b2 > 0 || u2 > 0;
-        let calcTP = (isK1 && isK2) ? ((p1||0) + (p2||0)) / 2 : (isK1 ? (p1||0) : (isK2 ? (p2||0) : (p1||p2||0)));
+        let calcTP = tB > 0 ? (tU / tB) * 100 : ((isK1 && isK2) ? ((p1||0) + (p2||0)) / 2 : (isK1 ? (p1||0) : (isK2 ? (p2||0) : (p1||p2||0))));
         p.push({tarih:tarih, calisan:cal, vardiya:get('vardiya')||'', pres1:get('pres1')||'', fason1:get('fason1')||'', beklenen1:b1, uretim1:u1, perf1:p1, durus1:tN(get('durus1')), pres2:get('pres2')||'', fason2:get('fason2')||'', beklenen2:b2, uretim2:u2, perf2:p2, durus2:tN(get('durus2')), tB:tB, tU:tU, tP:calcTP});
     } return p.map(x=>{if(x.tP>0&&x.tP<=1)x.tP*=100; return x;});
 }

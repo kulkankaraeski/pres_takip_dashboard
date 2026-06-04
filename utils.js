@@ -17,10 +17,12 @@ function safeAttr(str) {
 }
 
 function calc(arr) {
+    const u = arr.reduce((s, r) => s + r.tU, 0);
+    const b = arr.reduce((s, r) => s + r.tB, 0);
     return {
-        u: arr.reduce((s, r) => s + r.tU, 0),
-        b: arr.reduce((s, r) => s + r.tB, 0),
-        p: arr.length ? arr.reduce((s, r) => s + r.tP, 0) / arr.length : 0,
+        u: u,
+        b: b,
+        p: b > 0 ? (u / b) * 100 : (arr.length ? arr.reduce((s, r) => s + r.tP, 0) / arr.length : 0),
         d: arr.reduce((s, r) => s + r.durus1 + r.durus2, 0),
         c: arr.length
     };
