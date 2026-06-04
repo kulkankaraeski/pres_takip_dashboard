@@ -39,6 +39,7 @@
         }
         body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.4s ease, color 0.4s ease;}
         ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:var(--bg); border-radius: 4px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px; transition: background 0.3s;} ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
+        .hidden { display: none !important; } /* Tailwind Yüklenmeden Önce FOUC Engelleme */
         
         .panel { display: none; opacity: 0; }
         .panel.active { display: block; opacity: 1; animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -163,6 +164,7 @@
 
     <!-- GLOBAL YÜKLEME EKRANI -->
     <div id="global-loader" class="fixed inset-0 bg-[var(--bg)]/95 z-[9999] hidden flex-col items-center justify-center opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+    <div id="global-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500 backdrop-blur-sm" style="background-color: var(--bg); opacity: 1; visibility: visible;">
         
         <!-- KURUMSAL LOGO (PORLAND PORSELEN) -->
         <!-- Eğer elinizde resmi .png veya .svg dosyası varsa, hemen alt satırdaki yorumu açıp dosya adını 'src' kısmına yazabilirsiniz. -->
@@ -3429,6 +3431,7 @@ function togglePassword() {
 }
 
 function showLogin() {
+    hideLoader(); // Arayüz karmaşasını engellemek için login ekranında loader'ı gizle
     const mc = document.querySelector('.main-content');
     if(mc) mc.classList.add('blurred');
     if($('app-header')) { $('app-header').classList.add('hidden'); $('app-header').classList.remove('flex'); }
@@ -3770,9 +3773,13 @@ function parseGeneric(t){
 function showLoader() {
     const el = $('global-loader');
     if (el) {
+        el.style.display = 'flex';
         el.classList.remove('hidden');
         el.classList.add('flex');
         setTimeout(() => el.classList.remove('opacity-0'), 10);
+        // Yeniden çizimi (reflow) tetikle
+        void el.offsetWidth;
+        el.style.opacity = '1';
     }
 }
 
@@ -3781,6 +3788,11 @@ function hideLoader() {
     if (el) {
         el.classList.add('opacity-0');
         setTimeout(() => { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
+        el.style.opacity = '0';
+        setTimeout(() => { 
+            el.style.display = 'none'; 
+            el.classList.add('hidden'); 
+        }, 300);
     }
 }
 
@@ -3802,6 +3814,11 @@ function fetchCSV(isBg = false) {
             getCSV(MESAJ_URL + ts).catch(()=>''),
             getCSV(FASONLAR_URL + ts).catch(()=>'')
     ]).then(([t, k_text, d_text, m_text, msg_text, fason_text]) => {
+    ]).then(async ([t, k_text, d_text, m_text, msg_text, fason_text]) => {
+        // Arayüzün (UI) donmasını önlemek için JavaScript thread'ine nefes aldır (Yield)
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => setTimeout(resolve, 10));
+
         window.RAW_CSV_ROWS = parseCSV(t);
         RAW=parse(t);
         KALIP_RAW=parseGeneric(k_text);
@@ -3881,6 +3898,12 @@ function fetchCSV(isBg = false) {
             toast(e.message || 'Veri çekilemedi. İnternet bağlantınızı kontrol edin.', 'err');
         }
     }).finally(()=>{b.innerText='↻ GÜNCELLE'; b.disabled=false; if(!isBg) hideLoader();});
+    }).finally(()=>{
+        b.innerText='↻ GÜNCELLE'; b.disabled=false; 
+        if(!isBg) {
+            setTimeout(hideLoader, 150); // DOM'un tam çizilmesi için ufak bir gecikme
+        }
+    });
 }
 
 // OTOMATİK GÜNCELLEME VE OTURUM KONTROLÜ
