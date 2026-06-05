@@ -970,7 +970,8 @@
       const isExtensionNoise = (
         reason.name === 'n' && reason.code === 403 ||
         String(msg).includes('chrome-extension://') ||
-        String(msg).includes('message channel closed before a response was received')
+        String(msg).includes('message channel closed before a response was received') ||
+        String(msg).includes('a listener indicated an asynchronous response')
       );
 
       if (isExtensionNoise) event.preventDefault();

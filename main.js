@@ -2882,11 +2882,15 @@ async function fetchUsers() {
             }
             
             // Gelişmiş Yönetici Güvencesi (Boşluk veya harf hatasına karşı korumalı)
+            let adminFound = false;
             Object.keys(USER_DATA).forEach(k => {
                 if (k.toLowerCase().includes('yusuf yalç')) {
                     USER_DATA[k].role = 'admin';
+                    adminFound = true;
                 }
             });
+            if (!adminFound) USER_DATA['Yusuf Yalçıntaş'] = { pass: '1234', role: 'admin', photo: '' };
+
             normalizeUserRoles();
             localStorage.setItem('cachedUsers', JSON.stringify(USER_DATA));
         }
@@ -2895,11 +2899,14 @@ async function fetchUsers() {
         // Offline durumunda önbellekten al
         USER_DATA = safeJSON(localStorage.getItem('cachedUsers'), {});
         normalizeUserRoles();
+        let adminFound = false;
         Object.keys(USER_DATA).forEach(k => {
             if (k.toLowerCase().includes('yusuf yalç')) {
                 USER_DATA[k].role = 'admin';
+                adminFound = true;
             }
         });
+        if (!adminFound) USER_DATA['Yusuf Yalçıntaş'] = { pass: '1234', role: 'admin', photo: '' };
     }
 }
 
