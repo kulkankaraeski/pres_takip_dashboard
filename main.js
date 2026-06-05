@@ -1346,11 +1346,13 @@ function analyzeFason(fasonName) {
                 </div>
                 <div class="flex justify-between text-[10px] text-text2">
                     <span>Toplam Üretim: <b>${n(p.uretim)}</b></span>
+                </div>
                 <div class="bg-bg3/50 rounded p-2 text-center mt-1">
                     <span class="text-[9px] text-text3 uppercase">Tahmini Vardiya Üretimi</span>
                     <span class="block font-bold text-lg ${isBest ? 'text-accent3' : 'text-text'}">${n(p.shiftProd)}</span>
                 </div>
                 <div class="flex justify-between text-[10px] text-text2 pt-1 mt-1">
+                <div class="flex justify-between text-[10px] text-text2 pt-1 mt-1 border-t border-border/50">
                     <span>Hız: <b class="text-accent4">${p.ppm.toFixed(2)} adet/dk</b></span>
                     <span>Ort. Duruş: <b class="text-accent2">${Math.round(p.durus)} dk</b></span>
                 </div>
