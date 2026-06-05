@@ -3397,3 +3397,162 @@ function editGenericRecord(idx, type) {
     closeGenericModal();
     setTimeout(() => openGenericFormModal(type, idx), 300);
 }
+
+// --- YENİ: AKILLI SESLİ ASİSTAN MODÜLÜ ---
+const VoiceAssistant = {
+    recognition: null,
+    synth: window.speechSynthesis,
+    isListening: false,
+    bubbleTimeout: null,
+    
+    init() {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) {
+            console.warn('Tarayıcınız Web Speech API (Ses Tanıma) desteklemiyor.');
+            return;
+        }
+        
+        const asstContainer = $('voice-asst-container');
+        if(asstContainer) asstContainer.style.display = 'flex';
+
+        this.recognition = new SpeechRec();
+        this.recognition.lang = 'tr-TR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = false;
+        
+        this.recognition.onstart = () => {
+            this.isListening = true;
+            $('asst-pulse').classList.remove('hidden');
+            $('asst-mic-btn').classList.add('border-accent', 'scale-105');
+            this.showBubble('Sizi dinliyorum... (Örn: "Günlük rapora git" veya "Ahmet\'in performansı nedir")');
+            this.stopSpeech();
+        };
+        
+        this.recognition.onresult = (e) => {
+            const transcript = e.results[0][0].transcript;
+            this.showBubble(`<span class="text-text2 italic">"${transcript}"</span>`);
+            this.processCommand(transcript);
+        };
+        
+        this.recognition.onerror = (e) => {
+            if (e.error !== 'no-speech') {
+                this.speak('Ses anlaşılamadı veya mikrofon hatası oluştu.');
+            }
+            this.stopListeningUI();
+        };
+        
+        this.recognition.onend = () => {
+            this.stopListeningUI();
+        };
+    },
+    
+    stopListeningUI() {
+        this.isListening = false;
+        $('asst-pulse').classList.add('hidden');
+        $('asst-mic-btn').classList.remove('border-accent', 'scale-105');
+    },
+    
+    toggle() {
+        if (this.isListening) {
+            this.recognition.stop();
+        } else {
+            this.recognition.start();
+        }
+    },
+    
+    showBubble(text) {
+        const bubble = $('asst-chat-bubble');
+        $('asst-text').innerHTML = text;
+        bubble.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+        bubble.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+        
+        clearTimeout(this.bubbleTimeout);
+        this.bubbleTimeout = setTimeout(() => this.closeBubble(), 12000); // 12 saniye sonra balon kapanır
+    },
+    
+    closeBubble() {
+        const bubble = $('asst-chat-bubble');
+        bubble.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+        bubble.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+        this.stopSpeech();
+    },
+    
+    speak(text) {
+        this.showBubble(`<b class="text-accent4">Asistan:</b> ${text}`);
+        this.stopSpeech();
+        if (!this.synth) return;
+        const utterance = new SpeechSynthesisUtterance(text.replace(/<[^>]+>/g, '')); // Okurken HTML taglerini ayıkla
+        utterance.lang = 'tr-TR';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        this.synth.speak(utterance);
+    },
+    
+    stopSpeech() {
+        if(this.synth && this.synth.speaking) this.synth.cancel();
+    },
+    
+    processCommand(rawText) {
+        const cmd = rawText.toLocaleLowerCase('tr-TR');
+        let response = '';
+
+        // --- 1. SAYFA YÖNLENDİRMELERİ ---
+        if(cmd.match(/günlük|bugün/)) { swT('gunluk'); response = 'Günlük rapor ekranını açtım.'; }
+        else if(cmd.match(/haftalık|bu hafta/)) { swT('haftalik'); response = 'Haftalık rapor açıldı.'; }
+        else if(cmd.match(/aylık|bu ay/)) { swT('aylik'); response = 'Aylık üretim raporuna geçildi.'; }
+        else if(cmd.match(/genel|özet|tüm zamanlar/)) { swT('genel'); response = 'Genel özet ekranı açılıyor.'; }
+        else if(cmd.match(/alarm|uyarı/)) { swT('alarm'); response = 'Sistem alarmları ve analiz ekranındasınız.'; }
+        else if(cmd.match(/veri gir|form|kayıt ekle/)) { swT('form'); response = 'Veri giriş formuna yönlendirildiniz.'; }
+        else if(cmd.match(/fason/)) { swT('fason'); response = 'Fason analiz sayfası açıldı.'; }
+        else if(cmd.match(/pres|makine/)) { swT('pres'); response = 'Makine performansları ekranda.'; }
+        else if(cmd.match(/malzeme|depo/)) { swT('malzeme'); response = 'Malzeme listesine geçildi.'; }
+        else if(cmd.match(/plan/)) { swT('plan'); response = 'Üretim planı yükleniyor.'; }
+
+        if (response) { this.speak(response); return; }
+
+        // --- 2. KAPSAMLI VERİ ANALİZİ ---
+        if(cmd.match(/üretim lideri|ayın elemanı|en iyi/)) {
+            if(window.bestEmpName) {
+                openModal(window.bestEmpName);
+                this.speak(`Bu ayın tartışmasız lideri ${window.bestEmpName}. Detaylı performans analizini sizin için ekrana getirdim.`);
+            } else { this.speak('Şu an için bir lider hesaplaması bulunmuyor.'); }
+            return;
+        }
+        if(cmd.match(/toplam üretim/)) {
+            const s = calc(RAW);
+            this.speak(`Tüm zamanlarda kayıtlı toplam ${n(s.u)} adet üretim bulunuyor. Sistemin genel performans ortalaması yüzde ${s.p.toFixed(1)}.`);
+            return;
+        }
+        if(cmd.match(/duruş/)) {
+            const pm={}; RAW.forEach(r=>{
+                if(r.pres1) pm[r.pres1] = (pm[r.pres1]||0) + (Number(r.durus1)||0);
+                if(r.pres2) pm[r.pres2] = (pm[r.pres2]||0) + (Number(r.durus2)||0);
+            });
+            const sorted = Object.entries(pm).sort((a,b)=>b[1]-a[1]);
+            if(sorted.length) { this.speak(`Veritabanına göre en çok duruş yaşanan makine toplam ${n(sorted[0][1])} dakika ile ${sorted[0][0]}.`); } 
+            else { this.speak('Duruş verisi analiz edilemedi.'); }
+            return;
+        }
+
+        // --- 3. ÇALIŞAN (KİŞİ) BAZLI DERİN ANALİZ ---
+        const emps = [...new Set(RAW.map(r=>r.calisan))];
+        const words = cmd.split(' ');
+        for(let e of emps) {
+            const firstName = e.toLocaleLowerCase('tr-TR').split(' ')[0]; // Sadece ilk adından yakalamaya çalış
+            if(words.some(w => w.includes(firstName) && w.length > 2)) {
+                const eData = RAW.filter(r=>r.calisan === e); const s = calc(eData);
+                openModal(e);
+                this.speak(`${e} bugüne kadar toplam ${n(s.c)} kez çalışmış ve ${n(s.u)} adet üretim yapmış. Performans ortalaması yüzde ${s.p.toFixed(1)}. Dosyasını açtım.`);
+                return;
+            }
+        }
+
+        // Anlaşılamadı Durumu
+        this.speak('Bunu anlayamadım. Sayfa değiştirmek, üretim liderini sormak veya bir personelin ismini verip performansını istemek gibi komutları deneyebilirsiniz.');
+    }
+};
+
+// Uygulama yüklendiğinde asistanı (gizlice) hazırla
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => VoiceAssistant.init(), 1500);
+});
