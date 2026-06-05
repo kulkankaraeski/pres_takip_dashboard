@@ -121,6 +121,36 @@ function normalizeRole(value) {
     return 'user';
 }
 
+// YENİ: Ortak ve Şeffaf Liderlik Hesaplama Modülü (Eksi puanlıları ve sıfır üretim yapanları eler)
+function calculateLeaderboard(data) {
+    if(!data || data.length === 0) return [];
+    let empStats = [...new Set(data.map(r=>r.calisan))].map(w => ({ w, ...calc(data.filter(r=>r.calisan===w)) }));
+    
+    // Sadece üretime katkısı olan (üretimi sıfırdan büyük olan) çalışanları dahil et
+    empStats = empStats.filter(e => e.u > 0 && e.w && e.w !== 'Belirtilmeyen');
+    if(empStats.length === 0) return [];
+
+    const maxU = Math.max(...empStats.map(e => e.u)) || 1;
+    const maxP = Math.max(...empStats.map(e => e.p)) || 1;
+    const maxC = Math.max(...empStats.map(e => e.c)) || 1;
+    
+    const wU = adminSettings.weights?.u ?? 40;
+    const wP = adminSettings.weights?.p ?? 40;
+    const wC = adminSettings.weights?.c ?? 20;
+    const wD = adminSettings.weights?.d ?? 0.1;
+
+    empStats.forEach(e => {
+        e.ptsU = (e.u / maxU) * wU;
+        e.ptsP = (e.p / maxP) * wP;
+        e.ptsC = (e.c / maxC) * wC;
+        e.ptsD = e.d * wD;
+        e.score = e.ptsU + e.ptsP + e.ptsC - e.ptsD;
+    });
+
+    // Puanı 0 veya eksiye düşenleri liderlik panosuna dahil etme
+    return empStats.filter(e => e.score > 0).sort((a, b) => b.score - a.score);
+}
+
 function getRoleMeta(role) {
     return ROLE_OPTIONS[normalizeRole(role)] || ROLE_OPTIONS.user;
 }
@@ -512,9 +542,10 @@ function swT(t,el){
         if(t==='kayitlar') rKayitlar();        if(t==='plan') rPlan(); 
         if(t==='admin') rAdmin();
         if(t==='verisayfasi') rVerisayfasi();
+        if(t==='liderlik') rLiderlik();
         
     if(!RAW.length)return;
-        if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='alarm')rAlarm(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF(); 
+        if(t==='gunluk')rG(); if(t==='haftalik')rW(); if(t==='aylik')rM(); if(t==='genel')rH(); if(t==='alarm')rAlarm(); if(t==='calisan')rC(); if(t==='pres')rP(); if(t==='fason')rF();
 }
 
 // Tema Değiştirme
@@ -841,24 +872,10 @@ function rH(){
         // ŞEREF KÜRSÜSÜ (HALL OF FAME)
         const fameHtml = MONTHS.slice().reverse().map(m => {
             const mData = RAW.filter(r => r.tarih.endsWith(m));
-            if(mData.length === 0) return '';
-            
-            let empStats = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }));
-            const maxU = Math.max(...empStats.map(e => e.u)) || 1;
-            const maxP = Math.max(...empStats.map(e => e.p)) || 1;
-            const maxC = Math.max(...empStats.map(e => e.c)) || 1;
-            
-            const wU = adminSettings.weights?.u ?? 40;
-            const wP = adminSettings.weights?.p ?? 40;
-            const wC = adminSettings.weights?.c ?? 20;
-            const wD = adminSettings.weights?.d ?? 0.1;
-            
-            empStats.forEach(e => {
-                e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC) - (e.d * wD);
-            });
-            
-            const best = empStats.sort((a, b) => b.score - a.score)[0];
-            if(!best) return '';
+            const lb = calculateLeaderboard(mData);
+            if(lb.length === 0) return '';
+
+            const best = lb[0];
 
             const uInfo = USER_DATA[best.w] || {};
             const avatar = uInfo.photo 
@@ -870,7 +887,7 @@ function rH(){
             const mText = monthNames[parseInt(mm)-1] + ' ' + yy;
 
             return `
-            <div class="flex items-center justify-between bg-bg2 border border-border/50 rounded-xl p-2 hover:bg-bg3 hover:shadow-md transition-all cursor-pointer group" onclick="openModal('${safeAttr(best.w)}')">
+            <div class="flex items-center justify-between bg-bg2 border border-border/50 rounded-xl p-2 hover:bg-bg3 hover:shadow-md transition-all cursor-pointer group" onclick="swT('liderlik'); setTimeout(()=>openLiderlikMonth('${m}'), 100);">
                 <div class="flex items-center gap-3">
                     ${avatar}
                     <div class="flex flex-col">
@@ -1601,6 +1618,81 @@ function openMalzemeListModal(title, filterKey, filterValue) {
         mdl.classList.add('flex');
         setTimeout(() => mdl.classList.remove('opacity-0'), 10);
     }
+}
+
+// YENİ: ÜRETİM LİDERLİĞİ MODÜL FONKSİYONLARI
+function rLiderlik() {
+    const monthNames = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+    let html = '';
+    MONTHS.slice().reverse().forEach(m => {
+        const mData = RAW.filter(r => r.tarih.endsWith(m));
+        const lb = calculateLeaderboard(mData);
+        if(lb.length === 0) return;
+        const best = lb[0];
+
+        const [mm, yy] = m.split('.');
+        const mText = monthNames[parseInt(mm)-1] + ' ' + yy;
+
+        const uInfo = USER_DATA[best.w] || {};
+        const avatar = uInfo.photo 
+            ? `<img src="${uInfo.photo}" class="w-12 h-12 rounded-full object-cover border-2 border-accent3 shadow-sm shrink-0">` 
+            : `<div class="w-12 h-12 rounded-full bg-gradient-to-br from-accent3 to-accent4 border-2 border-accent3 flex items-center justify-center font-bold text-bg2 text-lg shadow-sm shrink-0">${best.w.slice(0,2).toUpperCase()}</div>`;
+
+        html += `
+        <div class="flex items-center justify-between bg-bg border border-border/50 rounded-xl p-3 mb-3 hover:bg-bg3 hover:border-accent3/50 hover:shadow-[0_0_15px_rgba(245,158,11,0.15)] transition-all cursor-pointer group" onclick="openLiderlikMonth('${m}')">
+            <div class="flex items-center gap-4">
+                ${avatar}
+                <div class="flex flex-col">
+                    <span class="text-xs font-mono text-text3 tracking-wider group-hover:text-accent3 transition-colors">${mText}</span>
+                    <span class="font-bold text-base text-text">${best.w}</span>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-sm font-bold text-accent4">⭐ ${best.score.toFixed(1)} Puan</span>
+                <span class="text-[10px] text-text2">${n(best.u)} Adet</span>
+            </div>
+        </div>`;
+    });
+
+    if(!html) html = '<div class="text-center text-text3 text-xs p-4 font-mono">Henüz yeterli üretim verisi yok.</div>';
+    $('liderlik-aylar').innerHTML = html;
+    $('liderlik-detay-panel').classList.add('hidden');
+}
+
+function openLiderlikMonth(m) {
+    const monthNames = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+    const [mm, yy] = m.split('.');
+    
+    $('liderlik-detay-title').innerText = (monthNames[parseInt(mm)-1] + ' ' + yy) + ' DETAYLI PUAN TABLOSU';
+    
+    const lb = calculateLeaderboard(RAW.filter(r => r.tarih.endsWith(m)));
+
+    $('th-liderlik-detay').innerHTML = th(['Sıra', 'Çalışan', 'Üretim (Puan)', 'Perf. (Puan)', 'Kayıt (Puan)', 'Duruş (Ceza)', 'Toplam Puan']);
+
+    $('tb-liderlik-detay').innerHTML = lb.map((e, i) => {
+        let rowCls = i === 0 ? 'bg-accent3/10 border-accent3/30' : (i === 1 ? 'bg-gray-400/10' : (i === 2 ? 'bg-amber-700/10' : 'bg-bg2'));
+        let rankIcon = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : `${i+1}.`));
+        
+        return `
+        <tr class="hover:bg-bg3 border-b border-border/50 text-xs md:text-sm ${rowCls} transition-colors cursor-pointer" onclick="openModal('${safeAttr(e.w)}')">
+            <td class="p-3 font-bold text-center text-lg">${rankIcon}</td>
+            <td class="p-3 font-bold text-text">${escapeHTML(e.w)}</td>
+            <td class="p-3 text-text2"><span class="text-accent font-bold">+${e.ptsU.toFixed(1)}</span> <span class="text-[9px] block">(${n(e.u)} Adet)</span></td>
+            <td class="p-3 text-text2"><span class="text-accent4 font-bold">+${e.ptsP.toFixed(1)}</span> <span class="text-[9px] block">(%${e.p.toFixed(1)})</span></td>
+            <td class="p-3 text-text2"><span class="text-accent font-bold">+${e.ptsC.toFixed(1)}</span> <span class="text-[9px] block">(${e.c} Kayıt)</span></td>
+            <td class="p-3 text-text2"><span class="text-accent2 font-bold">-${e.ptsD.toFixed(1)}</span> <span class="text-[9px] block">(${n(e.d)} Dk)</span></td>
+            <td class="p-3 font-bold text-text text-base md:text-lg">⭐ ${e.score.toFixed(1)}</td>
+        </tr>`;
+    }).join('');
+
+    $('liderlik-detay-panel').classList.remove('hidden');
+    $('liderlik-detay-panel').classList.add('flex');
+    if(window.innerWidth < 768) $('liderlik-detay-panel').scrollIntoView({behavior: 'smooth'});
+}
+
+function closeLiderlikDetay() {
+    $('liderlik-detay-panel').classList.add('hidden');
+    $('liderlik-detay-panel').classList.remove('flex');
 }
 
 function rPlan() {
@@ -2878,7 +2970,7 @@ function logout() {
 function rAdmin() {
     const allTabs = [
         {id: 'gunluk', name: 'GÜNLÜK RAPOR'}, {id: 'haftalik', name: 'HAFTALIK RAPOR'}, {id: 'aylik', name: 'AYLIK RAPOR'},
-        {id: 'genel', name: 'GENEL ÖZET'}, {id: 'alarm', name: 'ALARM & ANALİZ'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
+        {id: 'genel', name: 'GENEL ÖZET'}, {id: 'liderlik', name: 'ÜRETİM LİDERLİĞİ'}, {id: 'alarm', name: 'ALARM & ANALİZ'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
         {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'malzeme', name: 'PRES MALZEME TAKİP'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
         {id: 'form', name: 'VERİ GİRİŞ FORMU'}
     ];
@@ -3224,24 +3316,10 @@ function fetchCSV(isBg = false) {
         // Ayın Elemanını Hesapla ve Yazdır
         if(sM) {
             const mData = RAW.filter(r => r.tarih.endsWith(sM));
-            if(mData.length > 0) {
-                let empStats = [...new Set(mData.map(r=>r.calisan))].map(w => ({ w, ...calc(mData.filter(r=>r.calisan===w)) }));
-                
-                // Normalizasyon için o ayın en yüksek değerlerini bul
-                const maxU = Math.max(...empStats.map(e => e.u)) || 1;
-                const maxP = Math.max(...empStats.map(e => e.p)) || 1;
-                const maxC = Math.max(...empStats.map(e => e.c)) || 1;
-                
-                const wU = adminSettings.weights?.u ?? 40;
-                const wP = adminSettings.weights?.p ?? 40;
-                const wC = adminSettings.weights?.c ?? 20;
-                const wD = adminSettings.weights?.d ?? 0.1;
-                
-                empStats.forEach(e => {
-                    e.score = ((e.u / maxU) * wU) + ((e.p / maxP) * wP) + ((e.c / maxC) * wC) - (e.d * wD);
-                });
-                
-                const best = empStats.sort((a, b) => b.score - a.score)[0];
+            const lb = calculateLeaderboard(mData);
+            
+            if(lb.length > 0) {
+                const best = lb[0];
                 window.bestEmpName = best.w;
                 if($('hdr-best-name')) $('hdr-best-name').textContent = best.w.toUpperCase();
                 if($('hdr-best-det')) $('hdr-best-det').innerHTML = `<span class="text-accent4 font-bold" title="Adil Puan">⭐ ${best.score.toFixed(1)} Puan</span> | <span class="text-text">${n(best.u)}</span> Adet | <span class="${best.p>=100?'text-accent':'text-accent2'}">${best.p.toFixed(1)}%</span> Perf`;
