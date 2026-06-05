@@ -1624,11 +1624,14 @@ function openMalzemeListModal(title, filterKey, filterValue) {
 function rLiderlik() {
     const monthNames = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
     let html = '';
+    let firstMonth = null;
+    
     MONTHS.slice().reverse().forEach(m => {
         const mData = RAW.filter(r => r.tarih.endsWith(m));
         const lb = calculateLeaderboard(mData);
         if(lb.length === 0) return;
         const best = lb[0];
+        if (!firstMonth) firstMonth = m;
 
         const [mm, yy] = m.split('.');
         const mText = monthNames[parseInt(mm)-1] + ' ' + yy;
@@ -1647,19 +1650,27 @@ function rLiderlik() {
                     <span class="font-bold text-base text-text">${best.w}</span>
                 </div>
             </div>
-            <div class="flex flex-col items-end">
+            <div class="flex flex-col items-end justify-center">
                 <span class="text-sm font-bold text-accent4">⭐ ${best.score.toFixed(1)} Puan</span>
-                <span class="text-[10px] text-text2">${n(best.u)} Adet</span>
+                <div class="flex items-center gap-1 mt-1">
+                    <span class="text-[10px] text-text2">${n(best.u)} Adet</span>
+                    <span class="text-[9px] bg-accent3/20 text-accent3 px-1.5 py-0.5 rounded font-bold ml-1 group-hover:bg-accent3 group-hover:text-bg transition-colors shadow-sm">Sıralama ➔</span>
+                </div>
             </div>
         </div>`;
     });
 
-    if(!html) html = '<div class="text-center text-text3 text-xs p-4 font-mono">Henüz yeterli üretim verisi yok.</div>';
+    if(!html) {
+        html = '<div class="text-center text-text3 text-xs p-4 font-mono">Henüz yeterli üretim verisi yok.</div>';
+        $('liderlik-detay-panel').classList.add('hidden');
+    }
     $('liderlik-aylar').innerHTML = html;
-    $('liderlik-detay-panel').classList.add('hidden');
+    
+    // Yeni: Panelin boş görünmemesi için son ayın sıralamasını otomatik aç (Mobil kaydırmasını iptal ederek)
+    if (firstMonth) openLiderlikMonth(firstMonth, true);
 }
 
-function openLiderlikMonth(m) {
+function openLiderlikMonth(m, preventScroll = false) {
     const monthNames = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
     const [mm, yy] = m.split('.');
     
@@ -1687,7 +1698,20 @@ function openLiderlikMonth(m) {
 
     $('liderlik-detay-panel').classList.remove('hidden');
     $('liderlik-detay-panel').classList.add('flex');
-    if(window.innerWidth < 768) $('liderlik-detay-panel').scrollIntoView({behavior: 'smooth'});
+    
+    // Yeni: Sadece tıklama ile tetiklendiğinde mobilde odaklan
+    if(window.innerWidth < 768 && !preventScroll) $('liderlik-detay-panel').scrollIntoView({behavior: 'smooth'});
+
+    // Yeni: Seçili olan ayın kartını görsel olarak vurgula
+    document.querySelectorAll('#liderlik-aylar .group').forEach(el => {
+        el.classList.remove('border-accent3', 'bg-bg3/50', 'shadow-md');
+        el.classList.add('border-border/50', 'bg-bg');
+    });
+    const activeItem = document.querySelector(`#liderlik-aylar .group[onclick*="'${m}'"]`);
+    if (activeItem) {
+        activeItem.classList.add('border-accent3', 'bg-bg3/50', 'shadow-md');
+        activeItem.classList.remove('border-border/50', 'bg-bg');
+    }
 }
 
 function closeLiderlikDetay() {
