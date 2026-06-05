@@ -37,14 +37,6 @@ if (localStorage.getItem('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
 }
 
-function safeJSON(str, fallback) {
-    if (!str || str === 'undefined') return fallback;
-    try {
-        const parsed = JSON.parse(str);
-        return parsed !== null ? parsed : fallback;
-    } catch (e) { return fallback; }
-}
-
 let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, MALZEME_RAW={h:[], r:[]}, MESAJ_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', sA='', cTab='';
 let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
@@ -86,7 +78,6 @@ function $(id){return document.getElementById(id);}
 function n(v){const val=Number(v)||0; return val>0?val.toLocaleString('tr-TR'):'-';}
 function pb(p){const val=Number(p)||0; const c=val>=120?'bg-accent/20 text-accent':val>=90?'bg-accent4/20 text-accent4':val>=70?'bg-accent2/20 text-accent2':'bg-accent3/20 text-accent3'; return `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${c}">${val.toFixed(1)}%</span>`;}
 function isoW(d){const[D,M,Y]=d.split('.').map(Number);const dt=new Date(Y,M-1,D);dt.setDate(dt.getDate()+4-(dt.getDay()||7));return `${dt.getFullYear()}-W${String(Math.ceil((((dt-new Date(dt.getFullYear(),0,1))/86400000)+1)/7)).padStart(2,'0')}`;}
-function calc(arr){const u=arr.reduce((s,r)=>s+r.tU,0);const b=arr.reduce((s,r)=>s+r.tB,0);return{u:u,b:b,p:b>0?(u/b)*100:(arr.length?arr.reduce((s,r)=>s+r.tP,0)/arr.length:0),d:arr.reduce((s,r)=>s+r.durus1+r.durus2,0),c:arr.length};}
 const cR=(v,a=1)=>`rgba(${getComputedStyle(document.documentElement).getPropertyValue('--c-'+v).trim()},${a})`;
 
 function normalizeText(value) {
@@ -421,16 +412,6 @@ async function getCSV(url) {
     }
     throw new Error('Ağ hatası veya veri erişimi sağlanamadı: ' + (lastErr ? lastErr.message : ''));
 }
-function escapeHTML(str) {
-    if (str === null || str === undefined) return '';
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-}
-
-function safeAttr(str) {
-    if (str === null || str === undefined) return '';
-    return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-}
-
 // TOAST BİLDİRİM
 function toast(msg, type='ok') {
     const t = document.createElement('div');
@@ -707,82 +688,145 @@ function rG(){
     ])).join('');
 }
 
-function rW(){
-    if(!sW)return; $('c-week').innerText=sW.replace('-W',' / ')+'. Hafta'; $('w-pick').value=sW;
-    const wd=RAW.filter(r=>isoW(r.tarih)===sW), s=calc(wd);
-    $('w-kpi').innerHTML=card('border-l-accent','Haftalık Üretim',n(s.u),'Adet',`showKpiDet('w','u')`)+card('border-l-accent4','Haftalık Perf',s.p.toFixed(1)+'%',s.c+' Kayıt',`showKpiDet('w','p')`)+card('border-l-accent2','Haftalık Duruş',n(s.d),'Dk',`showKpiDet('w','d')`)+card('border-l-accent3','Çalışılan Gün',new Set(wd.map(r=>r.tarih)).size,'Gün',`showKpiDet('w','c')`);
-    const dt=[...new Set(wd.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,5), ...calc(wd.filter(r=>r.tarih===d))}));
-    mc('w1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
-    mc('w2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
-    
-    renderShiftComparison('w3', 'tb-haf-kiyas', 'th-haf-kiyas', wd);
-    
-    const sab=wd.filter(r=>r.vardiya==='08:00-16:00').length, aks=wd.filter(r=>r.vardiya==='16:00-24:00').length;
-    mc('w4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,wd.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
-    
-    const ws=[...new Set(wd.map(r=>r.calisan))].map(w=>({w,...calc(wd.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
-    
-    const bestW = [...ws].sort((a,b) => b.p - a.p)[0];
-    if(bestW && bestW.p > 0) {
-        window.bestWeekEmp = bestW.w;
-        if($('w-best-name')) $('w-best-name').textContent = bestW.w;
-        if($('w-best-perf')) $('w-best-perf').textContent = bestW.p.toFixed(1) + '%';
-        if($('w-best')) {
-            $('w-best').classList.remove('hidden');
-            $('w-best').classList.add('flex');
+function renderPeriodReport(config) {
+    const {
+        periodType,
+        periodVar,
+        dataFilter,
+        titleId,
+        titleFormatter,
+        pickerId,
+        pickerValueFormatter,
+        kpiContainerId,
+        kpiCardTitlePrefix,
+        trendChart1Id,
+        trendChart2Id,
+        trendLabelFormatter,
+        shiftCompareChartId,
+        shiftCompareTableBodyId,
+        shiftCompareTableHeaderId,
+        shiftRatioChartId,
+        bestEmployeeContainerId,
+        bestEmployeeNameId,
+        bestEmployeePerfId,
+        bestEmployeeGlobalVar,
+        employeeTableBodyId,
+        employeeTableHeaderId,
+        downtimeTableBodyId,
+        downtimeTableHeaderId
+    } = config;
+
+    if (!periodVar) return;
+
+    $(titleId).innerText = titleFormatter(periodVar);
+    $(pickerId).value = pickerValueFormatter(periodVar);
+
+    const periodData = RAW.filter(dataFilter);
+    const stats = calc(periodData);
+
+    $(kpiContainerId).innerHTML =
+        card('border-l-accent', `${kpiCardTitlePrefix} Üretim`, n(stats.u), 'Adet', `showKpiDet('${periodType}','u')`) +
+        card('border-l-accent4', `${kpiCardTitlePrefix} Perf`, stats.p.toFixed(1) + '%', stats.c + ' Kayıt', `showKpiDet('${periodType}','p')`) +
+        card('border-l-accent2', `${kpiCardTitlePrefix} Duruş`, n(stats.d), 'Dk', `showKpiDet('${periodType}','d')`) +
+        card('border-l-accent3', 'Çalışılan Gün', new Set(periodData.map(r => r.tarih)).size, 'Gün', `showKpiDet('${periodType}','c')`);
+
+    const trendData = [...new Set(periodData.map(r => r.tarih))]
+        .sort((a, b) => a.split('.').reverse().join('') < b.split('.').reverse().join('') ? -1 : 1)
+        .map(d => ({ l: trendLabelFormatter(d), ...calc(periodData.filter(r => r.tarih === d)) }));
+
+    mc(trendChart1Id, 'line', { labels: trendData.map(x => x.l), datasets: [{ label: 'Üretim', data: trendData.map(x => x.u), borderColor: cR('accent'), backgroundColor: cR('accent', 0.2), fill: true }] });
+    mc(trendChart2Id, 'line', { labels: trendData.map(x => x.l), datasets: [{ label: 'Perf %', data: trendData.map(x => x.p), borderColor: cR('accent4'), backgroundColor: cR('accent4', 0.2), fill: true }] }, { y: { min: 60, max: 130 } });
+
+    renderShiftComparison(shiftCompareChartId, shiftCompareTableBodyId, shiftCompareTableHeaderId, periodData);
+
+    const shiftSabah = periodData.filter(r => r.vardiya === '08:00-16:00').length;
+    const shiftAksam = periodData.filter(r => r.vardiya === '16:00-24:00').length;
+    mc(shiftRatioChartId, 'doughnut', { labels: ['08:00-16:00', '16:00-24:00', 'Diğer'], datasets: [{ data: [shiftSabah, shiftAksam, periodData.length - shiftSabah - shiftAksam], backgroundColor: [cR('accent', 0.75), cR('accent4', 0.75), cR('accent3', 0.75)] }] }, { x: { display: false }, y: { display: false } });
+
+    const employeeStats = [...new Set(periodData.map(r => r.calisan))]
+        .map(w => ({ w, ...calc(periodData.filter(r => r.calisan === w)) }))
+        .sort((a, b) => b.u - a.u);
+
+    const bestEmployee = [...employeeStats].sort((a, b) => b.p - a.p)[0];
+    if (bestEmployee && bestEmployee.p > 0) {
+        window[bestEmployeeGlobalVar] = bestEmployee.w;
+        if ($(bestEmployeeNameId)) $(bestEmployeeNameId).textContent = bestEmployee.w;
+        if ($(bestEmployeePerfId)) $(bestEmployeePerfId).textContent = bestEmployee.p.toFixed(1) + '%';
+        if ($(bestEmployeeContainerId)) {
+            $(bestEmployeeContainerId).classList.remove('hidden');
+            $(bestEmployeeContainerId).classList.add('flex');
         }
     } else {
-        if($('w-best')) {
-            $('w-best').classList.add('hidden');
-            $('w-best').classList.remove('flex');
+        if ($(bestEmployeeContainerId)) {
+            $(bestEmployeeContainerId).classList.add('hidden');
+            $(bestEmployeeContainerId).classList.remove('flex');
         }
     }
 
-    $('th-haf').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
-    $('tb-haf').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
+    $(employeeTableHeaderId).innerHTML = th(['Sıra', 'Çalışan', 'Kayıt', 'Hedef (Adet)', 'Top.Üretim', 'Ort.Perf', 'Duruş (Dk)']);
+    $(employeeTableBodyId).innerHTML = employeeStats.map((w, i) => tr([i + 1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
 
-    const badW = [...ws].filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
-    $('th-haf-durus').innerHTML=th(['Çalışan','Toplam Duruş']);
-    $('tb-haf-durus').innerHTML=badW.length ? badW.map((w,i)=>tr([`<div class="flex gap-1 items-center"><span class="text-[10px] text-text3 font-mono">${i+1}.</span> <b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b></div>`, `<span class="text-accent2 font-mono font-bold">${n(w.d)} dk</span>`])).join('') : `<tr><td colspan="2" class="p-4 text-center text-text3 text-xs">Duruş kaydı yok.</td></tr>`;
+    const badEmployees = [...employeeStats].filter(x => x.d > 0).sort((a, b) => b.d - a.d).slice(0, 10);
+    $(downtimeTableHeaderId).innerHTML = th(['Çalışan', 'Toplam Duruş']);
+    $(downtimeTableBodyId).innerHTML = badEmployees.length ? badEmployees.map((w, i) => tr([`<div class="flex gap-1 items-center"><span class="text-[10px] text-text3 font-mono">${i + 1}.</span> <b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b></div>`, `<span class="text-accent2 font-mono font-bold">${n(w.d)} dk</span>`])).join('') : `<tr><td colspan="2" class="p-4 text-center text-text3 text-xs">Duruş kaydı yok.</td></tr>`;
 }
 
-function rM(){
-    if(!sM)return; const [m,y]=sM.split('.'); $('c-month').innerText=`${m}/${y}`; $('m-pick').value=`${y}-${m}`;
-    const md=RAW.filter(r=>r.tarih.endsWith(sM)), s=calc(md);
-    $('m-kpi').innerHTML=card('border-l-accent','Aylık Üretim',n(s.u),'Adet',`showKpiDet('m','u')`)+card('border-l-accent4','Aylık Perf',s.p.toFixed(1)+'%',s.c+' Kayıt',`showKpiDet('m','p')`)+card('border-l-accent2','Aylık Duruş',n(s.d),'Dk',`showKpiDet('m','d')`)+card('border-l-accent3','Çalışılan Gün',new Set(md.map(r=>r.tarih)).size,'Gün',`showKpiDet('m','c')`);
-    const dt=[...new Set(md.map(r=>r.tarih))].sort((a,b)=>a.split('.').reverse().join('')<b.split('.').reverse().join('')?-1:1).map(d=>({l:d.slice(0,2), ...calc(md.filter(r=>r.tarih===d))}));
-    mc('m1','line',{labels:dt.map(x=>x.l),datasets:[{label:'Üretim',data:dt.map(x=>x.u),borderColor:cR('accent'),backgroundColor:cR('accent',0.2),fill:true}]});
-    mc('m2','line',{labels:dt.map(x=>x.l),datasets:[{label:'Perf %',data:dt.map(x=>x.p),borderColor:cR('accent4'),backgroundColor:cR('accent4',0.2),fill:true}]},{y:{min:60,max:130}});
-    
-    renderShiftComparison('m3', 'tb-ay-kiyas', 'th-ay-kiyas', md);
-    
-    const sab=md.filter(r=>r.vardiya==='08:00-16:00').length, aks=md.filter(r=>r.vardiya==='16:00-24:00').length;
-    mc('m4','doughnut',{labels:['08:00-16:00','16:00-24:00','Diğer'],datasets:[{data:[sab,aks,md.length-sab-aks],backgroundColor:[cR('accent',0.75),cR('accent4',0.75),cR('accent3',0.75)]}]},{x:{display:false},y:{display:false}});
-    
-    const ws=[...new Set(md.map(r=>r.calisan))].map(w=>({w,...calc(md.filter(r=>r.calisan===w))})).sort((a,b)=>b.u-a.u);
-        
-        const bestM = [...ws].sort((a,b) => b.p - a.p)[0];
-        if(bestM && bestM.p > 0) {
-            window.bestMonthEmp = bestM.w;
-            if($('m-best-name')) $('m-best-name').textContent = bestM.w;
-            if($('m-best-perf')) $('m-best-perf').textContent = bestM.p.toFixed(1) + '%';
-            if($('m-best')) {
-                $('m-best').classList.remove('hidden');
-                $('m-best').classList.add('flex');
-            }
-        } else {
-            if($('m-best')) {
-                $('m-best').classList.add('hidden');
-                $('m-best').classList.remove('flex');
-            }
-        }
+function rW() {
+    renderPeriodReport({
+        periodType: 'w',
+        periodVar: sW,
+        dataFilter: r => isoW(r.tarih) === sW,
+        titleId: 'c-week',
+        titleFormatter: p => p.replace('-W', ' / ') + '. Hafta',
+        pickerId: 'w-pick',
+        pickerValueFormatter: p => p,
+        kpiContainerId: 'w-kpi',
+        kpiCardTitlePrefix: 'Haftalık',
+        trendChart1Id: 'w1',
+        trendChart2Id: 'w2',
+        trendLabelFormatter: d => d.slice(0, 5),
+        shiftCompareChartId: 'w3',
+        shiftCompareTableBodyId: 'tb-haf-kiyas',
+        shiftCompareTableHeaderId: 'th-haf-kiyas',
+        shiftRatioChartId: 'w4',
+        bestEmployeeContainerId: 'w-best',
+        bestEmployeeNameId: 'w-best-name',
+        bestEmployeePerfId: 'w-best-perf',
+        bestEmployeeGlobalVar: 'bestWeekEmp',
+        employeeTableBodyId: 'tb-haf',
+        employeeTableHeaderId: 'th-haf',
+        downtimeTableBodyId: 'tb-haf-durus',
+        downtimeTableHeaderId: 'th-haf-durus'
+    });
+}
 
-    $('th-ay').innerHTML=th(['Sıra','Çalışan','Kayıt','Hedef (Adet)','Top.Üretim','Ort.Perf','Duruş (Dk)']);
-    $('tb-ay').innerHTML=ws.map((w,i)=>tr([i+1, `<b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b>`, w.c, n(w.b), n(w.u), pb(w.p), n(w.d)])).join('');
-
-    const badM = [...ws].filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,10);
-    $('th-ay-durus').innerHTML=th(['Çalışan','Toplam Duruş']);
-    $('tb-ay-durus').innerHTML=badM.length ? badM.map((w,i)=>tr([`<div class="flex gap-1 items-center"><span class="text-[10px] text-text3 font-mono">${i+1}.</span> <b class="emp-link" onclick="openModal('${safeAttr(w.w)}')">${escapeHTML(w.w)}</b></div>`, `<span class="text-accent2 font-mono font-bold">${n(w.d)} dk</span>`])).join('') : `<tr><td colspan="2" class="p-4 text-center text-text3 text-xs">Duruş kaydı yok.</td></tr>`;
+function rM() {
+    renderPeriodReport({
+        periodType: 'm',
+        periodVar: sM,
+        dataFilter: r => r.tarih.endsWith(sM),
+        titleId: 'c-month',
+        titleFormatter: p => { const [m, y] = p.split('.'); return `${m}/${y}`; },
+        pickerId: 'm-pick',
+        pickerValueFormatter: p => { const [m, y] = p.split('.'); return `${y}-${m}`; },
+        kpiContainerId: 'm-kpi',
+        kpiCardTitlePrefix: 'Aylık',
+        trendChart1Id: 'm1',
+        trendChart2Id: 'm2',
+        trendLabelFormatter: d => d.slice(0, 2),
+        shiftCompareChartId: 'm3',
+        shiftCompareTableBodyId: 'tb-ay-kiyas',
+        shiftCompareTableHeaderId: 'th-ay-kiyas',
+        shiftRatioChartId: 'm4',
+        bestEmployeeContainerId: 'm-best',
+        bestEmployeeNameId: 'm-best-name',
+        bestEmployeePerfId: 'm-best-perf',
+        bestEmployeeGlobalVar: 'bestMonthEmp',
+        employeeTableBodyId: 'tb-ay',
+        employeeTableHeaderId: 'th-ay',
+        downtimeTableBodyId: 'tb-ay-durus',
+        downtimeTableHeaderId: 'th-ay-durus'
+    });
 }
 
 function rH(){
@@ -1275,11 +1319,8 @@ function analyzeFason(fasonName) {
         
         // Puanlama mantığı: Dakikada Üretilen Adet
         // Eksik/hatalı girişlere karşı her bir kaydın duruşu maksimum 449 dakika sayılarak netMins toplanmıştır.
-        const piecesPerMin = v.uretim / v.netMins;
         const piecesPerMin = v.netMins > 0 ? v.uretim / v.netMins : 0;
 
-        return { pres: p, runs: v.runs, perf: avgPerf, durus: avgDurus, score: piecesPerMin, uretim: v.uretim, ppm: piecesPerMin };
-    }).sort((a,b) => b.score - a.score);
         // YENİ: Vardiya başına üretim tahmini (Genel verimlilik metriği)
         const shiftProduction = piecesPerMin * (450 - avgDurus);
 
@@ -1288,7 +1329,7 @@ function analyzeFason(fasonName) {
             runs: v.runs, 
             perf: avgPerf, 
             durus: avgDurus, 
-            score: shiftProduction, // Ana sıralama metriği artık vardiya üretimi
+            score: shiftProduction, // Ana sıralama metriği artık vardiya üretimi.
             uretim: v.uretim, 
             ppm: piecesPerMin, 
             shiftProd: shiftProduction 
@@ -1312,9 +1353,6 @@ function analyzeFason(fasonName) {
         <div class="flex-1">
             <h3 class="text-accent3 font-bebas text-lg md:text-xl tracking-wider mb-1">PLANLAMA ÖNERİSİ: ${escapeHTML(best.pres)}</h3>
             <p class="text-text2 text-xs md:text-sm leading-relaxed">
-                Tarihsel verilere göre <b>${escapeHTML(canonicalName)}</b> fasonu en hızlı <b>${escapeHTML(best.pres)}</b> makinesinde üretilmektedir. 
-                Bu preste duruşlar düşüldükten sonra dakikada ortalama <b class="text-accent">${best.ppm.toFixed(2)} adet</b> üretim gerçekleşmiştir. Toplam <b>${best.runs}</b> kez çalışılmış olup, vardiya başına ortalama <b class="text-accent2">${Math.round(best.durus)} dk</b> duruş süresi gözlemlenmiştir. 
-                Planlamanızı bu prese yapmanız önerilir.
                 Tarihsel verilere göre <b>${escapeHTML(canonicalName)}</b> fasonu için en verimli pres <b>${escapeHTML(best.pres)}</b> olarak analiz edilmiştir.
                 Bu preste ortalama duruş süresi düşüldüğünde, 1 vardiyada (450 dk) yaklaşık <b class="text-accent text-lg">${n(best.shiftProd)} adet</b> üretim potansiyeli bulunmaktadır.<br>
                 <span class="text-[11px] text-text3 mt-1 inline-block">
@@ -1332,12 +1370,6 @@ function analyzeFason(fasonName) {
     presses.forEach((p, idx) => {
         const isBest = idx === 0;
         html += `
-            <div class="bg-bg border ${isBest ? 'border-accent3' : 'border-border/50'} rounded-lg p-3 flex flex-col gap-1 relative overflow-hidden shadow-sm">
-                ${isBest ? '<div class="absolute top-0 right-0 bg-accent3 text-bg font-bold text-[8px] px-1.5 py-0.5 rounded-bl-lg">EN HIZLI</div>' : ''}
-                <span class="font-bold text-text text-sm">${escapeHTML(p.pres)}</span>
-                <div class="flex justify-between text-[10px] text-text2 border-t border-border/50 pt-1 mt-1">
-                    <span>Kayıt: <b class="text-text">${p.runs}</b> kez</span>
-                    <span>Hız: <b class="text-accent">${p.ppm.toFixed(2)} adet/dk</b></span>
             <div class="bg-bg border ${isBest ? 'border-accent3' : 'border-border/50'} rounded-lg p-3 flex flex-col gap-1.5 relative overflow-hidden shadow-sm">
                 ${isBest ? '<div class="absolute top-0 right-0 bg-accent3 text-bg font-bold text-[8px] px-1.5 py-0.5 rounded-bl-lg">EN VERİMLİ</div>' : ''}
                 <div class="flex justify-between items-baseline">
@@ -1351,7 +1383,6 @@ function analyzeFason(fasonName) {
                     <span class="text-[9px] text-text3 uppercase">Tahmini Vardiya Üretimi</span>
                     <span class="block font-bold text-lg ${isBest ? 'text-accent3' : 'text-text'}">${n(p.shiftProd)}</span>
                 </div>
-                <div class="flex justify-between text-[10px] text-text2 pt-1 mt-1">
                 <div class="flex justify-between text-[10px] text-text2 pt-1 mt-1 border-t border-border/50">
                     <span>Hız: <b class="text-accent4">${p.ppm.toFixed(2)} adet/dk</b></span>
                     <span>Ort. Duruş: <b class="text-accent2">${Math.round(p.durus)} dk</b></span>
