@@ -3181,37 +3181,28 @@ function parseCSV(text) {
     if (!text) return [];
 
     const rows = [];
+    const objPattern = new RegExp((
+        "(\\,|\\r?\\n|\\r|^)" +
+        "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+        "([^\"\\,\\r\\n]*))"
+    ), "gi");
+
+    let arrMatches = null;
     let currentRow = [];
-    let currentCell = '';
-    let inQuotes = false;
 
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const nextChar = text[i + 1];
-
-        if (char === '"') {
-            if (inQuotes && nextChar === '"') {
-                currentCell += '"';
-                i++;
-            } else {
-                inQuotes = !inQuotes;
-            }
-        } else if (char === ',' && !inQuotes) {
-            currentRow.push(currentCell.trim());
-            currentCell = '';
-        } else if ((char === '\n' || (char === '\r' && nextChar === '\n')) && !inQuotes) {
-            if (char === '\r') i++;
-            currentRow.push(currentCell.trim());
+    while (arrMatches = objPattern.exec(text)) {
+        const strMatchedDelimiter = arrMatches[1];
+        if (strMatchedDelimiter.length && strMatchedDelimiter !== ",") {
             rows.push(currentRow);
             currentRow = [];
-            currentCell = '';
-        } else {
-            currentCell += char;
         }
-    }
-    
-    if (currentCell !== '' || text[text.length - 1] === ',') {
-        currentRow.push(currentCell.trim());
+        let strMatchedValue;
+        if (arrMatches[2]) {
+            strMatchedValue = arrMatches[2].replace(new RegExp("\"\"", "g"), "\"");
+        } else {
+            strMatchedValue = arrMatches[3];
+        }
+        currentRow.push((strMatchedValue || "").trim());
     }
     if (currentRow.length > 0) {
         rows.push(currentRow);
@@ -3220,10 +3211,8 @@ function parseCSV(text) {
     if (rows.length && rows[0].length) {
         rows[0][0] = rows[0][0].replace(/^\uFEFF/, '');
     }
-
     return rows;
 }
-
 function parse(t){
     const rows = parseCSV(t);
     if (rows.length < 2) return [];
