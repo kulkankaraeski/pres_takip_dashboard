@@ -1276,9 +1276,24 @@ function analyzeFason(fasonName) {
         // Puanlama mantığı: Dakikada Üretilen Adet
         // Eksik/hatalı girişlere karşı her bir kaydın duruşu maksimum 449 dakika sayılarak netMins toplanmıştır.
         const piecesPerMin = v.uretim / v.netMins;
+        const piecesPerMin = v.netMins > 0 ? v.uretim / v.netMins : 0;
 
         return { pres: p, runs: v.runs, perf: avgPerf, durus: avgDurus, score: piecesPerMin, uretim: v.uretim, ppm: piecesPerMin };
     }).sort((a,b) => b.score - a.score);
+        // YENİ: Vardiya başına üretim tahmini (Genel verimlilik metriği)
+        const shiftProduction = piecesPerMin * (450 - avgDurus);
+
+        return { 
+            pres: p, 
+            runs: v.runs, 
+            perf: avgPerf, 
+            durus: avgDurus, 
+            score: shiftProduction, // Ana sıralama metriği artık vardiya üretimi
+            uretim: v.uretim, 
+            ppm: piecesPerMin, 
+            shiftProd: shiftProduction 
+        };
+    }).sort((a,b) => b.score - a.score); // En verimli (vardiyada en çok üreten) prese göre sırala
 
     const resDiv = $('fas-analyze-result');
     resDiv.classList.remove('hidden');
@@ -1300,6 +1315,11 @@ function analyzeFason(fasonName) {
                 Tarihsel verilere göre <b>${escapeHTML(canonicalName)}</b> fasonu en hızlı <b>${escapeHTML(best.pres)}</b> makinesinde üretilmektedir. 
                 Bu preste duruşlar düşüldükten sonra dakikada ortalama <b class="text-accent">${best.ppm.toFixed(2)} adet</b> üretim gerçekleşmiştir. Toplam <b>${best.runs}</b> kez çalışılmış olup, vardiya başına ortalama <b class="text-accent2">${Math.round(best.durus)} dk</b> duruş süresi gözlemlenmiştir. 
                 Planlamanızı bu prese yapmanız önerilir.
+                Tarihsel verilere göre <b>${escapeHTML(canonicalName)}</b> fasonu için en verimli pres <b>${escapeHTML(best.pres)}</b> olarak analiz edilmiştir.
+                Bu preste ortalama duruş süresi düşüldüğünde, 1 vardiyada (450 dk) yaklaşık <b class="text-accent text-lg">${n(best.shiftProd)} adet</b> üretim potansiyeli bulunmaktadır.<br>
+                <span class="text-[11px] text-text3 mt-1 inline-block">
+                    <b>Analiz Detayları:</b> Toplam <b>${best.runs}</b> kez çalışılmış, vardiya başına ortalama <b class="text-accent2">${Math.round(best.durus)} dk</b> duruş yaşanmış ve net çalışma hızının <b class="text-accent4">${best.ppm.toFixed(2)} adet/dk</b> olduğu görülmüştür.
+                </span>
             </p>
         </div>
     </div>
@@ -1318,9 +1338,20 @@ function analyzeFason(fasonName) {
                 <div class="flex justify-between text-[10px] text-text2 border-t border-border/50 pt-1 mt-1">
                     <span>Kayıt: <b class="text-text">${p.runs}</b> kez</span>
                     <span>Hız: <b class="text-accent">${p.ppm.toFixed(2)} adet/dk</b></span>
+            <div class="bg-bg border ${isBest ? 'border-accent3' : 'border-border/50'} rounded-lg p-3 flex flex-col gap-1.5 relative overflow-hidden shadow-sm">
+                ${isBest ? '<div class="absolute top-0 right-0 bg-accent3 text-bg font-bold text-[8px] px-1.5 py-0.5 rounded-bl-lg">EN VERİMLİ</div>' : ''}
+                <div class="flex justify-between items-baseline">
+                    <span class="font-bold text-text text-sm">${escapeHTML(p.pres)}</span>
+                    <span class="text-[10px] text-text3">Kayıt: <b class="text-text">${p.runs}</b></span>
                 </div>
                 <div class="flex justify-between text-[10px] text-text2">
                     <span>Toplam Üretim: <b>${n(p.uretim)}</b></span>
+                <div class="bg-bg3/50 rounded p-2 text-center mt-1">
+                    <span class="text-[9px] text-text3 uppercase">Tahmini Vardiya Üretimi</span>
+                    <span class="block font-bold text-lg ${isBest ? 'text-accent3' : 'text-text'}">${n(p.shiftProd)}</span>
+                </div>
+                <div class="flex justify-between text-[10px] text-text2 pt-1 mt-1">
+                    <span>Hız: <b class="text-accent4">${p.ppm.toFixed(2)} adet/dk</b></span>
                     <span>Ort. Duruş: <b class="text-accent2">${Math.round(p.durus)} dk</b></span>
                 </div>
             </div>
