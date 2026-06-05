@@ -33,7 +33,12 @@ window.addEventListener('error', function(event) {
     }
 });
 
-if (localStorage.getItem('theme') === 'light') {
+// GÜVENLİ DEPOLAMA (Gizlilik ayarları katı olan tarayıcılarda uygulamanın çökmesini engeller)
+function safeGetStorage(k, f=null){try{return localStorage.getItem(k)||f;}catch(e){return f;}}
+function safeSetStorage(k, v){try{localStorage.setItem(k, v);}catch(e){}}
+function safeRemoveStorage(k){try{localStorage.removeItem(k);}catch(e){}}
+
+if (safeGetStorage('theme') === 'light') {
     document.documentElement.classList.add('light-mode');
 }
 
@@ -42,7 +47,7 @@ let recsModalData = [], recsModalTitle = '';
 window.bestEmpName = ''; // Ayın elemanı global kayıt
 let LOGGED_IN_USER = null;
 let USER_DATA = {};
-let adminSettings = safeJSON(localStorage.getItem('adminSettings'), { hiddenTabs: [] });
+let adminSettings = safeJSON(safeGetStorage('adminSettings'), { hiddenTabs: [] });
 if (!adminSettings || !Array.isArray(adminSettings.hiddenTabs)) adminSettings = { hiddenTabs: [] };
 
 // URL Parametrelerini Yakala (PWA Kısayolları İçin)
@@ -555,7 +560,7 @@ function swT(t,el){
 function toggleTheme() {
     document.documentElement.classList.toggle('light-mode');
     const isLight = document.documentElement.classList.contains('light-mode');
-    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    safeSetStorage('theme', isLight ? 'light' : 'dark');
 
     const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
     if(RAW.length) swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
@@ -2259,7 +2264,7 @@ function checkNotifs() {
     if(!LOGGED_IN_USER) return;
     
     const myName = LOGGED_IN_USER.name;
-    const readStates = safeJSON(localStorage.getItem('chatReadStates_' + myName), {});
+    const readStates = safeJSON(safeGetStorage('chatReadStates_' + myName), {});
     
     let unreadChats = 0;
     let totalUnreadMsgs = 0;
@@ -2365,7 +2370,7 @@ function openNotifModal() {
 
 function renderChatList() {
     const myName = LOGGED_IN_USER.name;
-    const readStates = safeJSON(localStorage.getItem('chatReadStates_' + myName), {});
+    const readStates = safeJSON(safeGetStorage('chatReadStates_' + myName), {});
     const chatGroups = {};
 
     if (MESAJ_RAW.r) {
@@ -2453,13 +2458,13 @@ function openChat(partner) {
     renderChatList(); // Listeyi renklendirmek için
     
     const myName = LOGGED_IN_USER.name;
-    const readStates = safeJSON(localStorage.getItem('chatReadStates_' + myName), {});
+    const readStates = safeJSON(safeGetStorage('chatReadStates_' + myName), {});
     let lastIdx = -1;
     (MESAJ_RAW.r || []).forEach((r, idx) => {
         if ((partner === 'GLOBAL' && r[2] === 'GLOBAL') || (r[1] === partner && r[2] === myName) || (r[1] === myName && r[2] === partner)) lastIdx = idx;
     });
     if(lastIdx > -1) {
-        readStates[partner] = lastIdx; localStorage.setItem('chatReadStates_' + myName, JSON.stringify(readStates)); checkNotifs();
+        readStates[partner] = lastIdx; safeSetStorage('chatReadStates_' + myName, JSON.stringify(readStates)); checkNotifs();
     }
     setTimeout(() => { const h = $('active-chat-history'); h.scrollTop = h.scrollHeight; $('chat-msg-input').focus(); }, 50);
 }
@@ -2479,7 +2484,7 @@ function backToChatList() {
 function renderChatHistory() {
     const myName = LOGGED_IN_USER.name;
     let html = ''; let lastDateStr = '';
-    const deletedStates = safeJSON(localStorage.getItem('chatDeletedStates_' + myName), {});
+    const deletedStates = safeJSON(safeGetStorage('chatDeletedStates_' + myName), {});
     const hideUpTo = deletedStates[currentChatPartner] || -1;
 
     // Akıllı Okundu Bilgisi için karşı tarafın yazdığı son mesajın sırasını bul
@@ -2574,9 +2579,9 @@ function sendChatMessage(directMsg = null) {
     }
     
     const myName = LOGGED_IN_USER.name;
-    const readStates = safeJSON(localStorage.getItem('chatReadStates_' + myName), {});
+    const readStates = safeJSON(safeGetStorage('chatReadStates_' + myName), {});
     readStates[currentChatPartner] = MESAJ_RAW.r.length - 1;
-    localStorage.setItem('chatReadStates_' + myName, JSON.stringify(readStates));
+    safeSetStorage('chatReadStates_' + myName, JSON.stringify(readStates));
 
     renderChatHistory(); renderChatList();
     const h = $('active-chat-history'); h.scrollTop = h.scrollHeight;
@@ -2821,8 +2826,8 @@ async function saveProfileFromModal(e) {
         fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.error(err));
         
         if (USER_DATA[name]) USER_DATA[name].photo = photo;
-        let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
-        if(!lu[name]) lu[name] = {}; lu[name].photo = photo; localStorage.setItem('localUsers', JSON.stringify(lu));
+        let lu = JSON.parse(safeGetStorage('localUsers')) || {};
+        if(!lu[name]) lu[name] = {}; lu[name].photo = photo; safeSetStorage('localUsers', JSON.stringify(lu));
         
         if (photo) { 
             $('user-avatar').src = photo; 
@@ -2873,7 +2878,7 @@ async function fetchUsers() {
                 if (photo && !photo.startsWith('http') && !photo.startsWith('data:')) photo = '';
                 
                 // Aynı cihazda kalıcılık için yerel depolama yedeği (Google Sheet'ten gelmezse)
-                let lu = JSON.parse(localStorage.getItem('localUsers')) || {};
+                let lu = JSON.parse(safeGetStorage('localUsers')) || {};
                 if (!photo && lu[name] && lu[name].photo) {
                     photo = lu[name].photo;
                 }
@@ -2892,12 +2897,12 @@ async function fetchUsers() {
             if (!adminFound) USER_DATA['Yusuf Yalçıntaş'] = { pass: '1234', role: 'admin', photo: '' };
 
             normalizeUserRoles();
-            localStorage.setItem('cachedUsers', JSON.stringify(USER_DATA));
+            safeSetStorage('cachedUsers', JSON.stringify(USER_DATA));
         }
     } catch(e) {
         console.error("Kullanıcı listesi çekilemedi, önbellek kullanılıyor.", e);
         // Offline durumunda önbellekten al
-        USER_DATA = safeJSON(localStorage.getItem('cachedUsers'), {});
+        USER_DATA = safeJSON(safeGetStorage('cachedUsers'), {});
         normalizeUserRoles();
         let adminFound = false;
         Object.keys(USER_DATA).forEach(k => {
@@ -2965,7 +2970,7 @@ function login(e) {
 
     if (userKey && String(USER_DATA[userKey].pass) === pass) {
         LOGGED_IN_USER = { name: userKey, role: normalizeRole(USER_DATA[userKey].role) };
-        localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
+        safeSetStorage('loggedUser', JSON.stringify(LOGGED_IN_USER));
         errorEl.innerText = '';
         const el = $('login-modal'); el.classList.add('opacity-0'); el.querySelector('div').classList.remove('scale-100'); el.querySelector('div').classList.add('scale-95');
         setTimeout(()=> { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
@@ -3007,7 +3012,7 @@ function login(e) {
 }
 
 function logout() {
-    localStorage.removeItem('loggedUser');
+    safeRemoveStorage('loggedUser');
     location.reload(); // Sayfayı yeniden yükleyerek çıkış yap ve login ekranını göster
 }
 
@@ -3163,7 +3168,7 @@ function saveAdminSettings() {
     const c = parseInt($('admin-w-c').value) || 20;
     const d = parseFloat($('admin-w-d').value) || 0;
     adminSettings = { hiddenTabs, weights: {u, p, c, d} };
-    localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
+    safeSetStorage('adminSettings', JSON.stringify(adminSettings));
     toast('Yönetim ayarları başarıyla kaydedildi!', 'ok');
     applyRoleRestrictions();
 }
@@ -3410,7 +3415,7 @@ function fetchCSV(isBg = false) {
 }
 
 // OTOMATİK GÜNCELLEME VE OTURUM KONTROLÜ
-    const savedUser = localStorage.getItem('loggedUser');
+    const savedUser = safeGetStorage('loggedUser');
 if(savedUser && savedUser !== "undefined") {
     LOGGED_IN_USER = safeJSON(savedUser, null);
     if (LOGGED_IN_USER) LOGGED_IN_USER.role = normalizeRole(LOGGED_IN_USER.role);
