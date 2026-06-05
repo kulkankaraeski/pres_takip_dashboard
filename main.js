@@ -143,7 +143,10 @@ function calculateLeaderboard(data) {
         e.ptsU = (e.u / maxU) * wU;
         e.ptsP = (e.p / maxP) * wP;
         e.ptsC = (e.c / maxC) * wC;
-        e.ptsD = e.d * wD;
+            
+            // ADALETLİ DURUŞ HESABI: Toplam duruşu kayıt sayısına bölerek (ortalama duruş) üzerinden ceza ver.
+            const avgDurus = e.c > 0 ? (e.d / e.c) : 0;
+            e.ptsD = avgDurus * wD;
         e.score = e.ptsU + e.ptsP + e.ptsC - e.ptsD;
     });
 
@@ -1683,6 +1686,7 @@ function openLiderlikMonth(m, preventScroll = false) {
     $('tb-liderlik-detay').innerHTML = lb.map((e, i) => {
         let rowCls = i === 0 ? 'bg-accent3/10 border-accent3/30' : (i === 1 ? 'bg-gray-400/10' : (i === 2 ? 'bg-amber-700/10' : 'bg-bg2'));
         let rankIcon = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : `${i+1}.`));
+        const avgDurus = Math.round(e.c > 0 ? (e.d / e.c) : 0);
         
         return `
         <tr class="hover:bg-bg3 border-b border-border/50 text-xs md:text-sm ${rowCls} transition-colors cursor-pointer" onclick="openModal('${safeAttr(e.w)}')">
@@ -1691,7 +1695,7 @@ function openLiderlikMonth(m, preventScroll = false) {
             <td class="p-3 text-text2"><span class="text-accent font-bold">+${e.ptsU.toFixed(1)}</span> <span class="text-[9px] block">(${n(e.u)} Adet)</span></td>
             <td class="p-3 text-text2"><span class="text-accent4 font-bold">+${e.ptsP.toFixed(1)}</span> <span class="text-[9px] block">(%${e.p.toFixed(1)})</span></td>
             <td class="p-3 text-text2"><span class="text-accent font-bold">+${e.ptsC.toFixed(1)}</span> <span class="text-[9px] block">(${e.c} Kayıt)</span></td>
-            <td class="p-3 text-text2"><span class="text-accent2 font-bold">-${e.ptsD.toFixed(1)}</span> <span class="text-[9px] block">(${n(e.d)} Dk)</span></td>
+            <td class="p-3 text-text2"><span class="text-accent2 font-bold">-${e.ptsD.toFixed(1)}</span> <span class="text-[9px] block">(Ort. ${n(avgDurus)} Dk)</span></td>
             <td class="p-3 font-bold text-text text-base md:text-lg">⭐ ${e.score.toFixed(1)}</td>
         </tr>`;
     }).join('');
@@ -2877,7 +2881,12 @@ async function fetchUsers() {
                 if (name) USER_DATA[name] = { pass: String(pass), role: role, photo: photo };
             }
             
-            if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin"; // Süimiş Ana Yönetici Güvencesi
+            // Gelişmiş Yönetici Güvencesi (Boşluk veya harf hatasına karşı korumalı)
+            Object.keys(USER_DATA).forEach(k => {
+                if (k.toLowerCase().includes('yusuf yalç')) {
+                    USER_DATA[k].role = 'admin';
+                }
+            });
             normalizeUserRoles();
             localStorage.setItem('cachedUsers', JSON.stringify(USER_DATA));
         }
@@ -2886,7 +2895,11 @@ async function fetchUsers() {
         // Offline durumunda önbellekten al
         USER_DATA = safeJSON(localStorage.getItem('cachedUsers'), {});
         normalizeUserRoles();
-        if (USER_DATA["Yusuf Yalçıntaş"]) USER_DATA["Yusuf Yalçıntaş"].role = "admin";
+        Object.keys(USER_DATA).forEach(k => {
+            if (k.toLowerCase().includes('yusuf yalç')) {
+                USER_DATA[k].role = 'admin';
+            }
+        });
     }
 }
 
@@ -3011,7 +3024,7 @@ function rAdmin() {
         const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
         
         // Son gönderdiği mesajı göster
-        const notifMsg = MESAJ_RAW.r ? MESAJ_RAW.r.slice().reverse().find(r => r[1] === u && (r[2] === LOGGED_IN_USER.name || r[2] === 'GLOBAL')) : null;
+        const notifMsg = MESAJ_RAW.r ? MESAJ_RAW.r.slice().reverse().find(r => r[1] === u && (r[2] === LOGGED_IN_USER?.name || r[2] === 'GLOBAL')) : null;
         const hasNotif = notifMsg ? `<span class="px-1.5 py-0.5 bg-accent/20 text-accent rounded text-[9px] ml-2 cursor-help border border-accent/50" title="Son Mesajı: ${escapeHTML(notifMsg[3])}">💬 MESAJ</span>` : '';
         
         const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border-2 border-bg2 shadow-sm">` : `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 flex items-center justify-center font-bold text-white text-[10px] shadow-sm border border-bg2">${u.slice(0,2).toUpperCase()}</div>`;

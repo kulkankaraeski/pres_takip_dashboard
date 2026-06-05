@@ -959,6 +959,13 @@
       const reason = event.reason;
       if (!reason) return;
 
+      // Eklentilerden gelen tamamen boş "{}" objelerini tamamen yok say
+      const isObject = typeof reason === 'object';
+      if (isObject && Object.keys(reason).length === 0 && !reason.message && !reason.stack) {
+          event.preventDefault();
+          return;
+      }
+
       const msg = typeof reason === 'string' ? reason : (reason.message || '');
       const isExtensionNoise = (
         reason.name === 'n' && reason.code === 403 ||
