@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -102,17 +102,17 @@
             
             <div class="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 w-full sm:w-auto">
                 <!-- YENİ: UYGULAMA İNDİRME BUTONU -->
-                <button id="btn-install" class="hidden flex-1 sm:flex-none px-2 md:px-3 py-2 md:py-2.5 bg-accent hover:bg-accent/80 text-white border border-accent/50 rounded-xl font-mono text-[9px] md:text-[10px] items-center justify-center gap-1.5 transition-all hover:scale-105 hover:shadow-lg whitespace-nowrap animate-bounce">
+                <button id="btn-install" class="hidden flex-1 sm:flex-none px-2 md:px-3 py-2 md:py-2.5 bg-gradient-to-br from-accent to-accent4 text-white border border-white/20 rounded-xl font-mono text-[9px] md:text-[10px] items-center justify-center gap-1.5 transition-all hover:scale-105 shadow-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.6)] whitespace-nowrap animate-bounce">
                     📲 İNDİR
                 </button>
 
-                <button onclick="toggleTheme()" class="flex-1 sm:flex-none px-2 md:px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[9px] md:text-[10px] flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+                <button onclick="toggleTheme()" class="flex-1 sm:flex-none px-2 md:px-3 py-2 md:py-2.5 bg-gradient-to-br from-bg2 to-bg3 hover:from-bg3 hover:to-border text-text2 hover:text-text border border-border/80 rounded-xl font-mono text-[9px] md:text-[10px] flex items-center justify-center gap-1.5 transition-all hover:-translate-y-1 shadow-md hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] whitespace-nowrap">
                     🌓 TEMA
                 </button>
-                <button onclick="exportToPDF()" class="flex-1 sm:flex-none px-2 md:px-3 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-text2 hover:text-text border border-border/50 rounded-xl font-mono text-[9px] md:text-[10px] flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+                <button onclick="exportToPDF()" class="flex-1 sm:flex-none px-2 md:px-3 py-2 md:py-2.5 bg-gradient-to-br from-bg2 to-bg3 hover:from-bg3 hover:to-border text-text2 hover:text-text border border-border/80 rounded-xl font-mono text-[9px] md:text-[10px] flex items-center justify-center gap-1.5 transition-all hover:-translate-y-1 shadow-md hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] whitespace-nowrap">
                     📥 PDF
                 </button>
-                <button onclick="fetchCSV(true)" id="btn-refresh" class="flex-1 sm:flex-none min-w-[100px] px-3 md:px-4 py-2 md:py-2.5 bg-bg3/80 hover:bg-border/80 text-accent font-bold border border-border/50 rounded-xl font-mono text-[9px] md:text-[10px] flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+                <button onclick="fetchCSV(true)" id="btn-refresh" class="flex-1 sm:flex-none min-w-[100px] px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-bg2 to-bg3 hover:from-bg3 hover:to-border text-accent font-bold border border-border/80 rounded-xl font-mono text-[9px] md:text-[10px] flex items-center justify-center gap-1.5 transition-all hover:-translate-y-1 shadow-md hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] whitespace-nowrap">
                     ↻ GÜNCELLE
                 </button>
             </div>
@@ -129,49 +129,49 @@
 
         <nav class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6 bg-transparent p-2 w-full max-w-7xl mx-auto flex-1 min-h-0" id="main-nav" style="grid-auto-rows: minmax(0, 1fr); align-content: stretch;">
             <!-- 1. Veri Giriş Formu -->
-            <div onclick="swT('form',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div onclick="swT('form',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📝</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">VERİ GİRİŞ FORMU</span>
             </div>
             
             <!-- 2. Üretim Planı -->
-            <div onclick="swT('plan',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div onclick="swT('plan',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📅</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">ÜRETİM PLANI</span>
             </div>
 
             <!-- 3. Veri Sayfası -->
-            <div onclick="swT('verisayfasi',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div onclick="swT('verisayfasi',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📋</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">VERİ SAYFASI</span>
             </div>
 
             <!-- 4. Üretim Takip Denemeleri -->
-            <div onclick="swT('kayitlar',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div onclick="swT('kayitlar',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">🧪</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10 uppercase">ÜRETİM TAKİP DENEMELERİ</span>
             </div>
 
             <!-- 5. Kalıphane -->
-            <div onclick="swT('kaliphane',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div onclick="swT('kaliphane',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">🛠️</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">KALIPHANE</span>
             </div>
 
             <!-- 6. Pres Malzeme Takip -->
-            <div onclick="swT('malzeme',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div onclick="swT('malzeme',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📦</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10 uppercase">PRES MALZEME TAKİP</span>
             </div>
 
             <!-- 7. Alarmlar -->
-            <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-accent2/50 hover:border-accent2 shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent2),0.4)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div id="nav-alarm-btn" onclick="swT('alarm',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-accent2/50 hover:border-accent2 shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent2),0.5)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent2/0 to-accent2/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div class="absolute inset-0 bg-accent2/5 animate-pulse"></div>
                 <div class="relative z-10 flex flex-col items-center">
@@ -184,21 +184,21 @@
             </div>
 
             <!-- YENİ: Üretim Liderliği Ana Menü Butonu -->
-            <div id="nav-liderlik" onclick="swT('liderlik',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-accent3/50 hover:border-accent3 shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent3),0.4)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div id="nav-liderlik" onclick="swT('liderlik',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-accent3/50 hover:border-accent3 shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent3),0.5)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent3/0 to-accent3/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10 ayin-elemani">🏆</span>
                 <span class="text-accent3 font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">ÜRETİM LİDERLİĞİ</span>
             </div>
 
             <!-- 8. Raporlar -->
-            <div id="nav-raporlar-btn" onclick="swT('raporlar_menu',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div id="nav-raporlar-btn" onclick="swT('raporlar_menu',this)" class="group cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-1 sm:mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10">📊</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10 uppercase">RAPORLAR</span>
             </div>
 
             <!-- 9. Yönetim Paneli -->
-            <div id="nav-admin" onclick="swT('admin',this)" class="group cursor-pointer hidden flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent hover:bg-accent/10 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0">
+            <div id="nav-admin" onclick="swT('admin',this)" class="group cursor-pointer hidden flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent hover:bg-accent/10 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0 shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)]">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10 group-hover:rotate-90">⚙️</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">YÖNETİM PANELİ</span>
@@ -208,31 +208,31 @@
     <main class="flex-none w-full relative flex flex-col min-h-full" id="main-content-area">
         <div class="panel hidden h-full w-full" id="panel-raporlar_menu">
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6 p-2 md:p-6 w-full max-w-6xl mx-auto h-full" style="grid-auto-rows: minmax(0, 1fr); align-content: stretch;">
-                <div onclick="swT('gunluk',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
+                <div onclick="swT('gunluk',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
                     <span class="text-4xl md:text-6xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl shrink-0">📊</span>
                     <span class="text-text font-bold text-center tracking-wider text-[10px] md:text-sm">GÜNLÜK RAPOR</span>
                 </div>
-                <div onclick="swT('haftalik',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
+                <div onclick="swT('haftalik',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
                     <span class="text-4xl md:text-6xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl shrink-0">📅</span>
                     <span class="text-text font-bold text-center tracking-wider text-[10px] md:text-sm">HAFTALIK RAPOR</span>
                 </div>
-                <div onclick="swT('aylik',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
+                <div onclick="swT('aylik',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
                     <span class="text-4xl md:text-6xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl shrink-0">🗓</span>
                     <span class="text-text font-bold text-center tracking-wider text-[10px] md:text-sm">AYLIK RAPOR</span>
                 </div>
-                <div onclick="swT('genel',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
+                <div onclick="swT('genel',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
                     <span class="text-4xl md:text-6xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl shrink-0">📈</span>
                     <span class="text-text font-bold text-center tracking-wider text-[10px] md:text-sm">GENEL ÖZET</span>
                 </div>
-                <div onclick="swT('calisan',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
+                <div onclick="swT('calisan',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
                     <span class="text-4xl md:text-6xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl shrink-0">👥</span>
                     <span class="text-text font-bold text-center tracking-wider text-[10px] md:text-sm">ÇALIŞAN PERFORMANSI</span>
                 </div>
-                <div onclick="swT('pres',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
+                <div onclick="swT('pres',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
                     <span class="text-4xl md:text-6xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl shrink-0">⚙️</span>
                     <span class="text-text font-bold text-center tracking-wider text-[10px] md:text-sm">PRES MAKİNE</span>
                 </div>
-                <div onclick="swT('fason',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-bg3/90 backdrop-blur-xl border border-border/50 hover:border-accent shadow-lg hover:shadow-[0_0_40px_rgba(var(--color-accent),0.3)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
+                <div onclick="swT('fason',this)" class="nav-tab cursor-pointer flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-[2rem] bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)] transition-all duration-500 hover:-translate-y-2 group h-full w-full min-h-0">
                     <span class="text-4xl md:text-6xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl shrink-0">🏭</span>
                     <span class="text-text font-bold text-center tracking-wider text-[10px] md:text-sm">FASON DETAY</span>
                 </div>

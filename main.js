@@ -142,10 +142,10 @@ function calculateLeaderboard(data) {
     const maxP = Math.max(...empStats.map(e => e.p)) || 1;
     const maxC = Math.max(...empStats.map(e => e.c)) || 1;
     
-    const wU = adminSettings.weights?.u ?? 40;
-    const wP = adminSettings.weights?.p ?? 40;
-    const wC = adminSettings.weights?.c ?? 20;
-    const wD = adminSettings.weights?.d ?? 0.1;
+    const wU = (adminSettings.weights && adminSettings.weights.u !== undefined) ? adminSettings.weights.u : 40;
+    const wP = (adminSettings.weights && adminSettings.weights.p !== undefined) ? adminSettings.weights.p : 40;
+    const wC = (adminSettings.weights && adminSettings.weights.c !== undefined) ? adminSettings.weights.c : 20;
+    const wD = (adminSettings.weights && adminSettings.weights.d !== undefined) ? adminSettings.weights.d : 0.1;
 
     empStats.forEach(e => {
         e.ptsU = (e.u / maxU) * wU;
@@ -288,15 +288,15 @@ function csvEscape(v) {
 }
 
 function gvizTableToCSV(payload) {
-    const cols = (payload?.table?.cols) || [];
-    const rows = (payload?.table?.rows) || [];
+    const cols = (payload && payload.table && payload.table.cols) ? payload.table.cols : [];
+    const rows = (payload && payload.table && payload.table.rows) ? payload.table.rows : [];
     if (!cols.length) return '';
 
     const headers = cols.map(c => String(c.label || c.id || ''));
     const csvRows = [headers.map(csvEscape).join(',')];
 
     for (const row of rows) {
-        const cells = row?.c || [];
+        const cells = (row && row.c) ? row.c : [];
         const line = cols.map((_, i) => {
             const cell = cells[i];
             if (!cell) return '';
@@ -338,7 +338,8 @@ async function getCSVFromGVizScript(url) {
 
         const onResponse = (payload) => {
             if (!payload || payload.status !== 'ok') {
-                finish(false, new Error('Google Sheet görselleştirme hatası: ' + (payload?.errors?.[0]?.detailed_message || payload?.status || 'Bilinmiyor')));
+                const errMsg = (payload && payload.errors && payload.errors[0] && payload.errors[0].detailed_message) ? payload.errors[0].detailed_message : (payload && payload.status ? payload.status : 'Bilinmiyor');
+                finish(false, new Error('Google Sheet görselleştirme hatası: ' + errMsg));
                 return;
             }
             try {
@@ -3052,10 +3053,10 @@ function rAdmin() {
         const wEl = $('admin-weights-list');
         if (wEl) {
             wEl.innerHTML = `
-                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim Ağırlığı</label><input type="number" id="admin-w-u" value="${adminSettings.weights?.u ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Performans Ağırlığı</label><input type="number" id="admin-w-p" value="${adminSettings.weights?.p ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kayıt Sayısı Ağırlığı</label><input type="number" id="admin-w-c" value="${adminSettings.weights?.c ?? 20}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk) Ceza Puanı</label><input type="number" step="0.01" id="admin-w-d" value="${adminSettings.weights?.d ?? 0.1}" title="Her 1 dakikalık duruş için toplam puandan düşülecek değer. Örn: 0.1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim Ağırlığı</label><input type="number" id="admin-w-u" value="${(adminSettings.weights && adminSettings.weights.u !== undefined) ? adminSettings.weights.u : 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Performans Ağırlığı</label><input type="number" id="admin-w-p" value="${(adminSettings.weights && adminSettings.weights.p !== undefined) ? adminSettings.weights.p : 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kayıt Sayısı Ağırlığı</label><input type="number" id="admin-w-c" value="${(adminSettings.weights && adminSettings.weights.c !== undefined) ? adminSettings.weights.c : 20}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk) Ceza Puanı</label><input type="number" step="0.01" id="admin-w-d" value="${(adminSettings.weights && adminSettings.weights.d !== undefined) ? adminSettings.weights.d : 0.1}" title="Her 1 dakikalık duruş için toplam puandan düşülecek değer. Örn: 0.1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
             `;
         }
 
@@ -3068,7 +3069,8 @@ function rAdmin() {
                 
                 let hasNotif = '';
                 try {
-                    const notifMsg = (MESAJ_RAW && Array.isArray(MESAJ_RAW.r)) ? MESAJ_RAW.r.slice().reverse().find(r => r && r[1] === u && (r[2] === LOGGED_IN_USER?.name || r[2] === 'GLOBAL')) : null;
+                    const myName = (LOGGED_IN_USER && LOGGED_IN_USER.name) ? LOGGED_IN_USER.name : '';
+                    const notifMsg = (MESAJ_RAW && Array.isArray(MESAJ_RAW.r)) ? MESAJ_RAW.r.slice().reverse().find(r => r && r[1] === u && (r[2] === myName || r[2] === 'GLOBAL')) : null;
                     if (notifMsg && notifMsg[3]) {
                         hasNotif = `<span class="px-1.5 py-0.5 bg-accent/20 text-accent rounded text-[9px] ml-2 cursor-help border border-accent/50" title="Son Mesajı: ${escapeHTML(notifMsg[3])}">💬 MESAJ</span>`;
                     }
@@ -3531,7 +3533,7 @@ if ('serviceWorker' in navigator) {
 // Açılır menüyü dışarı tıklandığında kapatma mekanizması
 document.addEventListener('click', (e) => {
     const btn = $('raporlar-btn');
-    const menu = btn?.nextElementSibling;
+    const menu = btn ? btn.nextElementSibling : null;
     if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
         menu.classList.add('hidden');
         menu.classList.remove('flex', 'opacity-100', 'scale-100');
