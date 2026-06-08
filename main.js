@@ -1,4 +1,4 @@
-﻿// Chrome eklentileri / üçüncü taraf içerikleri kaynaklı gürültülü Promise hatalarını (ör. content.js, message channel kapanması)
+﻿﻿// Chrome eklentileri / üçüncü taraf içerikleri kaynaklı gürültülü Promise hatalarını (ör. content.js, message channel kapanması)
 // konsolda göstermemek ve uygulama içi gerçek hataları korumak için filtrele.
 function isLikelyNoisePromiseReason(reason) {
     if (!reason) return true;
@@ -7,7 +7,10 @@ function isLikelyNoisePromiseReason(reason) {
         if (typeof value === 'string') return value;
         if (value instanceof Error) return `${value.message || ''}\n${value.stack || ''}`;
         if (value && typeof value === 'object') {
-            if (typeof value.message === 'string') return `${value.message}\n${value.stack || ''}\n${JSON.stringify(value)}`;
+            try {
+                if (typeof value.message === 'string') return `${value.message}\n${value.stack || ''}\n${JSON.stringify(value)}`;
+                return JSON.stringify(value);
+            } catch (e) { return value.message || String(value); }
             return String(value);
         }
         return String(value);
@@ -470,6 +473,7 @@ const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2/80
 
 // Tıklanabilir Grafikler
 function mc(id,t,d,o={}){
+    if(typeof Chart === 'undefined') { console.warn('Chart.js yüklenemedi.'); return; }
     if(charts[id])charts[id].destroy();
     const el=$(id);
     // FIX #2 guard: canvas elementi yoksa hata fırlatma
@@ -1311,6 +1315,7 @@ function rF(){
 function analyzeFason(fasonName) {
     if(!fasonName) {
         $('fas-analyze-result').classList.add('hidden');
+        $('fas-analyze-result').classList.remove('flex');
         return;
     }
 
@@ -1435,9 +1440,9 @@ function rKaliphane() {
     ];
 
     // Sütun indekslerini bulmaya çalış
-    let lokasyonIdx = KALIP_RAW.h.findIndex(h => h.toLowerCase().includes('lokasyon'));
-    let rafIdx = KALIP_RAW.h.findIndex(h => h.toLowerCase().includes('raf'));
-    let kalipIdx = KALIP_RAW.h.findIndex(h => h.toLowerCase().includes('kalıp') || h.toLowerCase().includes('kalip'));
+    let lokasyonIdx = KALIP_RAW.h.findIndex(h => h && String(h).toLowerCase().includes('lokasyon'));
+    let rafIdx = KALIP_RAW.h.findIndex(h => h && String(h).toLowerCase().includes('raf'));
+    let kalipIdx = KALIP_RAW.h.findIndex(h => h && (String(h).toLowerCase().includes('kalıp') || String(h).toLowerCase().includes('kalip')));
 
     // Bulunamazsa, ID olmayan ilk 3 sütunu varsay
     const idIdx = KALIP_RAW.h.findIndex(h => h.toLowerCase() === 'id' || h.toLowerCase() === 'ıd');
@@ -2198,7 +2203,7 @@ async function submitForm(e){
 
 function applyRoleRestrictions() {
     // 1. Önce tüm sekmeleri ve menüleri görünür yap (Yönetici için tam erişim sıfırlaması)
-    document.querySelectorAll('.nav-tab, #nav-dropdown-raporlar').forEach(el => {
+    document.querySelectorAll('.nav-tab, #nav-dropdown-raporlar, #main-nav > div').forEach(el => {
         el.classList.remove('hidden');
         el.style.display = '';
     });
@@ -2222,11 +2227,11 @@ function applyRoleRestrictions() {
     // 2. Eğer kullanıcı normal üye ise kısıtlamaları uygula
     if (LOGGED_IN_USER && LOGGED_IN_USER.role !== 'admin') {
         adminSettings.hiddenTabs.forEach(tab => {
-            const navEl = document.querySelector(`.nav-tab[onclick*="'${tab}'"]`);
-            if(navEl) {
+            const navEls = document.querySelectorAll(`[onclick*="'${tab}'"]`);
+            navEls.forEach(navEl => {
                 navEl.classList.add('hidden');
                 navEl.style.display = 'none';
-            }
+            });
         });
         
         // Raporlar menüsündeki tüm sekmeler gizliyse, ana "Raporlar" butonunu da komple gizle
@@ -2241,7 +2246,7 @@ function applyRoleRestrictions() {
         
         // Eğer üye, gizli olan veya erişimi olmayan (admin) bir sayfadaysa izin verilen ilk sayfaya yönlendir
         if(adminSettings.hiddenTabs.includes(cTab) || cTab === 'admin') {
-            const firstVisible = Array.from(document.querySelectorAll('.nav-tab')).find(el => el.style.display !== 'none' && !el.classList.contains('hidden') && el.id !== 'nav-admin');
+            const firstVisible = Array.from(document.querySelectorAll('.nav-tab, #main-nav > div')).find(el => el.style.display !== 'none' && !el.classList.contains('hidden') && el.id !== 'nav-admin');
             if(firstVisible) {
                 const match = firstVisible.getAttribute('onclick').match(/'([^']+)'/);
                 if(match) swT(match[1], firstVisible);
@@ -2826,7 +2831,7 @@ async function saveProfileFromModal(e) {
         fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).catch(err=>console.error(err));
         
         if (USER_DATA[name]) USER_DATA[name].photo = photo;
-        let lu = JSON.parse(safeGetStorage('localUsers')) || {};
+        let lu = safeJSON(safeGetStorage('localUsers'), {});
         if(!lu[name]) lu[name] = {}; lu[name].photo = photo; safeSetStorage('localUsers', JSON.stringify(lu));
         
         if (photo) { 
@@ -2878,7 +2883,7 @@ async function fetchUsers() {
                 if (photo && !photo.startsWith('http') && !photo.startsWith('data:')) photo = '';
                 
                 // Aynı cihazda kalıcılık için yerel depolama yedeği (Google Sheet'ten gelmezse)
-                let lu = JSON.parse(safeGetStorage('localUsers')) || {};
+                let lu = safeJSON(safeGetStorage('localUsers'), {});
                 if (!photo && lu[name] && lu[name].photo) {
                     photo = lu[name].photo;
                 }
@@ -3069,7 +3074,7 @@ async function saveUserObj(e) {
             
             if (LOGGED_IN_USER && LOGGED_IN_USER.name === name) {
                 LOGGED_IN_USER.role = normalizeRole(role);
-                localStorage.setItem('loggedUser', JSON.stringify(LOGGED_IN_USER));
+                safeSetStorage('loggedUser', JSON.stringify(LOGGED_IN_USER));
                 const roleBadge = renderRoleBadge(LOGGED_IN_USER.role);
                 $('user-name').innerHTML = `${LOGGED_IN_USER.name} ${roleBadge}`;
                 if (photo) {
