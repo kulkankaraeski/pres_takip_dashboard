@@ -3313,10 +3313,43 @@ function hideLoader() {
     }
 }
 
+// YENİ: ESTETİK İSKELET YÜKLEYİCİLERİ (SKELETON LOADER)
+function showSkeletons() {
+    // 1. Üst Performans Kartları (KPI) Skeletons
+    const kpis = ['g-kpi','w-kpi','m-kpi','h-kpi','alarm-kpis'];
+    kpis.forEach(id => {
+        if($(id)) $(id).innerHTML = Array(4).fill('<div class="bg-bg2/80 border border-border/50 rounded-2xl p-5 h-[104px] animate-pulse shadow-sm flex flex-col justify-center gap-3"><div class="h-3 w-1/2 bg-bg3/80 rounded"></div><div class="h-6 w-3/4 bg-bg3/80 rounded"></div></div>').join('');
+    });
+
+    // 2. Tablo Gövdeleri (Satırları) Skeletons
+    const tables = ['tb-gun','tb-gun-kiyas','tb-haf','tb-haf-kiyas','tb-haf-durus','tb-ay','tb-ay-kiyas','tb-ay-durus','tb-cal','tb-pre','tb-fas','tb-verisayfasi','tb-kalip','tb-malzeme','tb-deneme', 'tb-liderlik-detay'];
+    tables.forEach(id => { if($(id)) $(id).innerHTML = Array(5).fill(`<tr>${Array(5).fill('<td class="p-3"><div class="h-5 bg-bg3/60 rounded animate-pulse w-full"></div></td>').join('')}</tr>`).join(''); });
+
+    // 3. Tablo Başlıkları Skeletons
+    const theads = ['th-gun','th-gun-kiyas','th-haf','th-haf-kiyas','th-haf-durus','th-ay','th-ay-kiyas','th-ay-durus','th-cal','th-pre','th-fas','th-verisayfasi','th-kalip','th-malzeme','th-deneme', 'th-liderlik-detay'];
+    theads.forEach(id => { if($(id)) $(id).innerHTML = `<tr>${Array(5).fill('<th class="p-3"><div class="h-4 bg-border/60 rounded animate-pulse w-full"></div></th>').join('')}</tr>`; });
+
+    // 4. Grafikler (Canvas şeffaf yapılır, kapsayıcıya pulse animasyonu verilir)
+    const charts = ['c1','c2','c3','c4','w1','w2','w3','w4','m1','m2','m3','m4','h1','h2','h3','alarm-c1','alarm-c2','ca1','p1','f1','f2'];
+    charts.forEach(id => {
+        const canvas = $(id);
+        if(canvas && canvas.parentElement) {
+            canvas.parentElement.classList.add('animate-pulse', 'bg-bg3/30', 'rounded-xl');
+            canvas.style.opacity = '0';
+        }
+    });
+
+    // 5. Özel Listeler ve Analiz Kartları Skeletons
+    if($('liderlik-aylar')) $('liderlik-aylar').innerHTML = Array(4).fill('<div class="flex items-center gap-4 p-3 mb-3 border border-border/50 rounded-xl bg-bg2 animate-pulse"><div class="w-12 h-12 rounded-full bg-bg3/80 shrink-0"></div><div class="flex flex-col gap-2 flex-1"><div class="h-3 w-24 bg-bg3/80 rounded"></div><div class="h-4 w-32 bg-bg3/80 rounded"></div></div></div>').join('');
+    if($('alarm-feed-container')) $('alarm-feed-container').innerHTML = Array(3).fill('<div class="border border-border/50 rounded-lg p-3 mb-3 animate-pulse bg-bg2 flex items-start gap-3"><div class="w-8 h-8 rounded-full bg-bg3/80 shrink-0"></div><div class="flex-1 flex flex-col gap-2 mt-1"><div class="h-3 w-1/3 bg-bg3/80 rounded"></div><div class="h-5 w-1/2 bg-bg3/80 rounded"></div><div class="h-3 w-full bg-bg3/80 rounded mt-1"></div></div></div>').join('');
+    if($('makine-kiyas-container')) $('makine-kiyas-container').innerHTML = Array(2).fill('<div class="bg-bg2 border border-border/50 rounded-lg p-3 h-32 animate-pulse flex flex-col gap-2"><div class="h-5 w-1/3 bg-bg3/80 rounded mb-2"></div><div class="h-10 w-full bg-bg3/80 rounded"></div></div>').join('');
+}
+
 function fetchCSV(isBg = false) {
-    if(!isBg) {
+    if (RAW.length === 0) {
+        showSkeletons();
+    } else if (!isBg) {
         showLoader();
-        ['g-kpi','w-kpi','m-kpi','h-kpi'].forEach(id=>{if($(id))$(id).innerHTML='<div class="h-20 bg-bg3 rounded animate-pulse"></div>'.repeat(4);});
     }
     const b=$('btn-refresh'); b.innerText='Yükleniyor..'; b.disabled=true; $('src-status').innerText='Bağlanıyor..'; $('src-status').style.color='#f5c842';
         
