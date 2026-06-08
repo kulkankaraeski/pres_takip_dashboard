@@ -473,11 +473,18 @@ const card=(c,l,v,s,clk='')=>`<div ${clk?`onclick="${clk}"`:''} class="bg-bg2/80
 
 // Tıklanabilir Grafikler
 function mc(id,t,d,o={}){
-    if(typeof Chart === 'undefined') { console.warn('Chart.js yüklenemedi.'); return; }
-    if(charts[id])charts[id].destroy();
     const el=$(id);
     // FIX #2 guard: canvas elementi yoksa hata fırlatma
     if(!el) { console.warn('mc(): canvas bulunamadı → id='+id); return; }
+    
+    // YENİ: SKELETON TEMİZLİĞİ (Chart.js yüklensin/yüklenmesin iskeleti silip canvas'ı görünür yapar)
+    el.style.opacity = '1';
+    if (el.parentElement) {
+        el.parentElement.classList.remove('animate-pulse', 'bg-bg3/30', 'rounded-xl');
+    }
+
+    if(typeof Chart === 'undefined') { console.warn('Chart.js yüklenemedi.'); return; }
+    if(charts[id])charts[id].destroy();
     const c={
         responsive:true,maintainAspectRatio:false, animation: { duration: 800, easing: 'easeOutQuart' },
                 onClick: (e, elements, chartInstance) => {
@@ -3002,14 +3009,13 @@ function login(e) {
         
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
         applyRoleRestrictions();
+        
+        // YENİ: Veri yüklenmesini beklemeden menüleri anında aç (Skeletons devreye girer)
+        swT(cTab, cTab ? document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`) : null);
         checkNotifs();
         
-        // Eğer arka plandaki çekim henüz bitmediyse yükleme ekranıyla birlikte çek, bittiyse direkt göster
         if (RAW.length === 0) {
             fetchCSV();
-        } else {
-            const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
-            swT(cTab, activeNavEl || document.querySelector('.nav-tab'));
         }
     } else {
         errorEl.innerText = 'Kullanıcı adı veya şifre hatalı.';
@@ -3315,6 +3321,7 @@ function hideLoader() {
 
 // YENİ: ESTETİK İSKELET YÜKLEYİCİLERİ (SKELETON LOADER)
 function showSkeletons() {
+    hideLoader(); // Global siyah yükleme ekranını kaldırıp yerini modern iskeletlere bırakır
     // 1. Üst Performans Kartları (KPI) Skeletons
     const kpis = ['g-kpi','w-kpi','m-kpi','h-kpi','alarm-kpis'];
     kpis.forEach(id => {
@@ -3453,6 +3460,11 @@ if(savedUser && savedUser !== "undefined") {
         const roleBadge = renderRoleBadge(LOGGED_IN_USER.role);
         $('user-name').innerHTML = `${LOGGED_IN_USER.name} ${roleBadge}`;
         $('user-info').classList.remove('hidden'); $('user-info').classList.add('flex');
+        
+        // YENİ: Otomatik girişte de interneti/verileri beklemeden menüleri ve iskeletleri anında aç
+        applyRoleRestrictions();
+        swT(cTab, cTab ? document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`) : null);
+
         fetchUsers().then(() => {
             if(USER_DATA[LOGGED_IN_USER.name] && USER_DATA[LOGGED_IN_USER.name].photo) {
                 $('user-avatar').src = USER_DATA[LOGGED_IN_USER.name].photo;
@@ -3465,9 +3477,8 @@ if(savedUser && savedUser !== "undefined") {
                     $('user-initials').classList.remove('hidden');
                 }
             }
-            applyRoleRestrictions();
             checkNotifs();
-            fetchCSV();
+            if (RAW.length === 0) fetchCSV();
     }).catch(err => console.error('Auto login fetchUsers error:', err));
     } else {
         showLogin();
