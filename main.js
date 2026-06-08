@@ -600,7 +600,8 @@ const searchTimeouts = {};
 function fT(id, q, bypass = false) {
     clearTimeout(searchTimeouts[id]);
     const exec = () => {
-        const f = q.toLocaleLowerCase('tr-TR');
+        // YENİ: Kelimeleri boşluklardan ayırarak çoklu arama (Multi-keyword) dizisine çevirir
+        const terms = q.toLocaleLowerCase('tr-TR').split(/\s+/).filter(x => x);
         const tb = $(id);
         if (!tb) return;
         
@@ -609,8 +610,10 @@ function fT(id, q, bypass = false) {
         
         const r = tb.getElementsByTagName('tr'); 
         for(let i=0; i<r.length; i++) {
-            const target = r[i].textContent.toLocaleLowerCase('tr-TR').includes(f) ? '' : 'none';
-            if (r[i].style.display !== target) r[i].style.display = target; // Gereksiz DOM yazımını önle
+            const rowText = r[i].textContent.toLocaleLowerCase('tr-TR');
+            const isMatch = terms.length === 0 || terms.every(term => rowText.includes(term));
+            const target = isMatch ? '' : 'none';
+            if (r[i].style.display !== target) r[i].style.display = target;
         }
         
         tb.style.display = prev; // Tabloyu tek seferde yeniden çizdir
@@ -1336,16 +1339,20 @@ function analyzeFason(fasonName) {
         [1,2].forEach(i => {
             const f = normalizeField(r['fason'+i]);
             const p = r['pres'+i] || 'Belirtilmeyen Pres';
-            if(f && normalizeFasonKey(f) === fKey) {
-                if(!pStats[p]) pStats[p] = { runs: 0, perfArr: [], durus: 0, uretim: 0, beklenen: 0, netMins: 0 };
-                pStats[p].runs++;
-                if(r['perf'+i]) pStats[p].perfArr.push(Number(r['perf'+i]));
-                const d = Number(r['durus'+i]) || 0;
-                pStats[p].durus += d;
-                pStats[p].uretim += Number(r['uretim'+i]) || 0;
-                pStats[p].beklenen += Number(r['beklenen'+i]) || 0;
-                // Duruş eksiye düşürmesin diye min 1 dakika çalışma sayıyoruz
-                pStats[p].netMins += Math.max(450 - d, 1);
+            if(f) {
+                const normF = normalizeFasonKey(f);
+                // YENİ: Esnek eşleşme (Tam eşleşmese bile fason kodunu içeriyorsa kabul et)
+                if (normF === fKey || normF.includes(fKey) || fKey.includes(normF)) {
+                    if(!pStats[p]) pStats[p] = { runs: 0, perfArr: [], durus: 0, uretim: 0, beklenen: 0, netMins: 0 };
+                    pStats[p].runs++;
+                    if(r['perf'+i]) pStats[p].perfArr.push(Number(r['perf'+i]));
+                    const d = Number(r['durus'+i]) || 0;
+                    pStats[p].durus += d;
+                    pStats[p].uretim += Number(r['uretim'+i]) || 0;
+                    pStats[p].beklenen += Number(r['beklenen'+i]) || 0;
+                    // Duruş eksiye düşürmesin diye min 1 dakika çalışma sayıyoruz
+                    pStats[p].netMins += Math.max(450 - d, 1);
+                }
             }
         });
     });
@@ -3028,34 +3035,59 @@ function logout() {
 }
 
 function rAdmin() {
-    const allTabs = [
-        {id: 'gunluk', name: 'GÜNLÜK RAPOR'}, {id: 'haftalik', name: 'HAFTALIK RAPOR'}, {id: 'aylik', name: 'AYLIK RAPOR'},
-        {id: 'genel', name: 'GENEL ÖZET'}, {id: 'liderlik', name: 'ÜRETİM LİDERLİĞİ'}, {id: 'alarm', name: 'ALARM & ANALİZ'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
-        {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'malzeme', name: 'PRES MALZEME TAKİP'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
-        {id: 'form', name: 'VERİ GİRİŞ FORMU'}
-    ];
-    $('admin-tabs-list').innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!adminSettings.hiddenTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
-    
-    $('admin-weights-list').innerHTML = `
-        <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim Ağırlığı</label><input type="number" id="admin-w-u" value="${adminSettings.weights?.u ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-        <div><label class="block text-[10px] text-text3 mb-1 uppercase">Performans Ağırlığı</label><input type="number" id="admin-w-p" value="${adminSettings.weights?.p ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-        <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kayıt Sayısı Ağırlığı</label><input type="number" id="admin-w-c" value="${adminSettings.weights?.c ?? 20}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-        <div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk) Ceza Puanı</label><input type="number" step="0.01" id="admin-w-d" value="${adminSettings.weights?.d ?? 0.1}" title="Her 1 dakikalık duruş için toplam puandan düşülecek değer. Örn: 0.1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
-    `;
+    try {
+        const allTabs = [
+            {id: 'gunluk', name: 'GÜNLÜK RAPOR'}, {id: 'haftalik', name: 'HAFTALIK RAPOR'}, {id: 'aylik', name: 'AYLIK RAPOR'},
+            {id: 'genel', name: 'GENEL ÖZET'}, {id: 'liderlik', name: 'ÜRETİM LİDERLİĞİ'}, {id: 'alarm', name: 'ALARM & ANALİZ'}, {id: 'calisan', name: 'ÇALIŞAN PERFORMANSI'}, {id: 'pres', name: 'PRES MAKİNE'},
+            {id: 'fason', name: 'FASON DETAY'}, {id: 'kaliphane', name: 'KALIPHANE'}, {id: 'malzeme', name: 'PRES MALZEME TAKİP'}, {id: 'kayitlar', name: 'ÜRETİM TAKİP DENEMELERİ'}, {id: 'plan', name: 'ÜRETİM PLANI'},
+            {id: 'form', name: 'VERİ GİRİŞ FORMU'}
+        ];
+        
+        const tabsEl = $('admin-tabs-list');
+        if (tabsEl) {
+            const hTabs = adminSettings.hiddenTabs || [];
+            tabsEl.innerHTML = allTabs.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-bg2 rounded cursor-pointer border border-border hover:border-accent transition-colors"><input type="checkbox" value="${t.id}" class="admin-tab-cb w-4 h-4 accent-accent" ${!hTabs.includes(t.id) ? 'checked' : ''}><span class="font-mono text-text2">${t.name}</span></label>`).join('');
+        }
+        
+        const wEl = $('admin-weights-list');
+        if (wEl) {
+            wEl.innerHTML = `
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Üretim Ağırlığı</label><input type="number" id="admin-w-u" value="${adminSettings.weights?.u ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Performans Ağırlığı</label><input type="number" id="admin-w-p" value="${adminSettings.weights?.p ?? 40}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Kayıt Sayısı Ağırlığı</label><input type="number" id="admin-w-c" value="${adminSettings.weights?.c ?? 20}" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+                <div><label class="block text-[10px] text-text3 mb-1 uppercase">Duruş (Dk) Ceza Puanı</label><input type="number" step="0.01" id="admin-w-d" value="${adminSettings.weights?.d ?? 0.1}" title="Her 1 dakikalık duruş için toplam puandan düşülecek değer. Örn: 0.1" class="w-full bg-bg border border-border text-text rounded p-2 text-xs outline-none focus:border-accent"></div>
+            `;
+        }
 
-    $('admin-users-list').innerHTML = Object.keys(USER_DATA).sort().map(u => {
-        const role = USER_DATA[u].role; const isYusuf = (u === "Yusuf Yalçıntaş");
+        const uEl = $('admin-users-list');
+        if (uEl) {
+            uEl.innerHTML = Object.keys(USER_DATA || {}).sort().map(u => {
+                const uData = USER_DATA[u] || {};
+                const role = uData.role || 'user'; 
+                const isYusuf = (u === "Yusuf Yalçıntaş");
+                
+                let hasNotif = '';
+                try {
+                    const notifMsg = (MESAJ_RAW && Array.isArray(MESAJ_RAW.r)) ? MESAJ_RAW.r.slice().reverse().find(r => r && r[1] === u && (r[2] === LOGGED_IN_USER?.name || r[2] === 'GLOBAL')) : null;
+                    if (notifMsg && notifMsg[3]) {
+                        hasNotif = `<span class="px-1.5 py-0.5 bg-accent/20 text-accent rounded text-[9px] ml-2 cursor-help border border-accent/50" title="Son Mesajı: ${escapeHTML(notifMsg[3])}">💬 MESAJ</span>`;
+                    }
+                } catch(err) { console.warn(err); }
+                
+                const photoStr = uData.photo ? `<img src="${uData.photo}" class="w-8 h-8 rounded-full object-cover border-2 border-bg2 shadow-sm">` : `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 flex items-center justify-center font-bold text-white text-[10px] shadow-sm border border-bg2">${u.slice(0,2).toUpperCase()}</div>`;
+                const roleBadge = renderRoleBadge(role, true);
+                return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3"><div class="flex items-center gap-2"><span class="font-bold text-text">${escapeHTML(u)}</span>${hasNotif}</div></td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${safeAttr(u)}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${safeAttr(u)}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
+            }).join('');
+        }
         
-        // Son gönderdiği mesajı göster
-        const notifMsg = MESAJ_RAW.r ? MESAJ_RAW.r.slice().reverse().find(r => r[1] === u && (r[2] === LOGGED_IN_USER?.name || r[2] === 'GLOBAL')) : null;
-        const hasNotif = notifMsg ? `<span class="px-1.5 py-0.5 bg-accent/20 text-accent rounded text-[9px] ml-2 cursor-help border border-accent/50" title="Son Mesajı: ${escapeHTML(notifMsg[3])}">💬 MESAJ</span>` : '';
-        
-        const photoStr = USER_DATA[u].photo ? `<img src="${USER_DATA[u].photo}" class="w-8 h-8 rounded-full object-cover border-2 border-bg2 shadow-sm">` : `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent via-accent/80 to-accent4 flex items-center justify-center font-bold text-white text-[10px] shadow-sm border border-bg2">${u.slice(0,2).toUpperCase()}</div>`;
-        const roleBadge = renderRoleBadge(role, true);
-        return `<tr class="border-b border-border/50 hover:bg-bg2 transition-colors"><td class="p-3">${photoStr}</td><td class="p-3"><div class="flex items-center gap-2"><span class="font-bold text-text">${u}</span>${hasNotif}</div></td><td class="p-3">${roleBadge}</td><td class="p-3 text-right"><div class="flex gap-1 justify-end"><button onclick="editUser('${u}')" class="px-2 py-1 bg-accent4/20 text-accent4 hover:bg-accent4 hover:text-white rounded text-[10px] font-mono transition-colors">DÜZENLE</button><button onclick="deleteUser('${u}')" ${isYusuf ? 'disabled' : ''} class="px-2 py-1 bg-accent2/20 text-accent2 hover:bg-accent2 hover:text-white rounded text-[10px] font-mono transition-colors disabled:opacity-50">SİL</button></div></td></tr>`;
-    }).join('');
-    
-    $('admin-n-user').innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + Object.keys(USER_DATA).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+        const nEl = $('admin-n-user');
+        if (nEl) {
+            nEl.innerHTML = `<option value="">Seçiniz...</option><option value="GLOBAL" class="text-accent font-bold">🌟 HERKESE GÖNDER</option>` + Object.keys(USER_DATA || {}).sort().map(u => `<option value="${escapeHTML(u)}">${escapeHTML(u)}</option>`).join('');
+        }
+    } catch (err) {
+        console.error("Yönetim Paneli yükleme hatası:", err);
+        toast("Yönetim paneli yüklenirken hata oluştu, sayfayı yenileyin.", "err");
+    }
 }
 
 async function saveUserObj(e) {
@@ -3232,7 +3264,7 @@ function parse(t){
     const headerKey = headers.map(h => (h || '').replace(/[^a-z0-9]/g, ''));
     const possibleFasonCols = headerKey
         .map((h, i) => ({ h, i }))
-        .filter(x => x.h.includes('fason') || x.h.includes('urun'));
+        .filter(x => x.h.includes('fason') || x.h.includes('urun') || x.h.includes('kalip') || x.h.includes('parca') || x.h.includes('mamul'));
     const p = [];
 
     const idx = {
@@ -3240,11 +3272,11 @@ function parse(t){
         calisan: headerKey.findIndex(h => h.includes('calisan') || h === 'ad'),
         vardiya: headerKey.findIndex(h => h.includes('vardiya')),
         pres1: headerKey.findIndex(h => h === 'pres1' || h.includes('pres1')),
-        fason1: headerKey.findIndex(h => h === 'fason1' || h.includes('fason1') || h === 'fason' || h.includes('urun1') || h === 'urun'),
+        fason1: headerKey.findIndex(h => h === 'fason1' || h.includes('fason1') || h === 'fason' || h.includes('urun1') || h === 'urun' || h.includes('kalip1') || h.includes('parca1') || h.includes('mamul1')),
         uretim1: headerKey.findIndex(h => ((h.includes('uretilen') || h === 'uretim1') && h.includes('1') && !h.includes('gereken') && !h.includes('durussuz'))),
         durus1: headerKey.findIndex(h => h.includes('durus') && h.includes('1') && !h.includes('durussuz') && !h.includes('baslangic') && !h.includes('bitis')),
         pres2: headerKey.findIndex(h => h === 'pres2' || h.includes('pres2')),
-        fason2: headerKey.findIndex(h => h === 'fason2' || h.includes('fason2') || h.includes('urun2')),
+        fason2: headerKey.findIndex(h => h === 'fason2' || h.includes('fason2') || h.includes('urun2') || h.includes('kalip2') || h.includes('parca2') || h.includes('mamul2')),
         uretim2: headerKey.findIndex(h => ((h.includes('uretilen') || h === 'uretim2') && h.includes('2') && !h.includes('gereken') && !h.includes('durussuz'))),
         durus2: headerKey.findIndex(h => h.includes('durus') && h.includes('2') && !h.includes('durussuz') && !h.includes('baslangic') && !h.includes('bitis')),
         perf1: headerKey.findIndex(h => (h.includes('performans') || h.includes('yuzde') || h === 'perf1') && h.includes('1') && !h.includes('2')),
