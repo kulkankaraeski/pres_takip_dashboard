@@ -969,14 +969,14 @@ function checkSystemAlarms() {
     if(btn) {
         if(alarmCount > 0) {
             btn.innerHTML = `
-                <div class="absolute inset-0 bg-gradient-to-br from-accent2/0 to-accent2/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-accent2/0 to-accent2/15 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div class="absolute inset-0 bg-accent2/5 animate-pulse"></div>
                 <div class="relative z-10 flex flex-col items-center">
-                    <div class="relative mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">
+                    <div class="relative mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)]">
                         <span class="text-2xl sm:text-4xl md:text-7xl animate-bounce inline-block" style="animation-duration: 2s;">🚨</span>
-                        <span class="absolute -top-2 -right-4 bg-accent2 text-white px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-sm font-bold animate-pulse shadow-md border-2 border-bg">${alarmCount}</span>
+                        <span class="absolute -top-2 -right-4 bg-accent2 text-white px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-sm font-bold animate-pulse shadow-md border border-white/20">${alarmCount}</span>
                     </div>
-                    <span class="text-accent2 font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg">ALARMLAR</span>
+                    <span class="text-accent2 font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg drop-shadow-md">ALARMLAR</span>
                 </div>
             `;
             btn.classList.add('border-accent2', 'text-accent2', 'font-bold');
@@ -984,10 +984,10 @@ function checkSystemAlarms() {
             btn.innerHTML = `
                 <div class="absolute inset-0 bg-gradient-to-br from-text3/0 to-text3/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div class="relative z-10 flex flex-col items-center">
-                    <div class="relative mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl">
+                    <div class="relative mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)]">
                         <span class="text-5xl md:text-7xl inline-block">🔔</span>
                     </div>
-                    <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg">ALARMLAR</span>
+                    <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg drop-shadow-md">ALARMLAR</span>
                 </div>
             `;
             btn.classList.remove('border-accent2', 'text-accent2', 'font-bold');
