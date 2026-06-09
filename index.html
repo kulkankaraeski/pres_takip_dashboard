@@ -7,6 +7,7 @@
     <meta name="theme-color" content="#121410">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" id="dynamic-favicon" href="icon-512.png" type="image/png">
+    <link rel="shortcut icon" href="icon-512.png" type="image/png">
     <link rel="apple-touch-icon" href="icon-512.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -970,6 +971,7 @@
       const isObject = typeof reason === 'object';
       if (isObject && Object.keys(reason).length === 0 && !reason.message && !reason.stack) {
           event.preventDefault();
+                  event.stopPropagation();
           return;
       }
 

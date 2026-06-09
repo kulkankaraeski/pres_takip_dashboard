@@ -2,6 +2,8 @@
 // konsolda göstermemek ve uygulama içi gerçek hataları korumak için filtrele.
 function isLikelyNoisePromiseReason(reason) {
     if (!reason) return true;
+    // YENİ: Eklentilerden dönen tamamen boş obje reddedilmelerini yakalar
+    if (typeof reason === 'object' && Object.keys(reason).length === 0 && !reason.message) return true;
 
     const safeText = (value) => {
         if (typeof value === 'string') return value;
@@ -327,7 +329,7 @@ async function getCSVFromGVizScript(url) {
                 if (prevSetResponse) {
                     state.query.setResponse = prevSetResponse;
                 } else {
-                    delete state.query.setResponse;
+                    state.query.setResponse = () => {}; // FIX: Zaman aşımı sonrası gelen gecikmeli verinin hata fırlatmasını önler
                 }
             }
         };
