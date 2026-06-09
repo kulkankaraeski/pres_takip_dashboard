@@ -10,6 +10,12 @@
             --accent: #2563eb; --accent2: #dc2626; --accent3: #d97706; --accent4: #059669;
             --c-accent: 37, 99, 235; --c-accent2: 220, 38, 38; --c-accent3: 217, 119, 6; --c-accent4: 5, 150, 105; --c-border: 0, 0, 0; --c-text3: 156, 163, 175;
         }
+    .green-mode {
+        --bg: #022c22; --bg2: #064e3b; --bg3: #065f46; --border: #047857;
+        --text: #f8fafc; --text2: #cbd5e1; --text3: #94a3b8;
+        --accent: #10b981; --accent2: #ef4444; --accent3: #f59e0b; --accent4: #3b82f6;
+        --c-accent: 16, 185, 129; --c-accent2: 239, 68, 68; --c-accent3: 245, 158, 11; --c-accent4: 59, 130, 246; --c-border: 4, 120, 87; --c-text3: 148, 163, 184;
+    }
         body{background-color:var(--bg);color:var(--text);font-family:'Inter',sans-serif; transition: background-color 0.4s ease, color 0.4s ease;}
         ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:var(--bg); border-radius: 4px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px; transition: background 0.3s;} ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
         

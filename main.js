@@ -1,4 +1,4 @@
-﻿﻿// Chrome eklentileri / üçüncü taraf içerikleri kaynaklı gürültülü Promise hatalarını (ör. content.js, message channel kapanması)
+﻿﻿﻿﻿// Chrome eklentileri / üçüncü taraf içerikleri kaynaklı gürültülü Promise hatalarını (ör. content.js, message channel kapanması)
 // konsolda göstermemek ve uygulama içi gerçek hataları korumak için filtrele.
 function isLikelyNoisePromiseReason(reason) {
     if (!reason) return true;
@@ -41,8 +41,11 @@ function safeGetStorage(k, f=null){try{return localStorage.getItem(k)||f;}catch(
 function safeSetStorage(k, v){try{localStorage.setItem(k, v);}catch(e){}}
 function safeRemoveStorage(k){try{localStorage.removeItem(k);}catch(e){}}
 
-if (safeGetStorage('theme') === 'light') {
+const savedTheme = safeGetStorage('theme');
+if (savedTheme === 'light') {
     document.documentElement.classList.add('light-mode');
+} else if (savedTheme === 'green') {
+    document.documentElement.classList.add('green-mode');
 }
 
 let RAW=[], KALIP_RAW=[], DENEME_RAW={h:[], r:[]}, MALZEME_RAW={h:[], r:[]}, MESAJ_RAW={h:[], r:[]}, DATES=[], MONTHS=[], WEEKS=[], charts={}, sD='', sM='', sW='', sA='', cTab='';
@@ -570,9 +573,22 @@ function swT(t,el){
 
 // Tema Değiştirme
 function toggleTheme() {
-    document.documentElement.classList.toggle('light-mode');
-    const isLight = document.documentElement.classList.contains('light-mode');
-    safeSetStorage('theme', isLight ? 'light' : 'dark');
+    const root = document.documentElement;
+    let currentTheme = 'dark';
+    if (root.classList.contains('light-mode')) currentTheme = 'light';
+    if (root.classList.contains('green-mode')) currentTheme = 'green';
+    
+    root.classList.remove('light-mode', 'green-mode');
+    
+    let nextTheme = 'dark';
+    if (currentTheme === 'dark') nextTheme = 'light';
+    else if (currentTheme === 'light') nextTheme = 'green';
+    else if (currentTheme === 'green') nextTheme = 'dark';
+
+    if (nextTheme === 'light') root.classList.add('light-mode');
+    else if (nextTheme === 'green') root.classList.add('green-mode');
+    
+    safeSetStorage('theme', nextTheme);
 
     const activeNavEl = document.querySelector(`.nav-tab[onclick*="'${cTab}'"]`);
     if(RAW.length) swT(cTab, activeNavEl || document.querySelector('.nav-tab'));

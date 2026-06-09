@@ -119,7 +119,7 @@
         </div>
     </header>
 
-    <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-4 md:pb-0">
+    <div id="app-main" class="main-content hidden flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-24 md:pb-6">
         <!-- YENİ: Geri Dön Butonu -->
         <div id="back-btn-container" class="hidden justify-start mb-4 px-2">
             <button onclick="swT('')" class="px-6 py-3 bg-accent hover:bg-accent/80 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 hover:-translate-x-1">
@@ -198,7 +198,7 @@
             </div>
 
             <!-- 9. Yönetim Paneli -->
-            <div id="nav-admin" onclick="swT('admin',this)" class="group cursor-pointer hidden flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent hover:bg-accent/10 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0 shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)]">
+            <div id="nav-admin" onclick="swT('admin',this)" class="group cursor-pointer hidden flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg2 via-bg3 to-bg2 backdrop-blur-xl border border-border/80 hover:border-accent hover:bg-accent/10 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden h-full w-full min-h-0 shadow-2xl hover:shadow-[0_0_30px_rgba(var(--color-accent),0.5)]">
                 <div class="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span class="text-2xl sm:text-4xl md:text-7xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl z-10 group-hover:rotate-90">⚙️</span>
                 <span class="text-text font-bold text-center tracking-wider text-[10px] sm:text-sm md:text-lg z-10">YÖNETİM PANELİ</span>
@@ -935,7 +935,7 @@
     </div>
 
     <!-- YENİ: AKILLI SESLİ ASİSTAN BUTONU VE ARAYÜZÜ -->
-    <div id="voice-asst-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3" style="display: none;">
+    <div id="voice-asst-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 pointer-events-none" style="display: none;">
         <!-- Asistan Mesaj Kutusu -->
         <div id="asst-chat-bubble" class="bg-bg2/95 backdrop-blur-md border border-accent/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-2xl p-4 w-64 md:w-80 opacity-0 pointer-events-none transform translate-y-4 transition-all duration-300 origin-bottom-right">
             <div class="flex justify-between items-center mb-2 border-b border-border/50 pb-1">
@@ -946,7 +946,7 @@
         </div>
         
         <!-- Mikrofon Butonu -->
-        <button id="asst-mic-btn" onclick="VoiceAssistant.toggle()" class="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-bg2 to-bg3 border border-border/80 rounded-full flex items-center justify-center shadow-2xl hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all transform hover:scale-105 group relative outline-none">
+        <button id="asst-mic-btn" onclick="VoiceAssistant.toggle()" class="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-bg2 to-bg3 border border-border/80 rounded-full flex items-center justify-center shadow-2xl hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all transform hover:scale-105 group relative outline-none pointer-events-auto">
             <div class="absolute inset-0 rounded-full bg-accent/20 animate-ping hidden" id="asst-pulse"></div>
             <span class="text-2xl md:text-3xl group-hover:scale-110 transition-transform">🎙️</span>
         </button>
